@@ -1,0 +1,6 @@
+__pycache__
+**venv**
+.hypothesis
+.pytest_cache
+audit.log
+InitializationVector.json

@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "tallulah-backend"
+version = "0.1.0"
+description = ""
+authors = ["Prawal Gangwar <prawal@secureailabs.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.99.0"
+uvicorn = "^0.23.2"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = "^1.7.4"
+fastapi-responses = {git = "https://github.com/secureailabs/fastapi-responses.git", rev = "0.0.1"}
+python-multipart = "^0.0.6"
+aiohttp = "^3.8.4"
+motor = "^3.2.0"
+pyyml = "^0.0.2"
+pydantic = {version = "1.10.9", extras = ["email"]}
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "4.0.1"
+black = "^23.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
