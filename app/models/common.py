@@ -33,7 +33,7 @@ class PyObjectId(UUID):
 
     @classmethod
     def validate(cls, v):
-        uuid_obj = UUID(str(v), version=4)
+        _ = UUID(str(v), version=4)
         return UUID(str(v), version=4)
 
     @classmethod

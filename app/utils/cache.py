@@ -19,7 +19,6 @@ from app.models.common import BasicObjectInfo, PyObjectId
 
 GLOBAL_CACHE: Dict[PyObjectId, BasicObjectInfo] = {}
 
-DB_COLLECTION_ORGANIZATIONS = "organizations"
 DB_COLLECTION_USERS = "users"
 
 
@@ -39,7 +38,3 @@ async def get_basic_object(id: PyObjectId, collection_name: str) -> BasicObjectI
 
 async def get_basic_user(id: PyObjectId) -> BasicObjectInfo:
     return await get_basic_object(id, DB_COLLECTION_USERS)
-
-
-async def get_basic_orgnization(id: PyObjectId) -> BasicObjectInfo:
-    return await get_basic_object(id, DB_COLLECTION_ORGANIZATIONS)

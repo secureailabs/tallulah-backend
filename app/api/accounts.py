@@ -2,7 +2,7 @@
 # Engineering
 # accounts.py
 # -------------------------------------------------------------------------------
-"""APIs to manage user accounts and organizations"""
+""" APIs to manage user accounts and organizations """
 # -------------------------------------------------------------------------------
 # Copyright (C) 2022 Secure Ai Labs, Inc. All Rights Reserved.
 # Private and Confidential. Internal Use Only.
@@ -12,9 +12,6 @@
 #     prior written permission of Secure Ai Labs, Inc.
 # -------------------------------------------------------------------------------
 
-
-from datetime import datetime
-from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 
@@ -80,7 +77,7 @@ async def register_user(
 )
 async def get_user(
     user_id: PyObjectId = Path(description="UUID of the user"),
-    current_user: TokenData = Depends(get_current_user),
+    _: TokenData = Depends(get_current_user),
 ) -> GetUsers_Out:
     # Check if the user exists
     user_db = await Users.read(user_id=user_id)
@@ -90,9 +87,7 @@ async def get_user(
 
 @router.patch(
     path="/{user_id}",
-    description="""
-        Update user information.
-        """,
+    description="Update user information.",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="update_user_info",
 )

@@ -17,6 +17,7 @@ aiohttp = "^3.8.4"
 motor = "^3.2.0"
 pyyml = "^0.0.2"
 pydantic = {version = "1.10.9", extras = ["email"]}
+aio-pika = "^9.2.3"
 
 
 [tool.poetry.group.dev.dependencies]

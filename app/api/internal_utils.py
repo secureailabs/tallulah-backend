@@ -25,6 +25,6 @@ router = APIRouter(tags=["internal"])
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="drop_database",
 )
-async def drop_database():
+async def drop_database() -> Response:
     await data_service.drop()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
