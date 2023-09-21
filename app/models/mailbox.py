@@ -39,7 +39,7 @@ class MessageState(Enum):
 
 
 class Message_Base(SailBaseModel):
-    source_id: PyObjectId = Field()
+    source: str = Field()
     message: StrictStr = Field()
     message_type: MessageType = Field()
     note: Optional[StrictStr] = Field(default=None)
