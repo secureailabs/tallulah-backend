@@ -102,6 +102,8 @@ class OutlookClient(EmailServiceProvider):
         async with aiohttp.ClientSession() as session:
             async with session.post(self.token_url, data=self.token_data) as response:
                 self.token = (await response.json()).get("access_token")
+                if not self.token:
+                    raise Exception("Authorization failed. Invalid code")
 
     async def get_user_info(self):
         if not self.token:
@@ -131,7 +133,7 @@ class OutlookClient(EmailServiceProvider):
 
         async with aiohttp.ClientSession() as session:
             async with session.post(endpoint_url, headers=headers, json=email_body) as response:
-                return await response.json()
+                return await response.text()
 
     async def receive_email(self, query: str):
         if not self.token:
@@ -161,8 +163,19 @@ class EmailService:
         return await self.email_service.receive_email(query)
 
 
-async def main():
-    code = "0.AXwA7-V0Pmp-8EyFc2gMpJtk2ER0JF_4_7JCk2IdL-UkbeF8AGg.AgABAAIAAAAtyolDObpQQ5VtlI4uGjEPAgDs_wUA9P8Dl2Js8TkH8umTq8wvQTIG3xVDWBT0inWYrfN6h6yZ8kkfSvj0H9Q_r2OTdMPzgZK0x6_oROFUe4K8Lg57yE_ICDoi_zBMMp-Vm4nmLU3nvXMDqLNFlgHKQdTSsj4-UL-vhAcVblM6dnYpcw7hLvLm8dQcI0eB-C2DU-ER3uXDgVY9FNKR6frvKAmGmNz0B0P4KC9bMkKhrEH6uO2dmyGdgQFPI_VZ994WV8ftDrxq9XcoAtRPHtu7yH3tXk-uVpEVCt37l7k8gaMqsz1jnmuZCMA6OGlGgnRRDCsr5cf7f_Z6sD3Dobiu-xKqMYVH-fw-c4kFp6WQVW2UB0wYWAGypxNxeGNW-2T3GE0Fuf2-ooxCuDZJJB89LtKZNhbWm5tYLmOy4p4JYunFQcfnCEaB6pe5zjVcXGrGLPDhG-n_dsg2zpzhtwVe6PVDykLveBcUKTYaR4APORPDJXYzN94Ibb9pCwQTZpmHGV4-mDzvrHoepExjMf_gKwitT_1lV9luTun4RL-C-UZnJAyrN8LBYuBeYrJBFadZ6QkzYY7Fw7392tzJsXtlkp6DmHsXjxv8r6sGWu4Zt0ALOZE3UuhrEkml3vF1EIyDlrxgcxiX3HqeRPUvrlymDdEPgcqA-GR4vZXAV2UfJFH4eQHZLhwLH8g46_ZNqVipx5SP4Cd3a90tFF2wa2T7cLsajmBLLKBaPB9srLROc07iBibTPdx1c4AIxJRwGiHi9g1gKx6IKIlNHWYp5iOigadQKAVB9MzxG9ws_T0L0Cdag6iWsyG1cmRBqfw"
+async def test():
+    import webbrowser
+
+    client_id = "5f247444-fff8-42b2-9362-1d2fe5246de1"
+    redirect_uri = "https://127.0.0.1:8000/authorize"
+    scope = "openid offline_access User.Read Mail.Read Mail.Send"
+    auth_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&scope={scope}&response_mode=query"
+    webbrowser.open(auth_url)
+
+    code = input("Enter the code from the address bar in the browser: ")
+    # Sample value of code that is required as an input
+    # code = "0.AXwA7-V0Pmp-8EyFc2gMpJtk2ER0JF_4_7JCk2IdL-UkbeF8AGg.AgABAAIAAAAtyolDObpQQ5VtlI4uGjEPAgDs_wUA9P8Dl2Js8TkH8umTq8wvQTIG3xVDWBT0inWYrfN6h6yZ8kkfSvj0H9Q_r2OTdMPzgZK0x6_oROFUe4K8Lg57yE_ICDoi_zBMMp-Vm4nmLU3nvXMDqLNFlgHKQdTSsj4-UL-vhAcVblM6dnYpcw7hLvLm8dQcI0eB-C2DU-ER3uXDgVY9FNKR6frvKAmGmNz0B0P4KC9bMkKhrEH6uO2dmyGdgQFPI_VZ994WV8ftDrxq9XcoAtRPHtu7yH3tXk-uVpEVCt37l7k8gaMqsz1jnmuZCMA6OGlGgnRRDCsr5cf7f_Z6sD3Dobiu-xKqMYVH-fw-c4kFp6WQVW2UB0wYWAGypxNxeGNW-2T3GE0Fuf2-ooxCuDZJJB89LtKZNhbWm5tYLmOy4p4JYunFQcfnCEaB6pe5zjVcXGrGLPDhG-n_dsg2zpzhtwVe6PVDykLveBcUKTYaR4APORPDJXYzN94Ibb9pCwQTZpmHGV4-mDzvrHoepExjMf_gKwitT_1lV9luTun4RL-C-UZnJAyrN8LBYuBeYrJBFadZ6QkzYY7Fw7392tzJsXtlkp6DmHsXjxv8r6sGWu4Zt0ALOZE3UuhrEkml3vF1EIyDlrxgcxiX3HqeRPUvrlymDdEPgcqA-GR4vZXAV2UfJFH4eQHZLhwLH8g46_ZNqVipx5SP4Cd3a90tFF2wa2T7cLsajmBLLKBaPB9srLROc07iBibTPdx1c4AIxJRwGiHi9g1gKx6IKIlNHWYp5iOigadQKAVB9MzxG9ws_T0L0Cdag6iWsyG1cmRBqfw"
+
     outlook_client = OutlookClient(code)
     await outlook_client.connect()
     user_info = await outlook_client.get_user_info()
@@ -179,4 +192,4 @@ async def main():
 if __name__ == "__main__":
     import asyncio
 
-    asyncio.run(main())
+    asyncio.run(test())
