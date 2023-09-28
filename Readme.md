@@ -1,5 +1,23 @@
 # SAIL API Services Portal
 
+Set the following environment variables before running the application:
+```
+export AZURE_SUBSCRIPTION_ID="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export AZURE_TENANT_ID="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export AZURE_CLIENT_ID="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export AZURE_CLIENT_SECRET="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export AZURE_OBJECT_ID="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export container_registry_server="XXXXXXXXXXXXXXXXXXXXXXXXXXXXX.azurecr.io"
+export container_registry_user="XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+export container_registry_password="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+export outlook_client_id="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export outlook_client_secret="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export outlook_tenant_id="b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"
+export rabbit_mq_user="user"
+export rabbit_mq_password="password"
+```
+Alternativly, you can create a env.sh file in the root directory of the project and add the above environment variables to it.
+
 ## Api Writing Guidelines
 - Endpoint decorator should be defined in the format '@api.route('/<resource_name>/<id>/<sub_resource>/<id>.../?query_params')'
 - Endpoint decorator should at least contain description, response_description, operation_id, response_model, status_code
@@ -84,7 +102,6 @@ make build_image
 ```
 make run_image
 ```
-Note: make sure updated InitializationVevtor.json file is present in the root directory of the project
 
 ### Populate the database with test data
 Refer to the README.md in the Engineering/database-initialization folder.

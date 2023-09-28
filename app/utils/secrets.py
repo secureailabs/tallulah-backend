@@ -12,25 +12,20 @@
 #     prior written permission of Secure Ai Labs, Inc.
 # -------------------------------------------------------------------------------
 
-import json
+import os
+from typing import Dict
 
-initialization_vector = None
+initialization_vector: Dict[str, str] = {}
 
 
 def get_secret(secret_name: str) -> str:
-    """Get the value of a secret
-
-    :param secret_name: key for the value to be fetched
-    :type secret_name: str
-    :return: the value for the key if it exists or an exception
-    :rtype: str
-    """
     global initialization_vector
-    if not initialization_vector:
-        with open("InitializationVector.json") as file:
-            initialization_vector = json.load(file)
 
     if secret_name not in initialization_vector:
-        raise Exception(f"Secret {secret_name} not found")
+        # read from environment variable
+        if secret_name in os.environ:
+            initialization_vector[secret_name] = os.environ[secret_name]
+        else:
+            raise Exception(f"Secret {secret_name} not found")
 
-    return initialization_vector.get(secret_name)
+    return initialization_vector[secret_name]

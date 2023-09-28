@@ -12,6 +12,15 @@ check_docker() {
     fi
 }
 
+# Set the environment variables
+set_env_vars() {
+    # If there is a env.sh file, source it
+    if [ -f env.sh ]; then
+        source env.sh
+    fi
+}
+
+
 # function to tag and push the input image to the docker hub
 push_image_to_registry() {
     # check docker installed
@@ -49,12 +58,35 @@ build_image() {
     check_docker
     poetry export -f requirements.txt --output requirements.txt --without-hashes
     docker build -t $1 -f "docker/Dockerfile" .
+
+    # Tag the rabbitmq image
+    docker pull rabbitmq:3
+    docker tag rabbitmq:3 tallulah/rabbitmq
 }
 
 # Run the docker image
 run_image() {
+
     check_docker
-    docker run -it -p 8000:8000  -v $(pwd)/app:/app -v $(pwd)/certs:/etc/nginx/certs -v $(pwd)/InitializationVector.json:/InitializationVector.json $1
+    set_env_vars
+
+    docker run -it \
+    -p 8000:8000 \
+    -v $(pwd)/app:/app \
+    --env slack_webhook=$slack_webhook \
+    --env owner=$owner \
+    --env jwt_secret=$jwt_secret \
+    --env password_pepper=$password_pepper \
+    --env refresh_secret=$refresh_secret \
+    --env outlook_client_id=$outlook_client_id \
+    --env outlook_client_secret=$outlook_client_secret \
+    --env outlook_redirect_uri=$outlook_redirect_uri \
+    $1
+}
+
+run() {
+    set_env_vars
+    uvicorn app.main:server --reload
 }
 
 generate_client() {

@@ -56,6 +56,10 @@ class GetMessage_Out(Message_Base):
     creation_time: datetime = Field()
 
 
+class GetMultipleMessage_Out(SailBaseModel):
+    messages: List[GetMessage_Out] = Field()
+
+
 class UpdateMessage_In(SailBaseModel):
     message_state: MessageState = Field()
 

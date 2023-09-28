@@ -21,15 +21,17 @@ from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
-from fastapi import FastAPI, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
+from msal import ConfidentialClientApplication
 from pydantic import BaseModel, Field, StrictStr
 
 from app.api import accounts, authentication, internal_utils, mailbox
@@ -216,3 +218,37 @@ async def add_audit_log(request: Request, call_next: Callable):
     add_log_message(LogLevel.INFO, Resource.USER_ACTIVITY, message)
 
     return response
+
+
+# Microsoft OAuth2 Configuration
+CLIENT_ID = get_secret("outlook_client_id")
+CLIENT_SECRET = get_secret("outlook_client_secret")
+TENANT_ID = get_secret("outlook_tenant_id")
+AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
+SCOPES = ["User.Read", "Mail.Read", "Mail.Send"]
+
+# Create MSAL application instance
+app_instance = ConfidentialClientApplication(
+    CLIENT_ID,
+    authority=AUTHORITY,
+    client_credential=CLIENT_SECRET,
+)
+
+# Create OAuth2 Authorization URL
+redirect_uri = get_secret("outlook_redirect_uri")
+authorization_url = app_instance.get_authorization_request_url(SCOPES, redirect_uri)
+
+
+@server.get("/", response_class=HTMLResponse)
+async def read_root():
+    html_content = f"""
+    <html>
+        <head>
+            <title>Login with Microsoft</title>
+        </head>
+        <body>
+            <a href="{authorization_url}"><button>Login with Microsoft</button></a>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)

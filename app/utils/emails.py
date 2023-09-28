@@ -6,10 +6,12 @@ from typing import List
 
 import aiohttp
 
+from app.utils.secrets import get_secret
+
 
 class EmailServiceProvider(ABC):
     @abstractmethod
-    async def send_email(self, email_address, message):
+    async def send_email(self, email_address, subject, message):
         pass
 
     @abstractmethod
@@ -80,12 +82,15 @@ class ImapClient(EmailServiceProvider):
 
 class OutlookClient(EmailServiceProvider):
     def __init__(self, code: str):
-        CLIENT_ID = "5f247444-fff8-42b2-9362-1d2fe5246de1"
-        REDIRECT_URI = "https://127.0.0.1:8000/authorize"
+        CLIENT_ID = get_secret("outlook_client_id")
+        CLIENT_SECRET = get_secret("outlook_client_secret")
+        REDIRECT_URI = get_secret("outlook_redirect_uri")
+
         AUTHORITY_URL = "https://login.microsoftonline.com/organizations"
         self.RESOURCE_URL = "https://graph.microsoft.com"
         self.API_VERSION = "v1.0"
         SCOPES = "Mail.Read Mail.Send"
+        self.endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me/messages"
 
         self.token_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
         self.token_data = {
@@ -101,9 +106,10 @@ class OutlookClient(EmailServiceProvider):
         # Make an async request to get the access token
         async with aiohttp.ClientSession() as session:
             async with session.post(self.token_url, data=self.token_data) as response:
-                self.token = (await response.json()).get("access_token")
+                token_response = await response.json()
+                self.token = token_response.get("access_token")
                 if not self.token:
-                    raise Exception("Authorization failed. Invalid code")
+                    raise Exception("Authorization failed. Invalid code. Message: " + str(token_response))
 
     async def get_user_info(self):
         if not self.token:
@@ -139,13 +145,13 @@ class OutlookClient(EmailServiceProvider):
         if not self.token:
             raise Exception("Not connected")
 
-        endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me/messages"
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(endpoint_url, headers=headers) as response:
+            async with session.get(self.endpoint_url, headers=headers) as response:
                 email_r = await response.json()
                 emails = email_r.get("value")
+                self.endpoint_url = email_r.get("@odata.nextLink")
                 return emails
 
     def __del__(self):
@@ -157,7 +163,7 @@ class EmailService:
         self.email_service = email_service
 
     async def send_email(self, email_address, subject, message):
-        return await self.email_service.send_email(email_address, message)
+        return await self.email_service.send_email(email_address, subject, message)
 
     async def receive_email(self, query):
         return await self.email_service.receive_email(query)
@@ -166,8 +172,8 @@ class EmailService:
 async def test():
     import webbrowser
 
-    client_id = "5f247444-fff8-42b2-9362-1d2fe5246de1"
-    redirect_uri = "https://127.0.0.1:8000/authorize"
+    client_id = get_secret("outlook_client_id")
+    redirect_uri = get_secret("outlook_redirect_uri")
     scope = "openid offline_access User.Read Mail.Read Mail.Send"
     auth_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&scope={scope}&response_mode=query"
     webbrowser.open(auth_url)
@@ -182,7 +188,9 @@ async def test():
     print(user_info)
     email_service = EmailService(outlook_client)
     emails = await email_service.receive_email("")
-    print(emails)
+    print([email["subject"] for email in emails])
+    emails = await email_service.receive_email("")
+    print([email["subject"] for email in emails])
     send_resp = await email_service.send_email(
         ["prawal@secureailabs.com"], "Test email from Python", "Hello this is prawal"
     )
