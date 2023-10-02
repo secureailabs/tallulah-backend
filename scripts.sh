@@ -20,7 +20,6 @@ set_env_vars() {
     fi
 }
 
-
 # function to tag and push the input image to the docker hub
 push_image_to_registry() {
     # check docker installed
@@ -62,6 +61,10 @@ build_image() {
     # Tag the rabbitmq image
     docker pull rabbitmq:3
     docker tag rabbitmq:3 tallulah/rabbitmq
+
+    # Tag the mongodb image
+    docker pull mongo:6.0
+    docker tag mongo:6.0 tallulah/mongo
 }
 
 # Run the docker image
@@ -74,14 +77,24 @@ run_image() {
     -p 8000:8000 \
     -v $(pwd)/app:/app \
     --env slack_webhook=$slack_webhook \
-    --env owner=$owner \
-    --env jwt_secret=$jwt_secret \
-    --env password_pepper=$password_pepper \
-    --env refresh_secret=$refresh_secret \
+    --env AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID \
+    --env AZURE_TENANT_ID=$AZURE_TENANT_ID \
+    --env AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
+    --env AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
+    --env AZURE_OBJECT_ID=$AZURE_OBJECT_ID \
     --env outlook_client_id=$outlook_client_id \
     --env outlook_client_secret=$outlook_client_secret \
+    --env outlook_tenant_id=$outlook_tenant_id \
     --env outlook_redirect_uri=$outlook_redirect_uri \
-    $1
+    --env slack_webhook=$slack_webhook \
+    --env rabbit_mq_user=$rabbit_mq_user \
+    --env rabbit_mq_password=$rabbit_mq_password \
+    --env jwt_secret=$jwt_secret \
+    --env refresh_secret=$refresh_secret \
+    --env password_pepper=$password_pepper \
+    --env rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@rabbitmq.$domainName \
+    --env mongodb_host=mongodb://tallulan-mongo.com \
+    developmentdockerregistry.azurecr.io/tallulah/backend:v0.1.0_c618de8
 }
 
 run() {

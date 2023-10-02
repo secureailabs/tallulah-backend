@@ -12,6 +12,7 @@ run_image:
 push_image: build_image
 	@./scripts.sh push_image_to_registry tallulah/backend
 	@./scripts.sh push_image_to_registry tallulah/rabbitmq
+	@./scripts.sh push_image_to_registry tallulah/mongo
 
 generate_client:
 	@./scripts.sh generate_client

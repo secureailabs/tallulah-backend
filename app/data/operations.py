@@ -17,7 +17,10 @@ from typing import Any, Dict, List, Optional
 import motor.motor_asyncio
 import pymongo.results as results
 
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://127.0.0.1:27017/")
+from app.utils.secrets import get_secret
+
+mongodb_host = get_secret("mongodb_host")
+client = motor.motor_asyncio.AsyncIOMotorClient(f"{mongodb_host}:27017/")
 sail_db = client["tallulah"]
 
 
