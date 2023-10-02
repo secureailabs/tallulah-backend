@@ -4,12 +4,12 @@
 # -------------------------------------------------------------------------------
 """Async operations for the database"""
 # -------------------------------------------------------------------------------
-# Copyright (C) 2022 Secure Ai Labs, Inc. All Rights Reserved.
+# Copyright (C) 2022 Array Insights, Inc. All Rights Reserved.
 # Private and Confidential. Internal Use Only.
 #     This software contains proprietary information which shall not
 #     be reproduced or transferred to other documents and shall not
 #     be disclosed to others for any purpose without
-#     prior written permission of Secure Ai Labs, Inc.
+#     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
 from typing import Any, Dict, List, Optional
@@ -30,6 +30,16 @@ async def find_one(collection, query) -> Optional[dict]:
 
 async def find_all(collection: str) -> list:
     return await sail_db[collection].find().to_list(1000)
+
+
+async def find_sorted(collection: str, query: Dict, sort_key: str, sort_direction: int) -> list:
+    return await sail_db[collection].find(query).sort(sort_key, sort_direction).to_list(1000)
+
+
+async def find_sorted_pagination(
+    collection: str, query: Dict, sort_key: str, sort_direction: int, skip: int, limit: int
+) -> list:
+    return await sail_db[collection].find(query).sort(sort_key, sort_direction).skip(skip).limit(limit).to_list(1000)
 
 
 async def find_by_query(collection: str, query) -> List[Dict[str, Any]]:

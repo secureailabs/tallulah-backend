@@ -1,132 +1,108 @@
 # -------------------------------------------------------------------------------
 # Engineering
-# accounts.py
+# mailboxes.py
 # -------------------------------------------------------------------------------
-"""Models used by account management service"""
+"""Mailboxes used to fetch user emails"""
 # -------------------------------------------------------------------------------
-# Copyright (C) 2022 Secure Ai Labs, Inc. All Rights Reserved.
+# Copyright (C) 2022 Array Insights, Inc. All Rights Reserved.
 # Private and Confidential. Internal Use Only.
 #     This software contains proprietary information which shall not
 #     be reproduced or transferred to other documents and shall not
 #     be disclosed to others for any purpose without
-#     prior written permission of Secure Ai Labs, Inc.
+#     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-import mailbox
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
-from click import UNPROCESSED
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
 from app.data import operations as data_service
-from app.models.common import BasicObjectInfo, PyObjectId, SailBaseModel
+from app.models.common import PyObjectId, SailBaseModel
 
 
-class MessageType(Enum):
-    EMAIL = "EMAIL"
-    REDDIT = "REDDIT"
-    YOUTUBE_TRANSCRIPT = "YOUTUBE_TRANSCRIPT"
-
-
-class MessageState(Enum):
+class MailboxState(Enum):
     UNPROCESSED = "UNPROCESSED"
     PROCESSED = "PROCESSED"
     FAILED = "FAILED"
 
 
-class Message_Base(SailBaseModel):
-    source: str = Field()
-    message: StrictStr = Field()
-    message_type: MessageType = Field()
+class MailboxProvider(Enum):
+    GMAIL = "GMAIL"
+    OUTLOOK = "OUTLOOK"
+
+
+class Mailbox_Base(SailBaseModel):
+    email: EmailStr = Field()
     note: Optional[StrictStr] = Field(default=None)
-    message_state: MessageState = Field(default=MessageState.UNPROCESSED)
+    user_id: PyObjectId = Field()
 
 
-class Message_Db(Message_Base):
+class Mailbox_Db(Mailbox_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
+    last_refresh_time: Optional[datetime] = Field(default=None)
 
 
-class GetMessage_Out(Message_Base):
+class GetMailbox_Out(Mailbox_Base):
     id: PyObjectId = Field(alias="_id")
     creation_time: datetime = Field()
 
 
-class GetMultipleMessage_Out(SailBaseModel):
-    messages: List[GetMessage_Out] = Field()
+class RegisterMailbox_In(SailBaseModel):
+    code: str = Field()
+    provider: MailboxProvider = Field()
 
 
-class UpdateMessage_In(SailBaseModel):
-    message_state: MessageState = Field()
+class RegisterMailbox_Out(SailBaseModel):
+    id: PyObjectId = Field(alias="_id")
 
 
-class Messages:
-    DB_COLLECTION_USERS = "messages"
+class GetMultipleMailboxes_Out(SailBaseModel):
+    messages: List[GetMailbox_Out] = Field()
+
+
+class Mailboxes:
+    DB_COLLECTION_MAILBOXES = "mailboxes"
 
     @staticmethod
     async def create(
-        message: Message_Db,
+        mailbox: Mailbox_Db,
     ):
         return await data_service.insert_one(
-            collection=Messages.DB_COLLECTION_USERS,
-            data=jsonable_encoder(message),
+            collection=Mailboxes.DB_COLLECTION_MAILBOXES,
+            data=jsonable_encoder(mailbox),
         )
 
     @staticmethod
     async def read(
-        job_id: Optional[PyObjectId] = None,
-        message_id: Optional[PyObjectId] = None,
+        mailbox_id: Optional[PyObjectId] = None,
+        user_id: Optional[PyObjectId] = None,
         throw_on_not_found: bool = True,
-    ) -> List[Message_Db]:
-        messages_list = []
+    ) -> List[Mailbox_Db]:
+        mailboxes_list = []
 
         query = {}
-        if message_id:
-            query["_id"] = str(message_id)
-        if job_id:
-            query["job_id"] = str(job_id)
+        if mailbox_id:
+            query["_id"] = str(mailbox_id)
+        if user_id:
+            query["user_id"] = str(user_id)
 
         response = await data_service.find_by_query(
-            collection=Messages.DB_COLLECTION_USERS,
+            collection=Mailboxes.DB_COLLECTION_MAILBOXES,
             query=jsonable_encoder(query),
         )
 
         if response:
             for data_model in response:
-                messages_list.append(Message_Db(**data_model))
+                mailboxes_list.append(Mailbox_Db(**data_model))
         elif throw_on_not_found:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No messages found for query: {query}",
+                detail=f"No mailboxes found for query: {query}",
             )
 
-        return messages_list
-
-    @staticmethod
-    async def update(
-        query_message_id: Optional[PyObjectId] = None,
-        update_message_state: Optional[MessageState] = None,
-    ):
-        query = {}
-        if query_message_id:
-            query["_id"] = str(query_message_id)
-
-        update_request = {"$set": {}}
-        if update_message_state:
-            update_request["$set"]["message_state"] = update_message_state.value
-
-        update_response = await data_service.update_many(
-            collection=Messages.DB_COLLECTION_USERS,
-            query=query,
-            data=jsonable_encoder(update_request),
-        )
-
-        if update_response.modified_count == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Message not found or no changes to update",
-            )
+        return mailboxes_list

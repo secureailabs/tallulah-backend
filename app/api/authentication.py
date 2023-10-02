@@ -4,12 +4,12 @@
 # -------------------------------------------------------------------------------
 """Tallulah authentication and authorization service"""
 # -------------------------------------------------------------------------------
-# Copyright (C) 2022 Secure Ai Labs, Inc. All Rights Reserved.
+# Copyright (C) 2022 Array Insights, Inc. All Rights Reserved.
 # Private and Confidential. Internal Use Only.
 #     This software contains proprietary information which shall not
 #     be reproduced or transferred to other documents and shall not
 #     be disclosed to others for any purpose without
-#     prior written permission of Secure Ai Labs, Inc.
+#     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
 from datetime import datetime
@@ -215,7 +215,7 @@ async def refresh_for_access_token(
     operation_id="get_current_user_info",
 )
 async def get_current_user_info(
-    current_user: User_Db = Depends(get_current_user),
+    current_user: TokenData = Depends(get_current_user),
 ) -> UserInfo_Out:
     found_user = await Users.read(user_id=current_user.id)
 
