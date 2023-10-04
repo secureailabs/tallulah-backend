@@ -31,8 +31,8 @@ class MailboxState(Enum):
 
 
 class MailboxProvider(Enum):
-    GMAIL = "GMAIL"
     OUTLOOK = "OUTLOOK"
+    GMAIL = "GMAIL"
 
 
 class Mailbox_Base(SailBaseModel):
@@ -44,7 +44,8 @@ class Mailbox_Base(SailBaseModel):
 class Mailbox_Db(Mailbox_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
-    last_refresh_time: Optional[datetime] = Field(default=None)
+    refresh_token: StrictStr = Field(default=None)
+    last_refresh_time: Optional[str] = Field(default_factory=None)
 
 
 class GetMailbox_Out(Mailbox_Base):
@@ -62,7 +63,7 @@ class RegisterMailbox_Out(SailBaseModel):
 
 
 class GetMultipleMailboxes_Out(SailBaseModel):
-    messages: List[GetMailbox_Out] = Field()
+    mailboxes: List[GetMailbox_Out] = Field()
 
 
 class Mailboxes:
@@ -106,3 +107,34 @@ class Mailboxes:
             )
 
         return mailboxes_list
+
+    @staticmethod
+    async def update(
+        query_mailbox_id: Optional[PyObjectId] = None,
+        update_last_refresh_time: Optional[datetime] = None,
+        update_refresh_token: Optional[str] = None,
+        update_mailbox_state: Optional[MailboxState] = None,
+    ):
+        query = {}
+        if query_mailbox_id:
+            query["_id"] = str(query_mailbox_id)
+
+        update = {}
+        if update_last_refresh_time:
+            update["last_refresh_time"] = update_last_refresh_time
+        if update_refresh_token:
+            update["refresh_token"] = update_refresh_token
+        if update_mailbox_state:
+            update["mailbox_state"] = update_mailbox_state
+
+        update_result = await data_service.update_one(
+            collection=Mailboxes.DB_COLLECTION_MAILBOXES,
+            query=jsonable_encoder(query),
+            data=jsonable_encoder({"$set": update}),
+        )
+
+        if update_result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Mailbox not found for query: {query}",
+            )

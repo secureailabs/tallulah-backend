@@ -12,18 +12,16 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-import mailbox
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from click import UNPROCESSED
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
 from app.data import operations as data_service
-from app.models.common import BasicObjectInfo, PyObjectId, SailBaseModel
+from app.models.common import PyObjectId, SailBaseModel
 
 
 class EmailState(Enum):
@@ -34,7 +32,8 @@ class EmailState(Enum):
 
 class Email_Base(SailBaseModel):
     subject: StrictStr = Field()
-    body: StrictStr = Field()
+    body: Dict = Field()
+    from_address: Dict = Field()
     received_time: datetime = Field()
     mailbox_id: PyObjectId = Field()
     note: Optional[StrictStr] = Field(default=None)

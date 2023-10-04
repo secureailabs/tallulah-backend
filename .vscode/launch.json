@@ -9,6 +9,8 @@
             "args": [
                 "app.main:server",
                 "--reload",
+                "--env-file",
+                "${workspaceFolder}/.env"
             ],
             "jinja": true,
             "justMyCode": true

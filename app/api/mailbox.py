@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, status
 
 from app.api.authentication import get_current_user
 from app.api.emails import read_emails
@@ -50,21 +50,26 @@ async def add_new_mailbox(
     try:
         client = None
         if mailbox_info.provider == MailboxProvider.OUTLOOK:
-            client = OutlookClient(mailbox_info.code)
+            client = OutlookClient()
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid mailbox provider")
 
-        await client.connect()
+        await client.connect_with_code(mailbox_info.code)
         user_info = await client.get_user_info()
 
     except Exception as exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exception))
 
-    mailbox_db = Mailbox_Db(email=user_info["mail"], user_id=current_user.id)
+    if not client.refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Refresh token not found. Mailbox addition failed."
+        )
+
+    mailbox_db = Mailbox_Db(email=user_info["mail"], user_id=current_user.id, refresh_token=client.refresh_token)
     await Mailboxes.create(mailbox=mailbox_db)
 
     # Add a background task to read emails
-    background_tasks.add_task(read_emails, client, mailbox_db.id)
+    background_tasks.add_task(read_emails, client, mailbox_db.id, None)
 
     return RegisterMailbox_Out(_id=mailbox_db.id)
 
@@ -80,32 +85,19 @@ async def get_all_mailboxes(
 ) -> GetMultipleMailboxes_Out:
     mailboxes = await Mailboxes.read(user_id=current_user.id, throw_on_not_found=False)
 
-    return GetMultipleMailboxes_Out(messages=[GetMailbox_Out(**email.dict()) for email in mailboxes])
+    return GetMultipleMailboxes_Out(mailboxes=[GetMailbox_Out(**mailbox.dict()) for mailbox in mailboxes])
 
 
 @router.get(
     path="/{mailbox_id}",
     description="Get the mailbox for the current user",
     status_code=status.HTTP_200_OK,
-    operation_id="get_mailboxe",
+    operation_id="get_mailbox",
 )
-async def get_all_mailboxe(
+async def get_mailbox(
     mailbox_id: PyObjectId = Path(description="Mailbox id"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMailbox_Out:
     mailboxe = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
 
     return GetMailbox_Out(**mailboxe[0].dict())
-
-
-@router.get(
-    path="/authorize",
-    description="Authorize the user by sending the OAuth code",
-    status_code=status.HTTP_200_OK,
-    operation_id="outlook_authorize",
-)
-async def outlook_authorize(
-    code: str = Query(description="OAuth code"),
-    session_state: str = Query(description="Session state id"),
-) -> Response:
-    return Response(status_code=status.HTTP_200_OK)

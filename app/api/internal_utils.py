@@ -33,8 +33,6 @@ async def drop_database() -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-import os
-
 # Create MSAL application instance
 app_instance = ConfidentialClientApplication(
     client_id=get_secret("outlook_client_id"),
@@ -43,8 +41,7 @@ app_instance = ConfidentialClientApplication(
 )
 
 # Create OAuth2 Authorization URL
-# redirect_uri = get_secret("outlook_redirect_uri")
-redirect_uri = "https://127.0.0.1:8000/authorize"
+redirect_uri = get_secret("outlook_redirect_uri")
 scopes = ["User.Read", "Mail.Read", "Mail.Send"]
 authorization_url = app_instance.get_authorization_request_url(scopes=scopes, redirect_uri=redirect_uri)
 

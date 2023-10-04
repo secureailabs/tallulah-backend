@@ -54,8 +54,6 @@ class User_Db(User_Base):
 
 class UserInfo_Out(User_Base):
     id: PyObjectId = Field(alias="_id")
-    organization: BasicObjectInfo = Field()
-    freemium: bool = Field(default=True)
 
 
 class RegisterUser_In(User_Base):

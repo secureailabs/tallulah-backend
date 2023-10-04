@@ -13,7 +13,13 @@
 # -------------------------------------------------------------------------------
 
 
+import asyncio
+import datetime
+from datetime import date
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, status
+from fastapi_utils.tasks import repeat_every
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -27,8 +33,15 @@ from app.utils.secrets import get_secret
 router = APIRouter(prefix="/emails", tags=["emails"])
 
 
-async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
-    emails = await client.receive_email("")
+async def read_emails(client: OutlookClient, mailbox_id: PyObjectId, receivedDateTime: Optional[str] = None):
+    # reauthenticate to get the latest token
+    await client.reauthenticate()
+
+    # Fetch the emails
+    if receivedDateTime:
+        emails = await client.receive_email(f"$filter=receivedDateTime ge '{receivedDateTime}'")
+    else:
+        emails = await client.receive_email()
 
     # Connect to the message queue
     rabbit_mq_connect_url = get_secret("rabbit_mq_host")
@@ -42,18 +55,51 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
                 mailbox_id=mailbox_id,
                 subject=email["subject"],
                 body=email["body"],
-                received_time=email["received_time"],
+                received_time=email["receivedDateTime"],
+                from_address=email["sender"],
                 message_state=EmailState.UNPROCESSED,
             )
             await Emails.create(email=email_db)
 
             # Add the email to the queue for processing
-            await rabbit_mq_client.push_message(str(email))
+            await rabbit_mq_client.push_message(str(email_db.id))
 
         # refetch the next emails
-        emails = await client.receive_email("")
+        emails = await client.receive_email()
 
+    # Close the connection to the message queue
     await rabbit_mq_client.disconnect()
+
+
+@router.on_event("startup")
+@repeat_every(seconds=3600)  # 1 hour
+async def read_emails_hourly():
+    print("Reading emails")
+    # Get the list of all the mailboxes
+    mailboxes = await Mailboxes.read()
+    tasks = []
+    # Add an async task to read emails for each mailbox
+    for mailbox in mailboxes:
+        # Connect to the mailbox
+        client = OutlookClient()
+        await client.connect_with_refresh_token(mailbox.refresh_token)
+
+        # Update the last refresh time and refresh token
+        await Mailboxes.update(
+            query_mailbox_id=mailbox.id,
+            update_last_refresh_time=datetime.datetime.utcnow(),
+            update_refresh_token=client.refresh_token,
+        )
+
+        # Add a background task to read emails
+        tasks.append(
+            asyncio.create_task(
+                read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time)
+            )
+        )
+
+    # Wait for all the tasks to complete
+    await asyncio.gather(*tasks)
 
 
 @router.get(

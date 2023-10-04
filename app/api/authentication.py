@@ -215,7 +215,7 @@ async def refresh_for_access_token(
     operation_id="get_current_user_info",
 )
 async def get_current_user_info(
-    current_user: TokenData = Depends(get_current_user),
+    current_user: UserInfo_Out = Depends(get_current_user),
 ) -> UserInfo_Out:
     found_user = await Users.read(user_id=current_user.id)
 

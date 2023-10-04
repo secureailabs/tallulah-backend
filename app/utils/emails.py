@@ -1,9 +1,8 @@
 import email
 import imaplib
-import os
 from abc import ABC, abstractmethod
 from email.header import decode_header
-from typing import Dict, List
+from typing import List, Optional
 
 import aiohttp
 
@@ -82,33 +81,69 @@ class ImapClient(EmailServiceProvider):
 
 
 class OutlookClient(EmailServiceProvider):
-    def __init__(self, code: str):
-        self.RESOURCE_URL = "https://graph.microsoft.com"
-        self.API_VERSION = "v1.0"
-        self.code = code
+    def __init__(self):
+        self.resource_url = "https://graph.microsoft.com"
+        self.api_version = "v1.0"
+        self.base_email_endpoint = f"{self.resource_url}/{self.api_version}/me/messages"
+        self.current_email_endpoint = f"{self.resource_url}/{self.api_version}/me/messages"
+        self.token = None
+        self.refresh_token = None
 
-    async def connect(self):
+    async def connect_with_code(self, code: str):
+        # Don't authenticate if the code is empty or token is already set
+        if not code:
+            raise Exception("Authorization failed. Invalid code.")
+        if self.token:
+            return
+
         self.token_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
         token_data = {
             "grant_type": "authorization_code",
             "client_id": get_secret("outlook_client_id"),
             "client_secret": get_secret("outlook_client_secret"),
             "redirect_uri": get_secret("outlook_redirect_uri"),
-            "code": self.code,
+            "code": code,
             "scope": "Mail.Read Mail.Send",
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(self.token_url, data=token_data) as response:
                 token_response = await response.json()
                 self.token = token_response.get("access_token")
+                self.refresh_token = token_response.get("refresh_token")
                 if not self.token:
                     raise Exception("Authorization failed. Invalid code. Message: " + str(token_response))
+
+    async def connect_with_refresh_token(self, refresh_token: str):
+        if not refresh_token:
+            raise Exception("Authorization failed. Invalid refersh token.")
+
+        self.token_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
+        token_data = {
+            "grant_type": "refresh_token",
+            "client_id": get_secret("outlook_client_id"),
+            "client_secret": get_secret("outlook_client_secret"),
+            "redirect_uri": get_secret("outlook_redirect_uri"),
+            "refresh_token": refresh_token,
+            "scope": "Mail.Read Mail.Send",
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self.token_url, data=token_data) as response:
+                token_response = await response.json()
+                self.token = token_response.get("access_token")
+                self.refresh_token = token_response.get("refresh_token")
+                if not self.token:
+                    raise Exception("Authorization failed. Invalid code. Message: " + str(token_response))
+
+    async def reauthenticate(self):
+        if not self.refresh_token:
+            raise Exception("Refresh token not found.")
+        await self.connect_with_refresh_token(self.refresh_token)
 
     async def get_user_info(self):
         if not self.token:
             raise Exception("Not connected")
 
-        endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me"
+        endpoint_url = f"{self.resource_url}/{self.api_version}/me"
         headers = {"Authorization": f"Bearer {self.token}"}
 
         async with aiohttp.ClientSession() as session:
@@ -119,7 +154,7 @@ class OutlookClient(EmailServiceProvider):
         if not self.token:
             raise Exception("Not connected")
 
-        endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me/sendMail"
+        endpoint_url = f"{self.resource_url}/{self.api_version}/me/sendMail"
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
         email_body = {
             "message": {
@@ -134,8 +169,9 @@ class OutlookClient(EmailServiceProvider):
             async with session.post(endpoint_url, headers=headers, json=email_body) as response:
                 return await response.text()
 
-    async def receive_email(self, query: str):
-        self.endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me/messages"
+    async def receive_email(self, query: Optional[str] = None):
+        if query:
+            self.current_email_endpoint = f"{self.base_email_endpoint}?{query}"
 
         if not self.token:
             raise Exception("Not connected")
@@ -143,10 +179,10 @@ class OutlookClient(EmailServiceProvider):
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(self.endpoint_url, headers=headers) as response:
+            async with session.get(self.current_email_endpoint, headers=headers) as response:
                 email_r = await response.json()
                 emails = email_r.get("value")
-                self.endpoint_url = email_r.get("@odata.nextLink")
+                self.current_email_endpoint = email_r.get("@odata.nextLink")
                 return emails
 
     def __del__(self):
@@ -166,8 +202,8 @@ async def test():
     # Sample value of code that is required as an input
     # code = "0.AXwA7-V0Pmp-8EyFc2gMpJtk2ER0JF_4_7JCk2IdL-UkbeF8AGg.AgABAAIAAAAtyolDObpQQ5VtlI4uGjEPAgDs_wUA9P8Dl2Js8TkH8umTq8wvQTIG3xVDWBT0inWYrfN6h6yZ8kkfSvj0H9Q_r2OTdMPzgZK0x6_oROFUe4K8Lg57yE_ICDoi_zBMMp-Vm4nmLU3nvXMDqLNFlgHKQdTSsj4-UL-vhAcVblM6dnYpcw7hLvLm8dQcI0eB-C2DU-ER3uXDgVY9FNKR6frvKAmGmNz0B0P4KC9bMkKhrEH6uO2dmyGdgQFPI_VZ994WV8ftDrxq9XcoAtRPHtu7yH3tXk-uVpEVCt37l7k8gaMqsz1jnmuZCMA6OGlGgnRRDCsr5cf7f_Z6sD3Dobiu-xKqMYVH-fw-c4kFp6WQVW2UB0wYWAGypxNxeGNW-2T3GE0Fuf2-ooxCuDZJJB89LtKZNhbWm5tYLmOy4p4JYunFQcfnCEaB6pe5zjVcXGrGLPDhG-n_dsg2zpzhtwVe6PVDykLveBcUKTYaR4APORPDJXYzN94Ibb9pCwQTZpmHGV4-mDzvrHoepExjMf_gKwitT_1lV9luTun4RL-C-UZnJAyrN8LBYuBeYrJBFadZ6QkzYY7Fw7392tzJsXtlkp6DmHsXjxv8r6sGWu4Zt0ALOZE3UuhrEkml3vF1EIyDlrxgcxiX3HqeRPUvrlymDdEPgcqA-GR4vZXAV2UfJFH4eQHZLhwLH8g46_ZNqVipx5SP4Cd3a90tFF2wa2T7cLsajmBLLKBaPB9srLROc07iBibTPdx1c4AIxJRwGiHi9g1gKx6IKIlNHWYp5iOigadQKAVB9MzxG9ws_T0L0Cdag6iWsyG1cmRBqfw"
 
-    outlook_client = OutlookClient(code)
-    await outlook_client.connect()
+    outlook_client = OutlookClient()
+    await outlook_client.connect_with_code(code)
     user_info = await outlook_client.get_user_info()
     print(user_info)
     email_service = outlook_client
