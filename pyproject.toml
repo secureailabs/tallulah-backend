@@ -19,6 +19,7 @@ pyyml = "^0.0.2"
 pydantic = {version = "1.10.9", extras = ["email"]}
 aio-pika = "^9.2.3"
 msal = "^1.24.0"
+fastapi-utils = "^0.2.1"
 
 
 [tool.poetry.group.dev.dependencies]

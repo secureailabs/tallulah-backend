@@ -40,11 +40,11 @@ router = APIRouter(prefix="/mailbox", tags=["mailbox"])
     operation_id="add_new_mailbox",
 )
 async def add_new_mailbox(
+    background_tasks: BackgroundTasks,
     mailbox_info: RegisterMailbox_In = Body(
         description="Oauth code that is used to fetch the token from the authorization server"
     ),
     current_user: TokenData = Depends(get_current_user),
-    background_tasks: BackgroundTasks = Depends(),
 ) -> RegisterMailbox_Out:
     # Connect to the mailbox and check if the user is valid
     try:

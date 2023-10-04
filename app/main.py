@@ -1,8 +1,8 @@
 # -------------------------------------------------------------------------------
-# Engineering
+# Tallulah
 # main.py
 # -------------------------------------------------------------------------------
-"""The main entrypoint of the API Services"""
+"""The main entrypoint of the Tallulah Services"""
 # -------------------------------------------------------------------------------
 # Copyright (C) 2022 Array Insights, Inc. All Rights Reserved.
 # Private and Confidential. Internal Use Only.
@@ -21,20 +21,19 @@ from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
-from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
-from msal import ConfidentialClientApplication
+from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
-from app.api import accounts, authentication, internal_utils, mailbox
+from app.api import accounts, authentication, emails, internal_utils, mailbox
 from app.models.common import PyObjectId
 from app.utils.logging import LogLevel, Resource, add_log_message
 from app.utils.secrets import get_secret
@@ -48,17 +47,18 @@ server = FastAPI(
 server.openapi = custom_openapi(server)
 
 
-origins = [
-    "*",
-]
-
 # Add all the API services here exposed to the public
 server.include_router(authentication.router)
 server.include_router(accounts.router)
 server.include_router(internal_utils.router)
 server.include_router(mailbox.router)
+server.include_router(emails.router)
 
 
+# Setup CORS to allow all origins
+origins = [
+    "*",
+]
 server.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -80,16 +80,12 @@ async def validation_exception_handler(request, exc):
     return JSONResponse(status_code=422, content=jsonable_encoder(error))
 
 
+utils.validation_error_response_definition = ValidationError.schema()
+
+
+# Record all the exceptions that are not handled by the API and send them to slack and the database
 @server.exception_handler(Exception)
 async def server_error_exception_handler(request: Request, exc: Exception):
-    """
-    Handle all unknown exceptions
-
-    :param request: The http request object
-    :type request: Request
-    :param exc: The exception object
-    :type exc: Exception
-    """
     message = {
         "_id": str(PyObjectId()),
         "exception": f"{str(exc)}",
@@ -130,9 +126,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     )
 
 
-utils.validation_error_response_definition = ValidationError.schema()
-
-
+# Serve the Swagger UI on the /docs route and use the pre-downloaded js and css files
 @server.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
     if server.openapi_url is None:
@@ -220,35 +214,7 @@ async def add_audit_log(request: Request, call_next: Callable):
     return response
 
 
-# Microsoft OAuth2 Configuration
-CLIENT_ID = get_secret("outlook_client_id")
-CLIENT_SECRET = get_secret("outlook_client_secret")
-TENANT_ID = get_secret("outlook_tenant_id")
-AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
-SCOPES = ["User.Read", "Mail.Read", "Mail.Send"]
-
-# Create MSAL application instance
-app_instance = ConfidentialClientApplication(
-    CLIENT_ID,
-    authority=AUTHORITY,
-    client_credential=CLIENT_SECRET,
-)
-
-# Create OAuth2 Authorization URL
-redirect_uri = get_secret("outlook_redirect_uri")
-authorization_url = app_instance.get_authorization_request_url(SCOPES, redirect_uri)
-
-
-@server.get("/", response_class=HTMLResponse)
-async def read_root():
-    html_content = f"""
-    <html>
-        <head>
-            <title>Login with Microsoft</title>
-        </head>
-        <body>
-            <a href="{authorization_url}"><button>Login with Microsoft</button></a>
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+@server.on_event("startup")
+@repeat_every(seconds=10)  # 1 hour
+async def backup_database() -> None:
+    print("Running remove_expired_tokens_task")

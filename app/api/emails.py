@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------
-# Engineering
+# Tallulah
 # emails.py
 # -------------------------------------------------------------------------------
 """ Service to manage emails from user account """
@@ -13,14 +13,14 @@
 # -------------------------------------------------------------------------------
 
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMultipleEmail_Out
 from app.models.mailbox import Mailboxes
-from app.utils.emails import EmailService, OutlookClient
+from app.utils.emails import OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
 from app.utils.secrets import get_secret
 
@@ -28,8 +28,7 @@ router = APIRouter(prefix="/emails", tags=["emails"])
 
 
 async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
-    email_service = EmailService(client)
-    emails = await email_service.receive_email("")
+    emails = await client.receive_email("")
 
     # Connect to the message queue
     rabbit_mq_connect_url = get_secret("rabbit_mq_host")
@@ -52,7 +51,7 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
             await rabbit_mq_client.push_message(str(email))
 
         # refetch the next emails
-        emails = await email_service.receive_email("")
+        emails = await client.receive_email("")
 
     await rabbit_mq_client.disconnect()
 

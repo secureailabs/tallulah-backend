@@ -1,8 +1,9 @@
 import email
 import imaplib
+import os
 from abc import ABC, abstractmethod
 from email.header import decode_header
-from typing import List
+from typing import Dict, List
 
 import aiohttp
 
@@ -82,30 +83,22 @@ class ImapClient(EmailServiceProvider):
 
 class OutlookClient(EmailServiceProvider):
     def __init__(self, code: str):
-        CLIENT_ID = get_secret("outlook_client_id")
-        CLIENT_SECRET = get_secret("outlook_client_secret")
-        REDIRECT_URI = get_secret("outlook_redirect_uri")
-
-        AUTHORITY_URL = "https://login.microsoftonline.com/organizations"
         self.RESOURCE_URL = "https://graph.microsoft.com"
         self.API_VERSION = "v1.0"
-        SCOPES = "Mail.Read Mail.Send"
-        self.endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me/messages"
-
-        self.token_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
-        self.token_data = {
-            "grant_type": "authorization_code",
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-            "redirect_uri": REDIRECT_URI,
-            "code": code,
-            "scope": SCOPES,
-        }
+        self.code = code
 
     async def connect(self):
-        # Make an async request to get the access token
+        self.token_url = f"https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
+        token_data = {
+            "grant_type": "authorization_code",
+            "client_id": get_secret("outlook_client_id"),
+            "client_secret": get_secret("outlook_client_secret"),
+            "redirect_uri": get_secret("outlook_redirect_uri"),
+            "code": self.code,
+            "scope": "Mail.Read Mail.Send",
+        }
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.token_url, data=self.token_data) as response:
+            async with session.post(self.token_url, data=token_data) as response:
                 token_response = await response.json()
                 self.token = token_response.get("access_token")
                 if not self.token:
@@ -142,6 +135,8 @@ class OutlookClient(EmailServiceProvider):
                 return await response.text()
 
     async def receive_email(self, query: str):
+        self.endpoint_url = f"{self.RESOURCE_URL}/{self.API_VERSION}/me/messages"
+
         if not self.token:
             raise Exception("Not connected")
 
@@ -156,17 +151,6 @@ class OutlookClient(EmailServiceProvider):
 
     def __del__(self):
         pass
-
-
-class EmailService:
-    def __init__(self, email_service: EmailServiceProvider):
-        self.email_service = email_service
-
-    async def send_email(self, email_address, subject, message):
-        return await self.email_service.send_email(email_address, subject, message)
-
-    async def receive_email(self, query):
-        return await self.email_service.receive_email(query)
 
 
 async def test():
@@ -186,7 +170,7 @@ async def test():
     await outlook_client.connect()
     user_info = await outlook_client.get_user_info()
     print(user_info)
-    email_service = EmailService(outlook_client)
+    email_service = outlook_client
     emails = await email_service.receive_email("")
     print([email["subject"] for email in emails])
     emails = await email_service.receive_email("")
