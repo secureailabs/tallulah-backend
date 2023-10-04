@@ -64,11 +64,22 @@ run_image() {
 
     check_docker
 
+    # Run mongo if not already running
+    if ! docker ps | grep -q "mongo"; then
+        docker run -d --name mongo -p 27017:27017 mongo:6.0
+    fi
+
+    # Run rabbitmq if not already running
+    if ! docker ps | grep -q "rabbitmq"; then
+        docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+    fi
+
+    # Run the backend image
     docker run -it \
     -p 8000:8000 \
     -v $(pwd)/app:/app \
     --env-file .env \
-    developmentdockerregistry.azurecr.io/tallulah/backend:v0.1.0_c618de8
+    tallulah/backend
 }
 
 run() {
