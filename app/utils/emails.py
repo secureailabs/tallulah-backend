@@ -84,8 +84,8 @@ class OutlookClient(EmailServiceProvider):
     def __init__(self):
         self.resource_url = "https://graph.microsoft.com"
         self.api_version = "v1.0"
-        self.base_email_endpoint = f"{self.resource_url}/{self.api_version}/me/messages"
-        self.current_email_endpoint = f"{self.resource_url}/{self.api_version}/me/messages"
+        self.base_email_endpoint = f"{self.resource_url}/{self.api_version}/me/mailFolders/inbox/messages"
+        self.current_email_endpoint = f"{self.resource_url}/{self.api_version}/me/mailFolders/inbox/messages"
         self.token = None
         self.refresh_token = None
 
