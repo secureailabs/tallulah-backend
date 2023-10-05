@@ -48,7 +48,7 @@ push_image_to_registry() {
 build_image() {
     check_docker
     poetry export -f requirements.txt --output requirements.txt --without-hashes
-    docker build -t $1 -f "Dockerfile" .
+    docker build -t $1 .
 
     # Tag the rabbitmq image
     docker pull rabbitmq:3
@@ -80,7 +80,25 @@ run_image() {
     fi
 
     # Run the backend image
-    docker run -it -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend
+    # docker run -it --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env --entrypoint "uvicorn app.main:server --host 0.0.0.0 --port 8000 --reload"  tallulah/backend
+    docker run -dit --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend
+}
+
+
+stop_backend() {
+    # Stop and remove the backend container
+    docker stop backend
+    docker rm backend
+}
+
+stop_all() {
+    # Stop and remove all the containers
+    docker stop backend
+    docker rm backend
+    docker stop mongo
+    docker rm mongo
+    docker stop rabbitmq
+    docker rm rabbitmq
 }
 
 run() {

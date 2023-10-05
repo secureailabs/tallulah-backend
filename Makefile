@@ -7,7 +7,13 @@ build_image:
 	@./scripts.sh build_image tallulah/backend
 
 run_image:
-	@./scripts.sh run_image tallulah/backend
+	@./scripts.sh run_image
+
+stop_all:
+	@./scripts.sh stop_all
+
+stop_backend:
+	@./scripts.sh stop_backend
 
 push_image: build_image
 	@./scripts.sh push_image_to_registry tallulah/backend
