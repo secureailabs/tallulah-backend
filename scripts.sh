@@ -108,13 +108,18 @@ generate_client() {
     sed -i 's/\"_id\"/\"id\"/g' docs/openapi.json
 
     # Generate the python client
-    rm -rf sail-client/
+    rm -rf tallulah-client/
+    openapi-python-client --version
     openapi-python-client generate --path docs/openapi.json
 
     # Generate a whl package for the client using the pyproject.toml file
-    pushd sail-client
+    pushd tallulah-client
     poetry build
     popd
+
+    # Generate the typescript client
+    rm -rf tallulah-client-ts/
+    npm run generate-client
 
     popd
 }
