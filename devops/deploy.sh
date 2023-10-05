@@ -13,9 +13,11 @@ version=$(cat VERSION)
 gitCommitHash=$(git rev-parse --short HEAD)
 tag=v"$version"_"$gitCommitHash"
 
-# If there is a env.sh file, source it
-if [ -f env.sh ]; then
-    source env.sh
+# If there is a .env file, source it
+if [ -f .env ]; then
+  set -o allexport
+  source .env set
+  +o allexport
 fi
 
 # Login to azure and set the subscription

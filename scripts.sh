@@ -64,22 +64,23 @@ run_image() {
 
     check_docker
 
+    # Create a network if it doesn't exist
+    if ! docker network ls | grep -q "tallulah"; then
+        docker network create tallulah
+    fi
+
     # Run mongo if not already running
     if ! docker ps | grep -q "mongo"; then
-        docker run -d --name mongo -p 27017:27017 mongo:6.0
+        docker run -d --name mongo -p 27017:27017 --network tallulah mongo:6.0
     fi
 
     # Run rabbitmq if not already running
     if ! docker ps | grep -q "rabbitmq"; then
-        docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+        docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 --network tallulah rabbitmq:3-management
     fi
 
     # Run the backend image
-    docker run -it \
-    -p 8000:8000 \
-    -v $(pwd)/app:/app \
-    --env-file .env \
-    tallulah/backend
+    docker run -it -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend
 }
 
 run() {
