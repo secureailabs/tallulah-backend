@@ -48,7 +48,7 @@ push_image_to_registry() {
 build_image() {
     check_docker
     poetry export -f requirements.txt --output requirements.txt --without-hashes
-    docker build -t $1 -f "docker/Dockerfile" .
+    docker build -t $1 -f "Dockerfile" .
 
     # Tag the rabbitmq image
     docker pull rabbitmq:3
