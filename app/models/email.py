@@ -37,7 +37,7 @@ class Email_Base(SailBaseModel):
     received_time: datetime = Field()
     mailbox_id: PyObjectId = Field()
     note: Optional[StrictStr] = Field(default=None)
-    tags: Optional[List[StrictStr]] = Field(default=None)
+    tags: List[StrictStr] = Field(default=[])
     message_state: EmailState = Field(default=EmailState.UNPROCESSED)
 
 

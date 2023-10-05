@@ -141,7 +141,6 @@ az containerapp create \
       outlook_tenant_id=$outlook_tenant_id \
       rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq.$domainName \
       mongodb_host=mongodb://$productName-mongo.$domainName \
-      owner=prawal \
       jwt_secret=secretref:jwt-secret \
       refresh_secret=secretref:refresh-secret \
       password_pepper=secretref:password-pepper \

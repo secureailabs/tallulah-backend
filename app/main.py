@@ -104,7 +104,6 @@ async def server_error_exception_handler(request: Request, exc: Exception):
                     "text": json.dumps(
                         {
                             "id": message["_id"],
-                            "owner": get_secret("owner"),
                             "exception": message["exception"],
                         },
                         indent=2,

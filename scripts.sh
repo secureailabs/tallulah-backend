@@ -71,34 +71,28 @@ run_image() {
 
     # Run mongo if not already running
     if ! docker ps | grep -q "mongo"; then
-        docker run -d --name mongo -p 27017:27017 --network tallulah mongo:6.0
+        docker run -d --rm --name mongo -p 27017:27017 --network tallulah mongo:6.0
     fi
 
     # Run rabbitmq if not already running
     if ! docker ps | grep -q "rabbitmq"; then
-        docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 --network tallulah rabbitmq:3-management
+        docker run -d --rm --name rabbitmq -p 5672:5672 -p 15672:15672 --network tallulah rabbitmq:3-management
     fi
 
     # Run the backend image
     # docker run -it --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env --entrypoint "uvicorn app.main:server --host 0.0.0.0 --port 8000 --reload"  tallulah/backend
-    docker run -dit --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend
+    docker run -d --rm --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend
 }
 
 
 stop_backend() {
     # Stop and remove the backend container
     docker stop backend
-    docker rm backend
 }
 
 stop_all() {
     # Stop and remove all the containers
-    docker stop backend
-    docker rm backend
-    docker stop mongo
-    docker rm mongo
-    docker stop rabbitmq
-    docker rm rabbitmq
+    docker stop backend mongo rabbitmq
 }
 
 run() {

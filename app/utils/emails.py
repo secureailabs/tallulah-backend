@@ -170,6 +170,9 @@ class OutlookClient(EmailServiceProvider):
                 return await response.text()
 
     async def receive_email(self, query: Optional[str] = None):
+        if not self.current_email_endpoint:
+            return []
+
         if query:
             self.current_email_endpoint = f"{self.base_email_endpoint}?{query}"
 

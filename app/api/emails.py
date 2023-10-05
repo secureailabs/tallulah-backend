@@ -26,6 +26,7 @@ from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMultipleEmail_Out
 from app.models.mailbox import Mailboxes
+from app.utils.background_couroutines import add_async_task
 from app.utils.emails import OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
 from app.utils.secrets import get_secret
@@ -75,9 +76,10 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId, receivedDat
 @repeat_every(seconds=3600)  # 1 hour
 async def read_emails_hourly():
     print("Reading emails")
+
     # Get the list of all the mailboxes
     mailboxes = await Mailboxes.read()
-    tasks = []
+
     # Add an async task to read emails for each mailbox
     for mailbox in mailboxes:
         # Connect to the mailbox
@@ -92,14 +94,7 @@ async def read_emails_hourly():
         )
 
         # Add a background task to read emails
-        tasks.append(
-            asyncio.create_task(
-                read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time)
-            )
-        )
-
-    # Wait for all the tasks to complete
-    await asyncio.gather(*tasks)
+        add_async_task(read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time))
 
 
 @router.get(

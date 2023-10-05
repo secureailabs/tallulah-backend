@@ -28,6 +28,7 @@ from app.models.mailbox import (
     RegisterMailbox_In,
     RegisterMailbox_Out,
 )
+from app.utils.background_couroutines import add_async_task
 from app.utils.emails import OutlookClient
 
 router = APIRouter(prefix="/mailbox", tags=["mailbox"])
@@ -40,7 +41,6 @@ router = APIRouter(prefix="/mailbox", tags=["mailbox"])
     operation_id="add_new_mailbox",
 )
 async def add_new_mailbox(
-    background_tasks: BackgroundTasks,
     mailbox_info: RegisterMailbox_In = Body(
         description="Oauth code that is used to fetch the token from the authorization server"
     ),
@@ -69,7 +69,8 @@ async def add_new_mailbox(
     await Mailboxes.create(mailbox=mailbox_db)
 
     # Add a background task to read emails
-    background_tasks.add_task(read_emails, client, mailbox_db.id, None)
+    # background_tasks.add_task(read_emails, client, mailbox_db.id, None)
+    add_async_task(read_emails(client, mailbox_db.id, None))
 
     return RegisterMailbox_Out(_id=mailbox_db.id)
 
