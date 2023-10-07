@@ -40,9 +40,18 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId, receivedDat
 
     # Fetch the emails
     if receivedDateTime:
-        emails = await client.receive_email(f"$filter=receivedDateTime ge '{receivedDateTime}'")
+        emails = await client.receive_email(f"$filter=receivedDateTime gt {receivedDateTime}")
     else:
         emails = await client.receive_email()
+
+    if not emails:
+        return
+
+    # Update the last refresh time and refresh token
+    await Mailboxes.update(
+        query_mailbox_id=mailbox_id,
+        update_last_refresh_time=emails[0]["receivedDateTime"],
+    )
 
     # Connect to the message queue
     rabbit_mq_connect_url = get_secret("rabbit_mq_host")
@@ -89,12 +98,13 @@ async def read_emails_hourly():
         # Update the last refresh time and refresh token
         await Mailboxes.update(
             query_mailbox_id=mailbox.id,
-            update_last_refresh_time=datetime.datetime.utcnow(),
             update_refresh_token=client.refresh_token,
         )
 
         # Add a background task to read emails
         add_async_task(read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time))
+
+    print("Done reading emails")
 
 
 @router.get(

@@ -216,4 +216,4 @@ async def add_audit_log(request: Request, call_next: Callable):
 @server.on_event("startup")
 @repeat_every(seconds=30 * 60)  # 1/2 hour
 async def backup_database() -> None:
-    print("Running remove_expired_tokens_task")
+    print("Running backup_database")

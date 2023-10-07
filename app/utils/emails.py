@@ -183,10 +183,16 @@ class OutlookClient(EmailServiceProvider):
 
         async with aiohttp.ClientSession() as session:
             async with session.get(self.current_email_endpoint, headers=headers) as response:
-                email_r = await response.json()
-                emails = email_r.get("value")
-                self.current_email_endpoint = email_r.get("@odata.nextLink")
-                return emails
+                if response.status >= 200 and response.status < 300:
+                    try:
+                        email_r = await response.json()
+                        emails = email_r.get("value")
+                        self.current_email_endpoint = email_r.get("@odata.nextLink")
+                        return emails
+                    except:
+                        raise Exception(await response.text())
+                else:
+                    raise Exception(f"{response.status} " + (await response.text()))
 
     def __del__(self):
         pass

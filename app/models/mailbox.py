@@ -111,7 +111,7 @@ class Mailboxes:
     @staticmethod
     async def update(
         query_mailbox_id: Optional[PyObjectId] = None,
-        update_last_refresh_time: Optional[datetime] = None,
+        update_last_refresh_time: Optional[str] = None,
         update_refresh_token: Optional[str] = None,
         update_mailbox_state: Optional[MailboxState] = None,
     ):
