@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define, field
 from dateutil.parser import isoparse
@@ -27,6 +27,7 @@ class GetEmailOut:
         id (str):
         creation_time (datetime.datetime):
         note (Union[Unset, str]):
+        tags (Union[Unset, List[str]]):
         message_state (Union[Unset, EmailState]): An enumeration. Default: EmailState.UNPROCESSED.
     """
 
@@ -38,6 +39,7 @@ class GetEmailOut:
     id: str
     creation_time: datetime.datetime
     note: Union[Unset, str] = UNSET
+    tags: Union[Unset, List[str]] = UNSET
     message_state: Union[Unset, EmailState] = EmailState.UNPROCESSED
     additional_properties: Dict[str, Any] = field(init=False, factory=dict)
 
@@ -54,6 +56,10 @@ class GetEmailOut:
         creation_time = self.creation_time.isoformat()
 
         note = self.note
+        tags: Union[Unset, List[str]] = UNSET
+        if not isinstance(self.tags, Unset):
+            tags = self.tags
+
         message_state: Union[Unset, str] = UNSET
         if not isinstance(self.message_state, Unset):
             message_state = self.message_state.value
@@ -73,6 +79,8 @@ class GetEmailOut:
         )
         if note is not UNSET:
             field_dict["note"] = note
+        if tags is not UNSET:
+            field_dict["tags"] = tags
         if message_state is not UNSET:
             field_dict["message_state"] = message_state
 
@@ -100,6 +108,8 @@ class GetEmailOut:
 
         note = d.pop("note", UNSET)
 
+        tags = cast(List[str], d.pop("tags", UNSET))
+
         _message_state = d.pop("message_state", UNSET)
         message_state: Union[Unset, EmailState]
         if isinstance(_message_state, Unset):
@@ -116,6 +126,7 @@ class GetEmailOut:
             id=id,
             creation_time=creation_time,
             note=note,
+            tags=tags,
             message_state=message_state,
         )
 

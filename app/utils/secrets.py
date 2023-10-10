@@ -13,7 +13,10 @@
 # -------------------------------------------------------------------------------
 
 import os
-from typing import Dict
+from typing import Dict, Union
+
+from azure.identity.aio import DefaultAzureCredential
+from azure.keyvault.secrets.aio import SecretClient
 
 initialization_vector: Dict[str, str] = {}
 
@@ -29,3 +32,22 @@ def get_secret(secret_name: str) -> str:
             raise Exception(f"Secret {secret_name} not found")
 
     return initialization_vector[secret_name]
+
+
+async def get_keyvault_secret(secret_name: str) -> Union[str, None]:
+    credential = DefaultAzureCredential()
+    secret_client = SecretClient(vault_url=get_secret("azure_keyvault_url"), credential=credential)  # type: ignore
+
+    async with credential:
+        async with secret_client:
+            secret = await secret_client.get_secret(secret_name)
+            return secret.value
+
+
+async def set_keyvault_secret(secret_name: str, secret_value: str) -> None:
+    credential = DefaultAzureCredential()
+    secret_client = SecretClient(vault_url=get_secret("azure_keyvault_url"), credential=credential)  # type: ignore
+
+    async with credential:
+        async with secret_client:
+            await secret_client.set_secret(secret_name, secret_value)

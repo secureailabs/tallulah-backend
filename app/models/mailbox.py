@@ -44,7 +44,7 @@ class Mailbox_Base(SailBaseModel):
 class Mailbox_Db(Mailbox_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
-    refresh_token: StrictStr = Field(default=None)
+    refresh_token_id: PyObjectId = Field(default=None)
     last_refresh_time: Optional[str] = Field(default_factory=None)
 
 
@@ -112,7 +112,6 @@ class Mailboxes:
     async def update(
         query_mailbox_id: Optional[PyObjectId] = None,
         update_last_refresh_time: Optional[str] = None,
-        update_refresh_token: Optional[str] = None,
         update_mailbox_state: Optional[MailboxState] = None,
     ):
         query = {}
@@ -122,8 +121,6 @@ class Mailboxes:
         update = {}
         if update_last_refresh_time:
             update["last_refresh_time"] = update_last_refresh_time
-        if update_refresh_token:
-            update["refresh_token"] = update_refresh_token
         if update_mailbox_state:
             update["mailbox_state"] = update_mailbox_state
 

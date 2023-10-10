@@ -7,7 +7,8 @@ location="westus"
 containerEnvName="$productName-env"
 vnetName="$productName-vnet"
 subnetName="default"
-storageAccountName="tallulahStorage$(openssl rand -hex 4)"
+storageAccountName="tallulahstorage$(openssl rand -hex 4)"
+keyVaultName="tallulahKeyvault$(openssl rand -hex 4)"
 
 version=$(cat VERSION)
 gitCommitHash=$(git rev-parse --short HEAD)
@@ -21,71 +22,55 @@ if [ -f .env ]; then
 fi
 
 # Login to azure and set the subscription
-az login \
-  --service-principal \
-  --username $AZURE_CLIENT_ID \
-  --password $AZURE_CLIENT_SECRET \
-  --tenant $AZURE_TENANT_ID
-az account set \
-  --subscription $AZURE_SUBSCRIPTION_ID
+az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+az account set --subscription $AZURE_SUBSCRIPTION_ID
 
 # Create a resource group
-az group create \
-  --name $resourceGroup \
-  --location $location
+az group create --name $resourceGroup --location $location
 
 # Create a virtual network
-az network vnet create \
-  --resource-group $resourceGroup \
-  --name $vnetName \
-  --address-prefixes '10.0.0.0/16' \
-  --subnet-name $subnetName \
-  --subnet-prefix '10.0.0.0/20'
+az network vnet create --resource-group $resourceGroup --name $vnetName --address-prefixes '10.0.0.0/16' --subnet-name $subnetName --subnet-prefix '10.0.0.0/20'
 subnetId=$(az network vnet subnet show --resource-group $resourceGroup --vnet-name $vnetName --name $subnetName --query 'id' -o tsv)
 
 # Create an container app environment
 az containerapp env create -n $containerEnvName -g $resourceGroup --location $location --infrastructure-subnet-resource-id $subnetId
 domainName=$(az containerapp env show -n $containerEnvName -g $resourceGroup --query 'properties.defaultDomain' -o tsv)
-
 # Wait for the environment to be ready
 while [ "$(az containerapp env show -n $containerEnvName -g $resourceGroup --query 'properties.provisioningState' -o tsv)" != "Succeeded" ]; do
     echo "Waiting for the environment to be ready..."
     sleep 5
 done
 
-# Create a storage account for the environment
-# az storage account create \
-#   --resource-group $resourceGroup \
-#   --name $storageAccountName \
-#   --location $location \
-#   --kind StorageV2 \
-#   --sku Standard_LRS \
-#   --enable-large-file-share \
-#   --query provisioningState
+# Check if the storage account name is available
+while [ "$(az storage account check-name --name $storageAccountName --query 'nameAvailable' -o tsv)" != "true" ]; do
+    echo "The storage account name is not available. Trying another name..."
+    storageAccountName="tallulahStorage$(openssl rand -hex 4)"
+done
+# Create a storage account for the environment with version immutability
+az storage account create --resource-group $resourceGroup --name $storageAccountName --location $location --kind StorageV2 --sku Standard_LRS
+# Wait for the storage account to be ready
+while [ "$(az storage account show -n $storageAccountName -g $resourceGroup --query 'provisioningState' -o tsv)" != "Succeeded" ]; do
+    echo "Waiting for the storage account to be ready..."
+    sleep 5
+done
+storageAccountKey=$(az storage account keys list -n $storageAccountName --query "[0].value" -o tsv)
+# Create a storage container for the environment
+az storage container create --name mongo-backup --account-name $storageAccountName --account-key $storageAccountKey --public-access off
+# Get the container HTTPS URL with SAS token
+sas_token=$(az storage container generate-sas --name mongo-backup --account-name $storageAccountName --account-key $storageAccountKey --permissions dlrw --expiry 2025-01-01T00:00:00Z --output tsv)
+connection_url="https://$storageAccountName.blob.core.windows.net/mongo-backup?$sas_token"
 
-# Create a file share for mongodb
-# storageShareName="mongodb"
-# az storage share-rm create \
-#   --resource-group $resourceGroup \
-#   --storage-account $storageAccountName \
-#   --name $storageShareName \
-#   --quota 1024 \
-#   --enabled-protocols SMB \
-#   --output table
-
-# storageAccountKey=$(az storage account keys list -n $storageAccountName --query "[0].value" -o tsv)
-
-# storageMountName="mystoragemount"
-
-# az containerapp env storage set \
-#   --access-mode ReadWrite \
-#   --azure-file-account-name $storageAccountName \
-#   --azure-file-account-key $storageAccountKey \
-#   --azure-file-share-name $storageShareName \
-#   --storage-name $storageMountName \
-#   --name $containerEnvName \
-#   --resource-group $resourceGroup \
-#   --output table
+# Check if the keyvault name is available
+while [ "$(az keyvault check-name --name $keyVaultName --query 'nameAvailable' -o tsv)" != "true" ]; do
+    echo "The keyvault name is not available. Trying another name..."
+    keyVaultName="tallulahKeyvault$(openssl rand -hex 4)"
+done
+# Create an azure key vault from the ARM template
+az deployment group create --resource-group $resourceGroup --template-file keyvault.json --parameters \
+    keyvault_name=$keyVaultName \
+    azure_tenant_id=$AZURE_TENANT_ID \
+    azure_object_id=$AZURE_OBJECT_ID
+keyvault_url=$(az keyvault show -n $keyVaultName -g $resourceGroup --query 'properties.vaultUri' -o tsv)
 
 # Create a mongodb container
 az containerapp create \
@@ -146,12 +131,20 @@ az containerapp create \
       password_pepper=secretref:password-pepper \
       outlook_client_id=secretref:outlook-client-id \
       outlook_client_secret=secretref:outlook-client-secret \
+      AZURE_CLIENT_ID=secretref:azure-client-id \
+      AZURE_CLIENT_SECRET=secretref:azure-client-secret \
+      AZURE_TENANT_ID=secretref:azure-tenant-id \
+      azure_keyvault_url=secretref:azure-keyvault-url \
   --secrets \
       jwt-secret=$(openssl rand -hex 32) \
       refresh-secret=$(openssl rand -hex 32) \
       password-pepper=$(openssl rand -hex 32) \
       outlook-client-id=$outlook_client_id \
       outlook-client-secret=$outlook_client_secret \
+      azure-client-id=$AZURE_CLIENT_ID \
+      azure-client-secret=$AZURE_CLIENT_SECRET \
+      azure-tenant-id=$AZURE_TENANT_ID \
+      azure-keyvault-url=$keyvault_url \
   --registry-server $container_registry_server \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password

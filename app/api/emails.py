@@ -13,9 +13,6 @@
 # -------------------------------------------------------------------------------
 
 
-import asyncio
-import datetime
-from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, status
@@ -29,7 +26,7 @@ from app.models.mailbox import Mailboxes
 from app.utils.background_couroutines import add_async_task
 from app.utils.emails import OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
-from app.utils.secrets import get_secret
+from app.utils.secrets import get_keyvault_secret, get_secret, set_keyvault_secret
 
 router = APIRouter(prefix="/emails", tags=["emails"])
 
@@ -60,19 +57,22 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId, receivedDat
 
     while emails:
         for email in emails:
-            # Create an email object in the database
-            email_db = Email_Db(
-                mailbox_id=mailbox_id,
-                subject=email["subject"],
-                body=email["body"],
-                received_time=email["receivedDateTime"],
-                from_address=email["sender"],
-                message_state=EmailState.UNPROCESSED,
-            )
-            await Emails.create(email=email_db)
+            try:
+                # Create an email object in the database
+                email_db = Email_Db(
+                    mailbox_id=mailbox_id,
+                    subject=email["subject"],
+                    body=email["body"],
+                    received_time=email["receivedDateTime"],
+                    from_address=email["sender"],
+                    message_state=EmailState.UNPROCESSED,
+                )
+                await Emails.create(email=email_db)
 
-            # Add the email to the queue for processing
-            await rabbit_mq_client.push_message(str(email_db.id))
+                # Add the email to the queue for processing
+                await rabbit_mq_client.push_message(str(email_db.id))
+            except Exception as exception:
+                print(f"Error: while processing email {email['id']}: {exception}")
 
         # refetch the next emails
         emails = await client.receive_email()
@@ -91,15 +91,21 @@ async def read_emails_hourly():
 
     # Add an async task to read emails for each mailbox
     for mailbox in mailboxes:
+        # Get the refresh token for the mailbox
+        refresh_token = await get_keyvault_secret(str(mailbox.refresh_token_id))
+        if not refresh_token:
+            print(f"Refresh token not found for mailbox {mailbox.id}")
+            continue
+
         # Connect to the mailbox
         client = OutlookClient()
-        await client.connect_with_refresh_token(mailbox.refresh_token)
+        await client.connect_with_refresh_token(refresh_token)
+        if not client.refresh_token:
+            print(f"Refresh token not found after authentication for mailbox {mailbox.id}")
+            continue
 
-        # Update the last refresh time and refresh token
-        await Mailboxes.update(
-            query_mailbox_id=mailbox.id,
-            update_refresh_token=client.refresh_token,
-        )
+        # update the refresh token secret
+        await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
 
         # Add a background task to read emails
         add_async_task(read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time))

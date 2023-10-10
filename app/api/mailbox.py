@@ -30,6 +30,7 @@ from app.models.mailbox import (
 )
 from app.utils.background_couroutines import add_async_task
 from app.utils.emails import OutlookClient
+from app.utils.secrets import set_keyvault_secret
 
 router = APIRouter(prefix="/mailbox", tags=["mailbox"])
 
@@ -65,7 +66,11 @@ async def add_new_mailbox(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Refresh token not found. Mailbox addition failed."
         )
 
-    mailbox_db = Mailbox_Db(email=user_info["mail"], user_id=current_user.id, refresh_token=client.refresh_token)
+    # Add the refresh token to the keyvault
+    refresh_token_id = PyObjectId()
+    await set_keyvault_secret(str(refresh_token_id), client.refresh_token)
+
+    mailbox_db = Mailbox_Db(email=user_info["mail"], user_id=current_user.id, refresh_token_id=refresh_token_id)
     await Mailboxes.create(mailbox=mailbox_db)
 
     # Add a background task to read emails

@@ -11,6 +11,7 @@ export type GetEmail_Out = {
     received_time: string;
     mailbox_id: string;
     note?: string;
+    tags?: Array<string>;
     message_state?: EmailState;
     _id: string;
     creation_time: string;
