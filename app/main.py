@@ -23,14 +23,14 @@ from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
-from azure.storage.blob.aio import BlobServiceClient
+from azure.storage.blob.aio import ContainerClient
 from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
 from fastapi_utils.tasks import repeat_every
@@ -233,12 +233,10 @@ async def backup_database() -> None:
 
     # Upload to the blob storage
     sas_url = get_secret("storage_container_sas_url")
-    blob_service_client = BlobServiceClient.from_connection_string(sas_url)
+    blob_service_client = ContainerClient.from_container_url(sas_url)
     async with blob_service_client:
         # Get a reference to a BlobClient
-        blob_client = blob_service_client.get_blob_client(
-            container=get_secret("storage_container_name"), blob=backup_file_name
-        )
+        blob_client = blob_service_client.get_blob_client(blob=backup_file_name)
 
         # Upload the file
         with open(backup_file_name, "rb") as data:
