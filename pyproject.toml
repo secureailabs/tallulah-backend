@@ -6,9 +6,7 @@ authors = ["Prawal Gangwar <prawal@secureailabs.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-fastapi = "0.98.0"
-uvicorn = "^0.23.2"
+python = "^3.11"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = "^1.7.4"
 fastapi-responses = {git = "https://github.com/secureailabs/fastapi-responses.git", rev = "0.0.1"}
@@ -25,11 +23,13 @@ openapi-python-client = "0.15.0"
 azure-keyvault-secrets = "^4.7.0"
 azure-identity = "^1.14.1"
 azure-storage-blob = "^12.18.3"
+fastapi = "^0.103.2"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
 
 
 [tool.poetry.group.dev.dependencies]
-flake8 = "4.0.1"
-black = "^23.3.0"
+flake8 = "^6.1.0"
+black = "^23.9.1"
 
 
 [build-system]
