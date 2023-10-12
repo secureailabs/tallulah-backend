@@ -21,16 +21,20 @@ if [ -f .env ]; then
   +o allexport
 fi
 
+
 # Login to azure and set the subscription
 az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
 az account set --subscription $AZURE_SUBSCRIPTION_ID
 
+
 # Create a resource group
 az group create --name $resourceGroup --location $location
+
 
 # Create a virtual network
 az network vnet create --resource-group $resourceGroup --name $vnetName --address-prefixes '10.0.0.0/16' --subnet-name $subnetName --subnet-prefix '10.0.0.0/20'
 subnetId=$(az network vnet subnet show --resource-group $resourceGroup --vnet-name $vnetName --name $subnetName --query 'id' -o tsv)
+
 
 # Create an container app environment
 az containerapp env create -n $containerEnvName -g $resourceGroup --location $location --infrastructure-subnet-resource-id $subnetId
@@ -40,6 +44,7 @@ while [ "$(az containerapp env show -n $containerEnvName -g $resourceGroup --que
     echo "Waiting for the environment to be ready..."
     sleep 5
 done
+
 
 # Check if the storage account name is available
 while [ "$(az storage account check-name --name $storageAccountName --query 'nameAvailable' -o tsv)" != "true" ]; do
@@ -60,6 +65,7 @@ az storage container create --name mongo-backup --account-name $storageAccountNa
 sas_token=$(az storage container generate-sas --name mongo-backup --account-name $storageAccountName --account-key $storageAccountKey --permissions dlrw --expiry 2025-01-01T00:00:00Z --output tsv)
 connection_url="https://$storageAccountName.blob.core.windows.net/mongo-backup?$sas_token"
 
+
 # Check if the keyvault name is available
 while [ "$(az keyvault check-name --name $keyVaultName --query 'nameAvailable' -o tsv)" != "true" ]; do
     echo "The keyvault name is not available. Trying another name..."
@@ -71,6 +77,7 @@ az deployment group create --resource-group $resourceGroup --template-file keyva
     azure_tenant_id=$AZURE_TENANT_ID \
     azure_object_id=$AZURE_OBJECT_ID
 keyvault_url=$(az keyvault show -n $keyVaultName -g $resourceGroup --query 'properties.vaultUri' -o tsv)
+
 
 # Create a mongodb container
 az containerapp create \
@@ -135,6 +142,7 @@ az containerapp create \
       AZURE_CLIENT_SECRET=secretref:azure-client-secret \
       AZURE_TENANT_ID=secretref:azure-tenant-id \
       azure_keyvault_url=secretref:azure-keyvault-url \
+      storage_container_sas_url=secretref:storage-container-sas-url \
   --secrets \
       jwt-secret=$(openssl rand -hex 32) \
       refresh-secret=$(openssl rand -hex 32) \
@@ -145,11 +153,13 @@ az containerapp create \
       azure-client-secret=$AZURE_CLIENT_SECRET \
       azure-tenant-id=$AZURE_TENANT_ID \
       azure-keyvault-url=$keyvault_url \
+      storage-container-sas-url=$connection_url \
   --registry-server $container_registry_server \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password
 
-# Deploy the frontend app
+
+# Deploy the rabbitmq container
 az containerapp create \
   --name $productName-rabbitmq \
   --resource-group $resourceGroup \
@@ -165,6 +175,25 @@ az containerapp create \
   --env-vars \
       RABBITMQ_DEFAULT_USER=$rabbit_mq_user \
       RABBITMQ_DEFAULT_PASS=$rabbit_mq_password \
+  --registry-server $container_registry_server \
+  --registry-user $container_registry_user \
+  --registry-password $container_registry_password
+
+
+# Deploy the classifier container
+az containerapp create \
+  --name $productName-classifier \
+  --resource-group $resourceGroup \
+  --environment $containerEnvName \
+  --image $container_registry_server/$productName/classifier:v0.1.0_f374dff \
+  --cpu 0.5 \
+  --memory 1Gi \
+  --min-replicas 1 \
+  --env-vars \
+      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq.$domainName \
+      mongodb_host=mongodb://$productName-mongo.$domainName \
+  --secrets \
+      jwt-secret=$(openssl rand -hex 32) \
   --registry-server $container_registry_server \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password

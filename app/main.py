@@ -15,12 +15,15 @@
 import base64
 import json
 import logging
+import os
 import traceback
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
+from azure.storage.blob.aio import BlobServiceClient
 from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -217,3 +220,29 @@ async def add_audit_log(request: Request, call_next: Callable):
 @repeat_every(seconds=30 * 60)  # 1/2 hour
 async def backup_database() -> None:
     print("Running backup_database")
+    backup_file_name = datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S") + "-mongo-backup.gzip"
+
+    # Dump the database using mongodump
+    os.system(
+        "/usr/bin/mongodump --uri "
+        + get_secret("mongodb_host")
+        + ":27017/tallulah --archive="
+        + backup_file_name
+        + " --gzip"
+    )
+
+    # Upload to the blob storage
+    sas_url = get_secret("storage_container_sas_url")
+    blob_service_client = BlobServiceClient.from_connection_string(sas_url)
+    async with blob_service_client:
+        # Get a reference to a BlobClient
+        blob_client = blob_service_client.get_blob_client(
+            container=get_secret("storage_container_name"), blob=backup_file_name
+        )
+
+        # Upload the file
+        with open(backup_file_name, "rb") as data:
+            await blob_client.upload_blob(data, overwrite=True)
+
+        # Delete the file
+        os.remove(backup_file_name)
