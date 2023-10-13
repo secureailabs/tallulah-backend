@@ -25,6 +25,7 @@ azure-identity = "^1.14.1"
 azure-storage-blob = "^12.18.3"
 fastapi = "^0.103.2"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
+tenacity = "^8.2.3"
 
 
 [tool.poetry.group.dev.dependencies]

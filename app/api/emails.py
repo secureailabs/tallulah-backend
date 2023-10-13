@@ -13,6 +13,7 @@
 # -------------------------------------------------------------------------------
 
 
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, status
@@ -91,6 +92,12 @@ async def read_emails_hourly():
 
     # Add an async task to read emails for each mailbox
     for mailbox in mailboxes:
+        # Don't read emails for mailboxes where last_refresh_time is less than 1 hour
+        if mailbox.last_refresh_time and datetime.strptime(
+            mailbox.last_refresh_time, "%Y-%m-%dT%H:%M:%SZ"
+        ) > datetime.utcnow() - timedelta(hours=1):
+            continue
+
         # Get the refresh token for the mailbox
         refresh_token = await get_keyvault_secret(str(mailbox.refresh_token_id))
         if not refresh_token:

@@ -31,10 +31,10 @@ class EmailState(Enum):
 
 
 class Email_Base(SailBaseModel):
-    subject: StrictStr = Field()
-    body: Dict = Field()
+    subject: Optional[StrictStr] = Field(default=None)
+    body: Optional[Dict] = Field(default_factory=dict)
     from_address: Dict = Field()
-    received_time: datetime = Field()
+    received_time: str = Field()
     mailbox_id: PyObjectId = Field()
     note: Optional[StrictStr] = Field(default=None)
     tags: List[StrictStr] = Field(default=[])

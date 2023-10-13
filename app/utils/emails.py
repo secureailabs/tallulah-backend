@@ -5,6 +5,7 @@ from email.header import decode_header
 from typing import List, Optional
 
 import aiohttp
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app.utils.secrets import get_secret
 
@@ -89,6 +90,7 @@ class OutlookClient(EmailServiceProvider):
         self.token = None
         self.refresh_token = None
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     async def connect_with_code(self, code: str):
         # Don't authenticate if the code is empty or token is already set
         if not code:
@@ -113,6 +115,7 @@ class OutlookClient(EmailServiceProvider):
                 if not self.token:
                     raise Exception("Authorization failed. Invalid code. Message: " + str(token_response))
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     async def connect_with_refresh_token(self, refresh_token: str):
         if not refresh_token:
             raise Exception("Authorization failed. Invalid refersh token.")
@@ -139,6 +142,7 @@ class OutlookClient(EmailServiceProvider):
             raise Exception("Refresh token not found.")
         await self.connect_with_refresh_token(self.refresh_token)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     async def get_user_info(self):
         if not self.token:
             raise Exception("Not connected")
@@ -169,6 +173,7 @@ class OutlookClient(EmailServiceProvider):
             async with session.post(endpoint_url, headers=headers, json=email_body) as response:
                 return await response.text()
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     async def receive_email(self, query: Optional[str] = None):
         if not self.current_email_endpoint:
             return []
@@ -184,13 +189,10 @@ class OutlookClient(EmailServiceProvider):
         async with aiohttp.ClientSession() as session:
             async with session.get(self.current_email_endpoint, headers=headers) as response:
                 if response.status >= 200 and response.status < 300:
-                    try:
-                        email_r = await response.json()
-                        emails = email_r.get("value")
-                        self.current_email_endpoint = email_r.get("@odata.nextLink")
-                        return emails
-                    except:
-                        raise Exception(await response.text())
+                    email_r = await response.json()
+                    emails = email_r.get("value")
+                    self.current_email_endpoint = email_r.get("@odata.nextLink")
+                    return emails
                 else:
                     raise Exception(f"{response.status} " + (await response.text()))
 

@@ -231,6 +231,9 @@ async def backup_database() -> None:
         + " --gzip"
     )
 
+    # Use this as reference to restore
+    # mongorestore --host tallulah-mongo.thankfulstone-e2f1f7bf.westus.azurecontainerapps.io --port 27017 db_backup.gzip
+
     # Upload to the blob storage
     sas_url = get_secret("storage_container_sas_url")
     blob_service_client = ContainerClient.from_container_url(sas_url)
