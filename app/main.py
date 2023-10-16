@@ -38,7 +38,7 @@ from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
 from app.api import accounts, authentication, emails, internal_utils, mailbox
-from app.data import operations as data_service
+from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
 from app.utils.logging import LogLevel, Resource, add_log_message
 from app.utils.secrets import get_secret
@@ -118,6 +118,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
                 logging.info(f"Slack webhook response: {response.status}")
 
     # Add it to the sail database audit log
+    data_service = DatabaseOperations()
     await data_service.insert_one("errors", jsonable_encoder(message))
 
     # Add the exception to the audit log as well

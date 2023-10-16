@@ -13,17 +13,17 @@
 # -------------------------------------------------------------------------------
 
 import asyncio
-from typing import Any, Coroutine
+from typing import Coroutine
 
 
 class AsyncTaskManager:
     _instance = None
-    _loop = asyncio.get_event_loop()
-    _tasks = set()
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(AsyncTaskManager, cls).__new__(cls)
+            cls._loop = asyncio.get_event_loop()
+            cls._tasks = set()
         return cls._instance
 
     async def _wrap_task(self, coro: Coroutine, callback=None):

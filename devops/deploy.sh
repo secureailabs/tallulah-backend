@@ -35,8 +35,8 @@ az network vnet create --resource-group $resourceGroup --name $vnetName --addres
 subnetId=$(az network vnet subnet show --resource-group $resourceGroup --vnet-name $vnetName --name $subnetName --query 'id' -o tsv)
 
 
-# Create an container app environment
-az containerapp env create -n $containerEnvName -g $resourceGroup --location $location --infrastructure-subnet-resource-id $subnetId
+# Create an container app environment without log analytics
+az containerapp env create -n $containerEnvName -g $resourceGroup --location $location --infrastructure-subnet-resource-id $subnetId --logs-destination none
 domainName=$(az containerapp env show -n $containerEnvName -g $resourceGroup --query 'properties.defaultDomain' -o tsv)
 # Wait for the environment to be ready
 while [ "$(az containerapp env show -n $containerEnvName -g $resourceGroup --query 'properties.provisioningState' -o tsv)" != "Succeeded" ]; do

@@ -20,7 +20,7 @@ from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
-from app.data import operations as data_service
+from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
 
 
@@ -86,12 +86,13 @@ class UpdateUser_In(SailBaseModel):
 
 class Users:
     DB_COLLECTION_USERS = "users"
+    data_service = DatabaseOperations()
 
     @staticmethod
     async def create(
         user: User_Db,
     ):
-        return await data_service.insert_one(
+        return await Users.data_service.insert_one(
             collection=Users.DB_COLLECTION_USERS,
             data=jsonable_encoder(user),
         )
@@ -113,7 +114,7 @@ class Users:
         if user_role:
             query["roles"] = user_role.value
 
-        response = await data_service.find_by_query(
+        response = await Users.data_service.find_by_query(
             collection=Users.DB_COLLECTION_USERS,
             query=jsonable_encoder(query),
         )
@@ -157,7 +158,7 @@ class Users:
         if increment_failed_login_attempts:
             update_request["$inc"] = {"failed_login_attempts": 1}
 
-        update_response = await data_service.update_many(
+        update_response = await Users.data_service.update_many(
             collection=Users.DB_COLLECTION_USERS,
             query=query,
             data=jsonable_encoder(update_request),

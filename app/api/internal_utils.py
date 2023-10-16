@@ -17,7 +17,7 @@ from fastapi.responses import HTMLResponse
 from msal import ConfidentialClientApplication
 
 from app.api.authentication import RoleChecker, get_current_user
-from app.data import operations as data_service
+from app.data.operations import DatabaseOperations
 from app.models.authentication import TokenData
 from app.utils.secrets import get_secret
 
@@ -34,6 +34,7 @@ router = APIRouter(tags=["internal"])
 async def drop_database(
     _: TokenData = Depends(get_current_user),
 ) -> Response:
+    data_service = DatabaseOperations()
     await data_service.drop()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -20,7 +20,7 @@ from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
-from app.data import operations as data_service
+from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
 
 
@@ -63,12 +63,13 @@ class UpdateEmail_In(SailBaseModel):
 
 class Emails:
     DB_COLLECTION_EMAILS = "emails"
+    data_service = DatabaseOperations()
 
     @staticmethod
     async def create(
         email: Email_Db,
     ):
-        return await data_service.insert_one(
+        return await Emails.data_service.insert_one(
             collection=Emails.DB_COLLECTION_EMAILS,
             data=jsonable_encoder(email),
         )
@@ -90,12 +91,12 @@ class Emails:
             query["mailbox_id"] = str(mailbox_id)
 
         if skip is None and limit is None:
-            response = await data_service.find_by_query(
+            response = await Emails.data_service.find_by_query(
                 collection=Emails.DB_COLLECTION_EMAILS,
                 query=jsonable_encoder(query),
             )
         elif skip is not None and limit is not None:
-            response = await data_service.find_sorted_pagination(
+            response = await Emails.data_service.find_sorted_pagination(
                 collection=Emails.DB_COLLECTION_EMAILS,
                 query=jsonable_encoder(query),
                 sort_key="received_time",
@@ -133,7 +134,7 @@ class Emails:
         if update_message_state:
             update_request["$set"]["message_state"] = update_message_state.value
 
-        update_response = await data_service.update_many(
+        update_response = await Emails.data_service.update_many(
             collection=Emails.DB_COLLECTION_EMAILS,
             query=query,
             data=jsonable_encoder(update_request),

@@ -20,7 +20,7 @@ from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
-from app.data import operations as data_service
+from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
 
 
@@ -68,12 +68,13 @@ class GetMultipleMailboxes_Out(SailBaseModel):
 
 class Mailboxes:
     DB_COLLECTION_MAILBOXES = "mailboxes"
+    data_service = DatabaseOperations()
 
     @staticmethod
     async def create(
         mailbox: Mailbox_Db,
     ):
-        return await data_service.insert_one(
+        return await Mailboxes.data_service.insert_one(
             collection=Mailboxes.DB_COLLECTION_MAILBOXES,
             data=jsonable_encoder(mailbox),
         )
@@ -92,7 +93,7 @@ class Mailboxes:
         if user_id:
             query["user_id"] = str(user_id)
 
-        response = await data_service.find_by_query(
+        response = await Mailboxes.data_service.find_by_query(
             collection=Mailboxes.DB_COLLECTION_MAILBOXES,
             query=jsonable_encoder(query),
         )
@@ -124,7 +125,7 @@ class Mailboxes:
         if update_mailbox_state:
             update["mailbox_state"] = update_mailbox_state
 
-        update_result = await data_service.update_one(
+        update_result = await Mailboxes.data_service.update_one(
             collection=Mailboxes.DB_COLLECTION_MAILBOXES,
             query=jsonable_encoder(query),
             data=jsonable_encoder({"$set": update}),

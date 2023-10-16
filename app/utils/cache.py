@@ -14,7 +14,8 @@
 
 from typing import Dict
 
-from app.data import operations as data_service
+from app import data
+from app.data.operations import DatabaseOperations
 from app.models.common import BasicObjectInfo, PyObjectId
 
 GLOBAL_CACHE: Dict[PyObjectId, BasicObjectInfo] = {}
@@ -27,6 +28,7 @@ async def get_basic_object(id: PyObjectId, collection_name: str) -> BasicObjectI
         return GLOBAL_CACHE[id]
     else:
         # Get the user from the database
+        data_service = DatabaseOperations()
         object = await data_service.find_one(collection_name, {"_id": str(id)})
         if not object:
             raise Exception(f"{str(id)} in {collection_name} not found")

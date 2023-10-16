@@ -25,5 +25,5 @@ $(IMAGES):
 generate_client:
 	@./scripts.sh generate_client
 
-deploy: push_image
+deploy: push_all
 	@./devops/deploy.sh
