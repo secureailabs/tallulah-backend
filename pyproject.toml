@@ -28,11 +28,6 @@ uvicorn = {extras = ["standard"], version = "^0.23.2"}
 tenacity = "^8.2.3"
 
 
-[tool.poetry.group.dev.dependencies]
-flake8 = "^6.1.0"
-black = "^23.9.1"
-
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
