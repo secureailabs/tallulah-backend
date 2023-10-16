@@ -1,4 +1,4 @@
-.PHONY: clean build_image
+IMAGES = tallulah/backend tallulah/rabbitmq tallulah/mongo
 
 run:
 	@./scripts.sh run
@@ -15,10 +15,12 @@ stop_all:
 stop_backend:
 	@./scripts.sh stop_backend
 
-push_image: build_image
-	@./scripts.sh push_image_to_registry tallulah/backend
-	@./scripts.sh push_image_to_registry tallulah/rabbitmq
-	@./scripts.sh push_image_to_registry tallulah/mongo
+push_all: $(IMAGES)
+$(IMAGES):
+	@echo "Pushing image: $@"
+	@./scripts.sh push_image_to_registry $@
+
+.PHONY: push_all $(IMAGES)
 
 generate_client:
 	@./scripts.sh generate_client

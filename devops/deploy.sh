@@ -2,7 +2,6 @@
 
 productName="tallulah"
 resourceGroup="$productName-rg-$(openssl rand -hex 2)"
-# resourceGroup="tallulah-rg-291a"
 location="westus"
 containerEnvName="$productName-env"
 vnetName="$productName-vnet"
