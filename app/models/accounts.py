@@ -21,12 +21,12 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
 from app.data import operations as data_service
-from app.models.common import BasicObjectInfo, PyObjectId, SailBaseModel
+from app.models.common import PyObjectId, SailBaseModel
 
 
 class UserRole(Enum):
-    SAIL_ADMIN = "SAIL_ADMIN"
     USER = "USER"
+    TALLULAH_ADMIN = "TALLULAH_ADMIN"
 
 
 class UserAccountState(Enum):
@@ -100,6 +100,7 @@ class Users:
     async def read(
         user_id: Optional[PyObjectId] = None,
         email: Optional[str] = None,
+        user_role: Optional[UserRole] = None,
         throw_on_not_found: bool = True,
     ) -> List[User_Db]:
         dataset_version_list = []
@@ -109,6 +110,8 @@ class Users:
             query["_id"] = user_id
         if email:
             query["email"] = email
+        if user_role:
+            query["roles"] = user_role.value
 
         response = await data_service.find_by_query(
             collection=Users.DB_COLLECTION_USERS,

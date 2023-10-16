@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 
 from app.api.authentication import get_current_user
 from app.api.emails import read_emails
@@ -28,7 +28,7 @@ from app.models.mailbox import (
     RegisterMailbox_In,
     RegisterMailbox_Out,
 )
-from app.utils.background_couroutines import add_async_task
+from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
 from app.utils.secrets import set_keyvault_secret
 
@@ -75,7 +75,8 @@ async def add_new_mailbox(
 
     # Add a background task to read emails
     # background_tasks.add_task(read_emails, client, mailbox_db.id, None)
-    add_async_task(read_emails(client, mailbox_db.id, None))
+    async_task_manager = AsyncTaskManager()
+    async_task_manager.create_task(read_emails(client, mailbox_db.id, None))
 
     return RegisterMailbox_Out(_id=mailbox_db.id)
 

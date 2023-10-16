@@ -5,8 +5,8 @@
 import type { EmailState } from './EmailState';
 
 export type GetEmail_Out = {
-    subject: string;
-    body: any;
+    subject?: string;
+    body?: any;
     from_address: any;
     received_time: string;
     mailbox_id: string;

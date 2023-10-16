@@ -122,13 +122,13 @@ generate_client() {
 
     # Generate the python client
     rm -rf tallulah-client/
-    openapi-python-client --version
-    openapi-python-client generate --path docs/openapi.json
+    # openapi-python-client --version
+    # openapi-python-client generate --path docs/openapi.json
 
     # Generate a whl package for the client using the pyproject.toml file
-    pushd tallulah-client
-    poetry build
-    popd
+    # pushd tallulah-client
+    # poetry build
+    # popd
 
     # Generate the typescript client
     rm -rf tallulah-client-ts/

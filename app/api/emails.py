@@ -24,7 +24,7 @@ from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMultipleEmail_Out
 from app.models.mailbox import Mailboxes
-from app.utils.background_couroutines import add_async_task
+from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
 from app.utils.secrets import get_keyvault_secret, get_secret, set_keyvault_secret
@@ -115,7 +115,10 @@ async def read_emails_hourly():
         await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
 
         # Add a background task to read emails
-        add_async_task(read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time))
+        async_task_manager = AsyncTaskManager()
+        async_task_manager.create_task(
+            read_emails(client=client, mailbox_id=mailbox.id, receivedDateTime=mailbox.last_refresh_time)
+        )
 
     print("Done reading emails")
 

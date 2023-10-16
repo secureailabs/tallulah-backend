@@ -16,6 +16,7 @@ import base64
 import json
 import logging
 import os
+import subprocess
 import traceback
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Union
@@ -37,6 +38,7 @@ from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
 from app.api import accounts, authentication, emails, internal_utils, mailbox
+from app.data import operations as data_service
 from app.models.common import PyObjectId
 from app.utils.logging import LogLevel, Resource, add_log_message
 from app.utils.secrets import get_secret
@@ -116,7 +118,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
                 logging.info(f"Slack webhook response: {response.status}")
 
     # Add it to the sail database audit log
-    # await data_service.insert_one("errors", jsonable_encoder(message))
+    await data_service.insert_one("errors", jsonable_encoder(message))
 
     # Add the exception to the audit log as well
     add_log_message(LogLevel.ERROR, Resource.USER_ACTIVITY, message)
@@ -219,31 +221,43 @@ async def add_audit_log(request: Request, call_next: Callable):
 @server.on_event("startup")
 @repeat_every(seconds=30 * 60)  # 1/2 hour
 async def backup_database() -> None:
-    print("Running backup_database")
-    backup_file_name = datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S") + "-mongo-backup.gzip"
+    try:
+        print("Running backup_database")
+        backup_file_name = datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S") + "-mongo-backup.gzip"
 
-    # Dump the database using mongodump
-    os.system(
-        "/usr/bin/mongodump --uri "
-        + get_secret("mongodb_host")
-        + ":27017/tallulah --archive="
-        + backup_file_name
-        + " --gzip"
-    )
+        # Dump the database using mongodump
+        completed_process = subprocess.run(
+            [
+                "/usr/bin/mongodump",
+                "--uri",
+                get_secret("mongodb_host") + ":27017/tallulah",
+                "--archive=" + backup_file_name,
+                "--gzip",
+            ],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        print("Database Backup executed successfully")
+        print(completed_process.stdout)
 
-    # Use this as reference to restore
-    # mongorestore --host tallulah-mongo.thankfulstone-e2f1f7bf.westus.azurecontainerapps.io --port 27017 db_backup.gzip
+        # Use this as reference to restore
+        # mongorestore --host tallulah-mongo.thankfulstone-e2f1f7bf.westus.azurecontainerapps.io --port 27017 db_backup.gzip
 
-    # Upload to the blob storage
-    sas_url = get_secret("storage_container_sas_url")
-    blob_service_client = ContainerClient.from_container_url(sas_url)
-    async with blob_service_client:
-        # Get a reference to a BlobClient
-        blob_client = blob_service_client.get_blob_client(blob=backup_file_name)
+        # Upload to the blob storage
+        sas_url = get_secret("storage_container_sas_url")
+        blob_service_client = ContainerClient.from_container_url(sas_url)
+        async with blob_service_client:
+            # Get a reference to a BlobClient
+            blob_client = blob_service_client.get_blob_client(blob=backup_file_name)
 
-        # Upload the file
-        with open(backup_file_name, "rb") as data:
-            await blob_client.upload_blob(data, overwrite=True)
+            # Upload the file
+            with open(backup_file_name, "rb") as data:
+                await blob_client.upload_blob(data, overwrite=True)
 
-        # Delete the file
-        os.remove(backup_file_name)
+            # Delete the file
+            os.remove(backup_file_name)
+    except subprocess.CalledProcessError as e:
+        print("Backup command failed: ", e)
+    except Exception as e:
+        print("Error: ", e)

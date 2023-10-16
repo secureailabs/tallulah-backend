@@ -6,6 +6,6 @@
  * An enumeration.
  */
 export enum UserRole {
-    SAIL_ADMIN = 'SAIL_ADMIN',
     USER = 'USER',
+    TALLULAH_ADMIN = 'TALLULAH_ADMIN',
 }

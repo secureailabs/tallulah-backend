@@ -14,6 +14,7 @@
 
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
+from pydantic import EmailStr
 
 from app.api.authentication import get_current_user, get_password_hash
 from app.models.accounts import (
@@ -27,7 +28,7 @@ from app.models.accounts import (
     Users,
 )
 from app.models.authentication import TokenData
-from app.models.common import BasicObjectInfo, PyObjectId
+from app.models.common import PyObjectId
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -48,8 +49,8 @@ async def register_user(
     if user_db:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
 
-    # Also, don't allow the user to have a SAIL_ADMIN role
-    if UserRole.SAIL_ADMIN in user.roles:
+    # Also, don't allow the user to have a TALLULAH_ADMIN role
+    if UserRole.TALLULAH_ADMIN in user.roles:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
 
     # Create the user and add it to the database
@@ -98,7 +99,7 @@ async def update_user_info(
 ) -> Response:
     if user_id == current_user.id:
         pass
-    elif UserRole.SAIL_ADMIN in current_user.roles:
+    elif UserRole.TALLULAH_ADMIN in current_user.roles:
         pass
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
@@ -125,7 +126,7 @@ async def soft_delete_user(
     current_user: TokenData = Depends(get_current_user),
 ):
     # User must be admin of same organization or should be a SAIL Admin or same user
-    if user_id == current_user.id or UserRole.SAIL_ADMIN in current_user.roles:
+    if user_id == current_user.id or UserRole.TALLULAH_ADMIN in current_user.roles:
         pass
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
@@ -136,3 +137,24 @@ async def soft_delete_user(
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# Add the sail admin user at the time of deployment
+@router.on_event("startup")
+async def add_tallulah_admin():
+    # Check if the user already exists
+    user_db = await Users.read(user_role=UserRole.TALLULAH_ADMIN, throw_on_not_found=False)
+    if user_db:
+        return
+
+    # Create the user and add it to the database
+    user_db = User_Db(
+        name="Tallulah Admin",
+        email=EmailStr("admin@tallulah.net"),
+        roles=[UserRole.TALLULAH_ADMIN],
+        job_title="Array Insights Admin",
+        hashed_password=get_password_hash("admin@tallulah.net", "password"),
+        account_state=UserAccountState.ACTIVE,
+    )
+
+    await Users.create(user=user_db)

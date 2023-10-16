@@ -17,8 +17,8 @@ tag=v"$version"_"$gitCommitHash"
 # If there is a .env file, source it
 if [ -f .env ]; then
   set -o allexport
-  source .env set
-  +o allexport
+  source .env
+  set +o allexport
 fi
 
 

@@ -12,11 +12,13 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.responses import HTMLResponse
 from msal import ConfidentialClientApplication
 
+from app.api.authentication import RoleChecker, get_current_user
 from app.data import operations as data_service
+from app.models.authentication import TokenData
 from app.utils.secrets import get_secret
 
 router = APIRouter(tags=["internal"])
@@ -27,8 +29,11 @@ router = APIRouter(tags=["internal"])
     description="Drop the database",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="drop_database",
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
 )
-async def drop_database() -> Response:
+async def drop_database(
+    _: TokenData = Depends(get_current_user),
+) -> Response:
     await data_service.drop()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -39,7 +44,6 @@ app_instance = ConfidentialClientApplication(
     authority="https://login.microsoftonline.com/organizations",
     client_credential=get_secret("outlook_client_secret"),
 )
-
 # Create OAuth2 Authorization URL
 redirect_uri = get_secret("outlook_redirect_uri")
 scopes = ["User.Read", "Mail.Read", "Mail.Send"]

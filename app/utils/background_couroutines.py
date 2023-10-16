@@ -11,19 +11,40 @@
 #     be disclosed to others for any purpose without
 #     prior written permission of Secure Ai Labs, Inc.
 # -------------------------------------------------------------------------------
+
 import asyncio
 from typing import Any, Coroutine
 
-coroutines = set()
 
+class AsyncTaskManager:
+    _instance = None
+    _loop = asyncio.get_event_loop()
+    _tasks = set()
 
-def add_async_task(task_function: Coroutine[Any, Any, None]):
-    """
-    Add a task to the set of coroutines to be run
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AsyncTaskManager, cls).__new__(cls)
+        return cls._instance
 
-    :param task_function: the function to be run
-    :type task_function: Coroutine[Any, Any, None]
-    """
-    task = asyncio.create_task(task_function)
-    coroutines.add(task)
-    task.add_done_callback(coroutines.discard)
+    async def _wrap_task(self, coro: Coroutine, callback=None):
+        try:
+            result = await coro
+            if callback:
+                callback(result)
+        except Exception as e:
+            print(f"An exception was caught in the async task: {str(e)}")
+        finally:
+            if self._tasks:
+                await asyncio.wait(self._tasks)
+            self._tasks.discard(coro)
+
+    def create_task(self, coro: Coroutine, callback=None) -> None:
+        if not asyncio.iscoroutine(coro):
+            raise ValueError("Expected a coroutine for the execution")
+
+        task = self._loop.create_task(self._wrap_task(coro, callback))
+        self._tasks.add(task)
+
+    async def wait_tasks(self) -> None:
+        if self._tasks:
+            await asyncio.wait(self._tasks)

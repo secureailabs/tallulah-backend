@@ -63,8 +63,8 @@ class RoleChecker:
         self.allowed_roles = allowed_roles
 
     def __call__(self, user: TokenData = Depends(get_current_user)):
-        # allow SAIL_ADMIN to do anything
-        if UserRole.SAIL_ADMIN in user.roles:
+        # allow TALLULAH_ADMIN to do anything
+        if UserRole.TALLULAH_ADMIN in user.roles:
             return None
 
         if user.roles:
