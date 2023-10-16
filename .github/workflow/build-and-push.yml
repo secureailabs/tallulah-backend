@@ -1,0 +1,28 @@
+# name: Build and Push Docker Image
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# env:
+#   IMAGE_NAME: my-image
+#   REGISTRY: developmentdockerregistry.azurecr.io
+#   USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+#   PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Build and push Docker image using makefile
+#         run: |
+#           make push_all
+#         env:
+#           IMAGE_NAME: ${{ env.IMAGE_NAME }}
+#           REGISTRY: ${{ env.REGISTRY }}
+#           USERNAME: ${{ env.USERNAME }}
+#           PASSWORD: ${{ env.PASSWORD }}

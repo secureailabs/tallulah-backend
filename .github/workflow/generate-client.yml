@@ -1,0 +1,33 @@
+# name: Generate client code and push to GitHub
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   generate-client:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Run the backend service
+#         run: |
+#           make run
+
+#       - name: Generate client code
+#         run: |
+#           make generate-client
+
+#       - name: Commit and push generated client code
+#         uses: EndBug/add-and-commit@v7
+#         with:
+#           author_name: GitHub Actions
+#           author_email: prawal@arrayinsights.com
+#           message: "Generated client code"
+#           add: generated/
+#           force: true
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
