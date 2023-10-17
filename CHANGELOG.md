@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.x] - 2023-10-16
+## [0.x.x] - 2023-10-16
 
 ### Added
 
@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
-## [1.0.0] - 2023-10-16
+## [0.1.0] - 2023-10-16
 
 We are thrilled to announce the first release of our product! This release lays the groundwork for efficient email management and processing, with several robust services ensuring security, data integrity, and seamless integration. Our services are containerized for ease of deployment and scalability.
 

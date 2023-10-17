@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 productName="tallulah"
 resourceGroup="$productName-rg-$(openssl rand -hex 2)"
 location="westus"
@@ -51,7 +53,7 @@ while [ "$(az storage account check-name --name $storageAccountName --query 'nam
     storageAccountName="tallulahStorage$(openssl rand -hex 4)"
 done
 # Create a storage account for the environment with version immutability
-az storage account create --resource-group $resourceGroup --name $storageAccountName --location $location --kind StorageV2 --sku Standard_LRS
+az storage account create --resource-group $resourceGroup --name $storageAccountName --location $location --kind StorageV2 --sku Standard_LRS --allow-blob-public-access false
 # Wait for the storage account to be ready
 while [ "$(az storage account show -n $storageAccountName -g $resourceGroup --query 'provisioningState' -o tsv)" != "Succeeded" ]; do
     echo "Waiting for the storage account to be ready..."
@@ -87,9 +89,8 @@ az containerapp create \
   --cpu 0.5 \
   --memory 1Gi \
   --target-port 27017 \
-  --exposed-port 27017 \
   --transport 'tcp' \
-  --ingress 'external' \
+  --ingress 'internal' \
   --min-replicas 1 \
   --registry-server $container_registry_server \
   --registry-user $container_registry_user \
@@ -130,8 +131,8 @@ az containerapp create \
       slack_webhook="" \
       outlook_redirect_uri=https://$productName-backend.$domainName/mailbox/authorize \
       outlook_tenant_id=$outlook_tenant_id \
-      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq.$domainName \
-      mongodb_host=mongodb://$productName-mongo.$domainName \
+      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
+      mongodb_host=mongodb://$productName-mongo \
       jwt_secret=secretref:jwt-secret \
       refresh_secret=secretref:refresh-secret \
       password_pepper=secretref:password-pepper \
@@ -167,9 +168,8 @@ az containerapp create \
   --cpu 0.5 \
   --memory 1Gi \
   --target-port 5672 \
-  --exposed-port 5672 \
   --transport 'tcp' \
-  --ingress 'external' \
+  --ingress 'internal' \
   --min-replicas 1 \
   --env-vars \
       RABBITMQ_DEFAULT_USER=$rabbit_mq_user \
@@ -189,8 +189,8 @@ az containerapp create \
   --memory 1Gi \
   --min-replicas 1 \
   --env-vars \
-      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq.$domainName \
-      mongodb_host=mongodb://$productName-mongo.$domainName \
+      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
+      mongodb_host=mongodb://$productName-mongo \
   --secrets \
       jwt-secret=$(openssl rand -hex 32) \
   --registry-server $container_registry_server \
