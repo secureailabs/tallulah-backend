@@ -76,7 +76,8 @@ done
 az deployment group create --resource-group $resourceGroup --template-file keyvault.json --parameters \
     keyvault_name=$keyVaultName \
     azure_tenant_id=$AZURE_TENANT_ID \
-    azure_object_id=$AZURE_OBJECT_ID
+    azure_object_id=$AZURE_OBJECT_ID \
+    subnet_id=$subnetId
 keyvault_url=$(az keyvault show -n $keyVaultName -g $resourceGroup --query 'properties.vaultUri' -o tsv)
 
 
