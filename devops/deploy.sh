@@ -53,7 +53,7 @@ while [ "$(az storage account check-name --name $storageAccountName --query 'nam
     storageAccountName="tallulahStorage$(openssl rand -hex 4)"
 done
 # Create a storage account for the environment with version immutability
-az storage account create --resource-group $resourceGroup --name $storageAccountName --location $location --kind StorageV2 --sku Standard_LRS --allow-blob-public-access false
+az storage account create --resource-group $resourceGroup --name $storageAccountName --location $location --kind StorageV2 --sku Standard_LRS --subnet $subnetId
 # Wait for the storage account to be ready
 while [ "$(az storage account show -n $storageAccountName -g $resourceGroup --query 'provisioningState' -o tsv)" != "Succeeded" ]; do
     echo "Waiting for the storage account to be ready..."
