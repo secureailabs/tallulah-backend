@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 productName="tallulah"
 resourceGroup="$productName-rg-$(openssl rand -hex 2)"
@@ -35,7 +35,8 @@ az group create --name $resourceGroup --location $location
 # Create a virtual network
 az network vnet create --resource-group $resourceGroup --name $vnetName --address-prefixes '10.0.0.0/16' --subnet-name $subnetName --subnet-prefix '10.0.0.0/20'
 subnetId=$(az network vnet subnet show --resource-group $resourceGroup --vnet-name $vnetName --name $subnetName --query 'id' -o tsv)
-
+# Add Storage and keyvault to subnet service endpoints
+az network vnet subnet update --resource-group $resourceGroup --vnet-name $vnetName --name $subnetName --service-endpoints 'Microsoft.Storage' 'Microsoft.KeyVault'
 
 # Create an container app environment without log analytics
 az containerapp env create -n $containerEnvName -g $resourceGroup --location $location --infrastructure-subnet-resource-id $subnetId --logs-destination none
@@ -130,7 +131,7 @@ az containerapp create \
   --min-replicas 1 \
   --env-vars \
       slack_webhook="" \
-      outlook_redirect_uri=https://$productName-backend.$domainName/mailbox/authorize \
+      outlook_redirect_uri=https://tbbc.tallulah.ai/outlook-oauth \
       outlook_tenant_id=$outlook_tenant_id \
       rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
       mongodb_host=mongodb://$productName-mongo \
@@ -198,6 +199,21 @@ az containerapp create \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password
 
+
+# Deploy the frontend app
+az containerapp create \
+  --name $productName-ui \
+  --resource-group $resourceGroup \
+  --environment $containerEnvName \
+  --image $container_registry_server/$productName-ui:v0.1.0_089fdcb \
+  --cpu 0.5 \
+  --memory 1Gi \
+  --target-port 80 \
+  --ingress 'external' \
+  --min-replicas 1 \
+  --registry-server $container_registry_server \
+  --registry-user $container_registry_user \
+  --registry-password $container_registry_password
 
 echo "##################################################################"
 echo "##                                                                "
