@@ -19,6 +19,12 @@
             "metadata": {
                 "description": "Azure Service Principal which will have access to the Key Vault"
             }
+        },
+        "subnet_id": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet ID which will have access to the Key Vault"
+            }
         }
     },
     "variables": {},
@@ -34,6 +40,17 @@
                     "name": "standard"
                 },
                 "tenantId": "[parameters('azure_tenant_id')]",
+                "networkAcls": {
+                    "bypass": "None",
+                    "defaultAction": "Deny",
+                    "ipRules": [],
+                    "virtualNetworkRules": [
+                        {
+                            "id": "[parameters('subnet_id')]",
+                            "ignoreMissingVnetServiceEndpoint": false
+                        }
+                    ]
+                },
                 "accessPolicies": [
                     {
                         "tenantId": "[parameters('azure_tenant_id')]",
