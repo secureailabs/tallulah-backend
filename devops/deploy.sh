@@ -131,7 +131,7 @@ az containerapp create \
   --min-replicas 1 \
   --env-vars \
       slack_webhook="" \
-      outlook_redirect_uri=https://tbbc.tallulah.ai/outlook-oauth \
+      outlook_redirect_uri=$outlook_redirect_uri \
       outlook_tenant_id=$outlook_tenant_id \
       rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
       mongodb_host=mongodb://$productName-mongo \
