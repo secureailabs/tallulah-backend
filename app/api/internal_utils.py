@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, Response, status
 from fastapi.responses import HTMLResponse
 from msal import ConfidentialClientApplication
 
+from app.api.accounts import add_tallulah_admin
 from app.api.authentication import RoleChecker, get_current_user
 from app.data.operations import DatabaseOperations
 from app.models.authentication import TokenData
@@ -36,6 +37,7 @@ async def drop_database(
 ) -> Response:
     data_service = DatabaseOperations()
     await data_service.drop()
+    await add_tallulah_admin()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

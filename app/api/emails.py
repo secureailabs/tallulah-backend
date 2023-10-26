@@ -137,9 +137,12 @@ async def get_all_emails(
 ) -> GetMultipleEmail_Out:
     # Check if the mailbox belongs to the user
     _ = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
-
     emails = await Emails.read(mailbox_id=mailbox_id, skip=skip, limit=limit, throw_on_not_found=False)
+    email_count = await Emails.count(mailbox_id=mailbox_id)
 
     return GetMultipleEmail_Out(
-        messages=[GetEmail_Out(**email.dict()) for email in emails], next=skip + limit, limit=limit
+        messages=[GetEmail_Out(**email.dict()) for email in emails],
+        count=email_count,
+        next=skip + limit,
+        limit=limit,
     )

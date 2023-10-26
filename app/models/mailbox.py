@@ -136,3 +136,25 @@ class Mailboxes:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Mailbox not found for query: {query}",
             )
+
+    @staticmethod
+    async def delete(
+        query_mailbox_id: Optional[PyObjectId] = None,
+        user_id: Optional[PyObjectId] = None,
+    ):
+        query = {}
+        if query_mailbox_id:
+            query["_id"] = str(query_mailbox_id)
+        if user_id:
+            query["user_id"] = str(user_id)
+
+        delete_result = await Mailboxes.data_service.delete(
+            collection=Mailboxes.DB_COLLECTION_MAILBOXES,
+            query=jsonable_encoder(query),
+        )
+
+        if delete_result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Mailbox not found for query: {query}",
+            )

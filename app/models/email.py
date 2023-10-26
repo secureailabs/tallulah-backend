@@ -53,6 +53,7 @@ class GetEmail_Out(Email_Base):
 
 class GetMultipleEmail_Out(SailBaseModel):
     messages: List[GetEmail_Out] = Field()
+    count: int = Field()
     next: int = Field()
     limit: int = Field()
 
@@ -141,6 +142,38 @@ class Emails:
         )
 
         if update_response.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Email not found or no changes to update",
+            )
+
+    @staticmethod
+    async def count(
+        mailbox_id: Optional[PyObjectId] = None,
+    ) -> int:
+        query = {}
+        if mailbox_id:
+            query["mailbox_id"] = str(mailbox_id)
+
+        return await Emails.data_service.sail_db[Emails.DB_COLLECTION_EMAILS].count_documents(query)
+
+    @staticmethod
+    async def delete(
+        query_message_id: Optional[PyObjectId] = None,
+        mailbox_id: Optional[PyObjectId] = None,
+    ):
+        query = {}
+        if query_message_id:
+            query["_id"] = str(query_message_id)
+        if mailbox_id:
+            query["mailbox_id"] = str(mailbox_id)
+
+        delete_response = await Emails.data_service.delete(
+            collection=Emails.DB_COLLECTION_EMAILS,
+            query=query,
+        )
+
+        if delete_response.deleted_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Email not found or no changes to update",

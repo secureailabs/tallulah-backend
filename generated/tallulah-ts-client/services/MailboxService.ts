@@ -69,4 +69,26 @@ export class MailboxService {
         });
     }
 
+    /**
+     * Delete Mailbox
+     * Delete the mailbox and all the emails for the current user
+     * @param mailboxId Mailbox id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteMailbox(
+        mailboxId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/mailbox/{mailbox_id}',
+            path: {
+                'mailbox_id': mailboxId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }

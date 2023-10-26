@@ -13,12 +13,13 @@
 # -------------------------------------------------------------------------------
 
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 
 from app.api.authentication import get_current_user
 from app.api.emails import read_emails
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
+from app.models.email import Emails
 from app.models.mailbox import (
     GetMailbox_Out,
     GetMultipleMailboxes_Out,
@@ -30,7 +31,7 @@ from app.models.mailbox import (
 )
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
-from app.utils.secrets import set_keyvault_secret
+from app.utils.secrets import delete_keyvault_secret, set_keyvault_secret
 
 router = APIRouter(prefix="/mailbox", tags=["mailbox"])
 
@@ -108,3 +109,28 @@ async def get_mailbox(
     mailboxe = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
 
     return GetMailbox_Out(**mailboxe[0].dict())
+
+
+@router.delete(
+    path="/{mailbox_id}",
+    description="Delete the mailbox and all the emails for the current user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="delete_mailbox",
+)
+async def delete_mailbox(
+    mailbox_id: PyObjectId = Path(description="Mailbox id"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+    # Get the mailbox information
+    mailbox = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
+
+    # Delete the mailbox
+    await Mailboxes.delete(query_mailbox_id=mailbox_id, user_id=current_user.id)
+
+    # Delete all the emails associated with the mailbox
+    await Emails.delete(mailbox_id=mailbox_id)
+
+    # Delete the refresh token from the keyvault
+    await delete_keyvault_secret(str(mailbox[0].refresh_token_id))
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
