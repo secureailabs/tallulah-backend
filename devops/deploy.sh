@@ -3,7 +3,8 @@
 set -euo pipefail
 
 productName="tallulah"
-resourceGroup="$productName-rg-$(openssl rand -hex 2)"
+deployment_id="$(openssl rand -hex 4)"
+resourceGroup="$productName-rg-$deployment_id"
 location="westus"
 containerEnvName="$productName-env"
 vnetName="$productName-vnet"
@@ -21,7 +22,6 @@ if [ -f .env ]; then
   source .env
   set +o allexport
 fi
-
 
 # Login to azure and set the subscription
 az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
@@ -82,42 +82,6 @@ az deployment group create --resource-group $resourceGroup --template-file keyva
 keyvault_url=$(az keyvault show -n $keyVaultName -g $resourceGroup --query 'properties.vaultUri' -o tsv)
 
 
-# Create a mongodb container
-az containerapp create \
-  --name $productName-mongo \
-  --resource-group $resourceGroup \
-  --environment $containerEnvName \
-  --image $container_registry_server/$productName/mongo:$tag \
-  --cpu 0.5 \
-  --memory 1Gi \
-  --target-port 27017 \
-  --transport 'tcp' \
-  --ingress 'internal' \
-  --min-replicas 1 \
-  --registry-server $container_registry_server \
-  --registry-user $container_registry_user \
-  --registry-password $container_registry_password
-  # --env-vars \
-  #     MONGO_INITDB_ROOT_USERNAME=$mongo_user \
-  # --secrets \
-  #     MONGO_INITDB_ROOT_PASSWORD=$mongo_password \
-
-
-# az containerapp show \
-#   --name $CONTAINER_APP_NAME \
-#   --resource-group $RESOURCE_GROUP \
-#   --output yaml > app.yaml
-
-# ./yq '.properties.template.volumes += [{"name": "azure-files-volume", "storageType": "AzureFile", "storageName": "mystorage"}]' app.yaml > app.yaml
-# ./yq '.properties.template.containers.volumeMounts += [{"volumeName": "azure-files-volume", "mountPath": "AzureFile"}]' app.yaml > app.yaml
-
-# az containerapp update \
-#   --name $CONTAINER_APP_NAME \
-#   --resource-group $RESOURCE_GROUP \
-#   --yaml app.yaml \
-#   --output table
-
-
 # Deploy the backend app
 az containerapp create \
   --name $productName-backend \
@@ -131,10 +95,10 @@ az containerapp create \
   --min-replicas 1 \
   --env-vars \
       slack_webhook="" \
-      outlook_redirect_uri=$outlook_redirect_uri \
+      outlook_redirect_uri=https://$productName-backend.$domainName/mailbox/authorize \
       outlook_tenant_id=$outlook_tenant_id \
-      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
-      mongodb_host=mongodb://$productName-mongo \
+      mongo_db_name=tallulah-$deployment_id \
+      mongo_connection_url=secretref:mongo-connection-url \
       jwt_secret=secretref:jwt-secret \
       refresh_secret=secretref:refresh-secret \
       password_pepper=secretref:password-pepper \
@@ -145,6 +109,7 @@ az containerapp create \
       AZURE_TENANT_ID=secretref:azure-tenant-id \
       azure_keyvault_url=secretref:azure-keyvault-url \
       storage_container_sas_url=secretref:storage-container-sas-url \
+      rabbit_mq_host=secretref:rabbit-mq-host \
   --secrets \
       jwt-secret=$(openssl rand -hex 32) \
       refresh-secret=$(openssl rand -hex 32) \
@@ -156,6 +121,8 @@ az containerapp create \
       azure-tenant-id=$AZURE_TENANT_ID \
       azure-keyvault-url=$keyvault_url \
       storage-container-sas-url=$connection_url \
+      mongo-connection-url=mongodb+srv://$mongo_atlas_user:$mongo_atlas_password@$mongo_atlas_host \
+      rabbit-mq-host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
   --registry-server $container_registry_server \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password
@@ -191,10 +158,12 @@ az containerapp create \
   --memory 1Gi \
   --min-replicas 1 \
   --env-vars \
-      rabbit_mq_host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
-      mongodb_host=mongodb://$productName-mongo \
+      rabbit_mq_host=secretref:rabbit-mq-host \
+      mongo_db_name=tallulah-$deployment_id \
+      mongo_connection_url=secretref:mongo-connection-url \
   --secrets \
-      jwt-secret=$(openssl rand -hex 32) \
+      mongo-connection-url=mongodb+srv://$mongo_atlas_user:$mongo_atlas_password@$mongo_atlas_host \
+      rabbit-mq-host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
   --registry-server $container_registry_server \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password

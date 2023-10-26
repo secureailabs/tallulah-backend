@@ -53,10 +53,6 @@ build_image() {
     # Tag the rabbitmq image
     docker pull rabbitmq:3
     docker tag rabbitmq:3 tallulah/rabbitmq
-
-    # Tag the mongodb image
-    docker pull mongo:6.0
-    docker tag mongo:6.0 tallulah/mongo
 }
 
 # Run the docker image
@@ -67,11 +63,6 @@ run_image() {
     # Create a network if it doesn't exist
     if ! docker network ls | grep -q "tallulah"; then
         docker network create tallulah
-    fi
-
-    # Run mongo if not already running
-    if ! docker ps | grep -q "mongo"; then
-        docker run -d --rm --name mongo -p 27017:27017 --network tallulah mongo:6.0
     fi
 
     # Run rabbitmq if not already running
@@ -92,7 +83,7 @@ stop_backend() {
 
 stop_all() {
     # Stop and remove all the containers
-    docker stop backend mongo rabbitmq
+    docker stop backend rabbitmq
 }
 
 run() {
