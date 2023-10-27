@@ -49,7 +49,7 @@ class DatabaseOperations:
             .sort(sort_key, sort_direction)
             .skip(skip)
             .limit(limit)
-            .to_list(1000)
+            .to_list(limit)
         )
 
     async def find_by_query(self, collection: str, query) -> List[Dict[str, Any]]:

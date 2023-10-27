@@ -54,3 +54,14 @@ async def set_keyvault_secret(secret_name: str, secret_value: str) -> None:
     async with credential:
         async with secret_client:
             await secret_client.set_secret(secret_name, secret_value)
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
+async def delete_keyvault_secret(secret_name: str) -> None:
+    credential = DefaultAzureCredential()
+    secret_client = SecretClient(vault_url=get_secret("azure_keyvault_url"), credential=credential)  # type: ignore
+
+    async with credential:
+        async with secret_client:
+            await secret_client.delete_secret(secret_name)
+
