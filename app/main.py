@@ -15,16 +15,12 @@
 import base64
 import json
 import logging
-import os
-import subprocess
 import traceback
-from datetime import datetime
 from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
-from azure.storage.blob.aio import ContainerClient
 from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -34,7 +30,6 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
-from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
 from app.api import accounts, authentication, emails, internal_utils, mailbox
@@ -217,48 +212,3 @@ async def add_audit_log(request: Request, call_next: Callable):
     add_log_message(LogLevel.INFO, Resource.USER_ACTIVITY, message)
 
     return response
-
-
-@server.on_event("startup")
-@repeat_every(seconds=30 * 60)  # 1/2 hour
-async def backup_database() -> None:
-    try:
-        print("Running backup_database")
-        backup_file_name = datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S") + "-mongo-backup.gzip"
-
-        # Dump the database using mongodump
-        completed_process = subprocess.run(
-            [
-                "/usr/bin/mongodump",
-                "--uri",
-                get_secret("mongodb_host") + ":27017/tallulah",
-                "--archive=" + backup_file_name,
-                "--gzip",
-            ],
-            check=True,
-            text=True,
-            capture_output=True,
-        )
-        print("Database Backup executed successfully")
-        print(completed_process.stdout)
-
-        # Use this as reference to restore
-        # mongorestore --host tallulah-mongo.thankfulstone-e2f1f7bf.westus.azurecontainerapps.io --port 27017 db_backup.gzip
-
-        # Upload to the blob storage
-        sas_url = get_secret("storage_container_sas_url")
-        blob_service_client = ContainerClient.from_container_url(sas_url)
-        async with blob_service_client:
-            # Get a reference to a BlobClient
-            blob_client = blob_service_client.get_blob_client(blob=backup_file_name)
-
-            # Upload the file
-            with open(backup_file_name, "rb") as data:
-                await blob_client.upload_blob(data, overwrite=True)
-
-            # Delete the file
-            os.remove(backup_file_name)
-    except subprocess.CalledProcessError as e:
-        print("Backup command failed: ", e)
-    except Exception as e:
-        print("Error: ", e)
