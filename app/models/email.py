@@ -30,14 +30,21 @@ class EmailState(Enum):
     FAILED = "FAILED"
 
 
+class Annotation(SailBaseModel):
+    annotation_id: PyObjectId = Field(default_factory=PyObjectId)
+    source: StrictStr = Field()
+    label: StrictStr = Field()
+    label_scores: Dict[str, float] = Field()
+
+
 class Email_Base(SailBaseModel):
     subject: Optional[StrictStr] = Field(default=None)
     body: Optional[Dict] = Field(default_factory=dict)
     from_address: Dict = Field()
     received_time: str = Field()
     mailbox_id: PyObjectId = Field()
+    annotations: List[Annotation] = Field(default=[])
     note: Optional[StrictStr] = Field(default=None)
-    tags: List[StrictStr] = Field(default=[])
     message_state: EmailState = Field(default=EmailState.UNPROCESSED)
 
 

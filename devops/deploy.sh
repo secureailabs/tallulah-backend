@@ -109,6 +109,7 @@ az containerapp create \
       AZURE_TENANT_ID=secretref:azure-tenant-id \
       azure_keyvault_url=secretref:azure-keyvault-url \
       storage_container_sas_url=secretref:storage-container-sas-url \
+      rabbit_mq_queue_name=email_queue \
       rabbit_mq_host=secretref:rabbit-mq-host \
   --secrets \
       jwt-secret=$(openssl rand -hex 32) \
@@ -147,20 +148,22 @@ az containerapp create \
   --registry-user $container_registry_user \
   --registry-password $container_registry_password
 
-
 # Deploy the classifier container
 az containerapp create \
   --name $productName-classifier \
   --resource-group $resourceGroup \
   --environment $containerEnvName \
-  --image $container_registry_server/$productName/classifier:v0.1.0_f374dff \
+  --image $container_registry_server/$productName/classifier:v0.1.0_6fe4157 \
   --cpu 0.5 \
   --memory 1Gi \
   --min-replicas 1 \
   --env-vars \
-      rabbit_mq_host=secretref:rabbit-mq-host \
+      rabbit_mq_port=5672 \
+      rabbit_mq_queue_name=email_queue \
+      rabbit_mq_hostname=secretref:rabbit-mq-host \
       mongo_db_name=tallulah-$deployment_id \
       mongo_connection_url=secretref:mongo-connection-url \
+      mongodb_collection_name=emails \
   --secrets \
       mongo-connection-url=mongodb+srv://$mongo_atlas_user:$mongo_atlas_password@$mongo_atlas_host \
       rabbit-mq-host=amqp://$rabbit_mq_user:$rabbit_mq_password@$productName-rabbitmq \
