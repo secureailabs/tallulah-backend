@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
-## [0.1.0] - 2023-10-16
+## [0.1.0] - 2023-10-30
 
 We are thrilled to announce the first release of our product! This release lays the groundwork for efficient email management and processing, with several robust services ensuring security, data integrity, and seamless integration. Our services are containerized for ease of deployment and scalability.
 
@@ -45,7 +45,7 @@ We are thrilled to announce the first release of our product! This release lays 
   - Emails in the queue are ready for processing and tagging by the Machine Learning (ML) classifier service.
 
 - **Data Backup and Security**
-  - Implemented continuous database backup, with snapshots taken every 30 minutes.
+  - Database hosted on Mongodb Atlas with continuous backups and incremental snapshots.
   - All backups are securely stored in Azure Blob Storage, ensuring data integrity and recovery.
   - Refresh tokens are securely stored in Azure Key Vault, enhancing the security posture.
 
@@ -58,9 +58,17 @@ We are thrilled to announce the first release of our product! This release lays 
   - Added codebase for generating Python and TypeScript clients, facilitating interaction with our REST APIs.
 
 - **Containerization and Microservices**
-  - Structured the application into microservices including MongoDB, RabbitMQ, and backend services.
+  - Structured the application into microservices including RabbitMQ, Backend and classifier services.
   - Each service runs in its own container for isolated environments and scalability.
 
 - **Azure AD Integration for Mailbox Addition**
   - Integrated Azure Active Directory (AD) app creation, allowing users to effortlessly link their Outlook mailboxes.
   - Users can now securely add their mailboxes using the permissions and security provided by Azure AD, simplifying the setup process while ensuring robust security protocols are adhered to.
+
+- **Email Classification and Tagging**
+  - Implemented a Machine Learning (ML) classifier service that tags incoming emails based on their content.
+  - The classifier service is containerized with the model loaded into it at build time.
+
+- **Frontend Application**
+  - Added a frontend application for users to interact with the backend services.
+  - Users can now add their mailboxes, view their tagged emails.

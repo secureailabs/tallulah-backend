@@ -83,6 +83,7 @@ keyvault_url=$(az keyvault show -n $keyVaultName -g $resourceGroup --query 'prop
 
 
 # Deploy the backend app
+# outlook_redirect_uri=https://$productName-backend.$domainName/mailbox/authorize \
 az containerapp create \
   --name $productName-backend \
   --resource-group $resourceGroup \
@@ -95,7 +96,7 @@ az containerapp create \
   --min-replicas 1 \
   --env-vars \
       slack_webhook="" \
-      outlook_redirect_uri=https://$productName-backend.$domainName/mailbox/authorize \
+      outlook_redirect_uri=$outlook_redirect_uri \
       outlook_tenant_id=$outlook_tenant_id \
       mongo_db_name=tallulah-$deployment_id \
       mongo_connection_url=secretref:mongo-connection-url \
@@ -153,7 +154,7 @@ az containerapp create \
   --name $productName-classifier \
   --resource-group $resourceGroup \
   --environment $containerEnvName \
-  --image $container_registry_server/$productName/classifier:v0.1.0_6fe4157 \
+  --image $container_registry_server/$productName/classifier:v0.1.0_7f67c94 \
   --cpu 0.5 \
   --memory 1Gi \
   --min-replicas 1 \
@@ -177,7 +178,7 @@ az containerapp create \
   --name $productName-ui \
   --resource-group $resourceGroup \
   --environment $containerEnvName \
-  --image $container_registry_server/$productName-ui:v0.1.0_089fdcb \
+  --image $container_registry_server/$productName/ui:v0.1.0_089fdcb \
   --cpu 0.5 \
   --memory 1Gi \
   --target-port 80 \
