@@ -32,7 +32,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
 from pydantic import BaseModel, Field, StrictStr
 
-from app.api import accounts, authentication, emails, internal_utils, mailbox
+from app.api import accounts, authentication, emails, internal_utils, mailbox, response_templates
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
 from app.utils.logging import LogLevel, Resource, add_log_message
@@ -53,6 +53,7 @@ server.include_router(accounts.router)
 server.include_router(internal_utils.router)
 server.include_router(mailbox.router)
 server.include_router(emails.router)
+server.include_router(response_templates.router)
 
 
 # Setup CORS to allow all origins
