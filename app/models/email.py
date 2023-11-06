@@ -86,17 +86,22 @@ class Emails:
     async def read(
         mailbox_id: Optional[PyObjectId] = None,
         email_id: Optional[PyObjectId] = None,
+        filter_tags: Optional[List[str]] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
+        sort_key: str = "received_time",
+        sort_direction: int = -1,
         throw_on_not_found: bool = True,
     ) -> List[Email_Db]:
         messages_list = []
-
+        # TODO: Use a builder pattern or an ODM to build the query
         query = {}
         if email_id:
             query["_id"] = str(email_id)
         if mailbox_id:
             query["mailbox_id"] = str(mailbox_id)
+        if filter_tags:
+            query["annotations.label"] = {"$in": filter_tags}
 
         if skip is None and limit is None:
             response = await Emails.data_service.find_by_query(
@@ -107,8 +112,8 @@ class Emails:
             response = await Emails.data_service.find_sorted_pagination(
                 collection=Emails.DB_COLLECTION_EMAILS,
                 query=jsonable_encoder(query),
-                sort_key="received_time",
-                sort_direction=-1,
+                sort_key=sort_key,
+                sort_direction=sort_direction,
                 skip=skip,
                 limit=limit,
             )
