@@ -14,7 +14,7 @@
 
 
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi_utils.tasks import repeat_every
@@ -136,11 +136,22 @@ async def get_all_emails(
     mailbox_id: PyObjectId = Query(description="Mailbox id"),
     skip: int = Query(default=0, description="Number of emails to skip"),
     limit: int = Query(default=20, description="Number of emails to return"),
+    sort_key: str = Query(default="received_time", description="Sort key"),
+    sort_direction: int = Query(default=-1, description="Sort direction"),
+    filter_tags: Optional[List[str]] = Query(default=None, description="Filter tags"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleEmail_Out:
     # Check if the mailbox belongs to the user
     _ = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
-    emails = await Emails.read(mailbox_id=mailbox_id, skip=skip, limit=limit, throw_on_not_found=False)
+    emails = await Emails.read(
+        mailbox_id=mailbox_id,
+        filter_tags=filter_tags,
+        skip=skip,
+        limit=limit,
+        sort_key=sort_key,
+        sort_direction=sort_direction,
+        throw_on_not_found=False,
+    )
     email_count = await Emails.count(mailbox_id=mailbox_id)
 
     return GetMultipleEmail_Out(
