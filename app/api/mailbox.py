@@ -26,12 +26,13 @@ from app.models.mailbox import (
     Mailbox_Db,
     Mailboxes,
     MailboxProvider,
+    MailboxState,
     RegisterMailbox_In,
     RegisterMailbox_Out,
 )
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
-from app.utils.secrets import delete_keyvault_secret, set_keyvault_secret
+from app.utils.secrets import delete_keyvault_secret, get_secret, set_keyvault_secret
 
 router = APIRouter(prefix="/mailbox", tags=["mailbox"])
 
@@ -52,7 +53,11 @@ async def add_new_mailbox(
     try:
         client = None
         if mailbox_info.provider == MailboxProvider.OUTLOOK:
-            client = OutlookClient()
+            client = OutlookClient(
+                client_id=get_secret("outlook_client_id"),
+                client_secret=get_secret("outlook_client_secret"),
+                redirect_uri=get_secret("outlook_redirect_uri"),
+            )
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid mailbox provider")
 
@@ -71,13 +76,18 @@ async def add_new_mailbox(
     refresh_token_id = PyObjectId()
     await set_keyvault_secret(str(refresh_token_id), client.refresh_token)
 
-    mailbox_db = Mailbox_Db(email=user_info["mail"], user_id=current_user.id, refresh_token_id=refresh_token_id)
+    mailbox_db = Mailbox_Db(
+        email=user_info["mail"],
+        user_id=current_user.id,
+        refresh_token_id=refresh_token_id,
+        state=MailboxState.IDLE,
+    )
     await Mailboxes.create(mailbox=mailbox_db)
 
     # Add a background task to read emails
     # background_tasks.add_task(read_emails, client, mailbox_db.id, None)
     async_task_manager = AsyncTaskManager()
-    async_task_manager.create_task(read_emails(client, mailbox_db.id, None))
+    async_task_manager.create_task(read_emails(client, mailbox_db.id))
 
     return RegisterMailbox_Out(_id=mailbox_db.id)
 

@@ -25,8 +25,8 @@ from app.models.common import PyObjectId, SailBaseModel
 
 
 class MailboxState(Enum):
-    UNPROCESSED = "UNPROCESSED"
-    PROCESSED = "PROCESSED"
+    IDLE = "IDLE"
+    PROCESSING = "PROCESSING"
     FAILED = "FAILED"
 
 
@@ -46,6 +46,7 @@ class Mailbox_Db(Mailbox_Base):
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     refresh_token_id: PyObjectId = Field(default=None)
     last_refresh_time: Optional[str] = Field(default_factory=None)
+    state: MailboxState = Field(default=MailboxState.IDLE)
 
 
 class GetMailbox_Out(Mailbox_Base):
@@ -136,6 +137,47 @@ class Mailboxes:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Mailbox not found for query: {query}",
             )
+
+    @staticmethod
+    async def lock(query_mailbox_id: PyObjectId) -> bool:
+        query = {}
+        query["_id"] = str(query_mailbox_id)
+        query["state"] = MailboxState.IDLE.value
+
+        update_result = await Mailboxes.data_service.find_one_and_update(
+            collection=Mailboxes.DB_COLLECTION_MAILBOXES,
+            query=jsonable_encoder(query),
+            update=jsonable_encoder({"$set": {"state": MailboxState.PROCESSING}}),
+        )
+
+        if not update_result:
+            return False
+
+        if update_result["state"] == MailboxState.PROCESSING.value:
+            return True
+
+        return False
+
+    @staticmethod
+    async def unlock(query_mailbox_id: PyObjectId) -> bool:
+        # Unlock the mailbox irrespective of the state
+        query = {}
+        query["_id"] = str(query_mailbox_id)
+
+        update_result = await Mailboxes.data_service.find_one_and_update(
+            collection=Mailboxes.DB_COLLECTION_MAILBOXES,
+            query=jsonable_encoder(query),
+            update=jsonable_encoder({"$set": {"state": MailboxState.IDLE.value}}),
+        )
+
+        # If nothing was updated, this means that the mailbox was not found
+        if not update_result:
+            raise Exception(f"Mailbox not found for query: {query}")
+
+        if update_result["state"] == MailboxState.IDLE.value:
+            return True
+
+        return False
 
     @staticmethod
     async def delete(

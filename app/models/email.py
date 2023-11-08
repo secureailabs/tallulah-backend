@@ -46,6 +46,7 @@ class Email_Base(SailBaseModel):
     annotations: List[Annotation] = Field(default=[])
     note: Optional[StrictStr] = Field(default=None)
     message_state: EmailState = Field(default=EmailState.UNPROCESSED)
+    outlook_id: StrictStr = Field()
 
 
 class Email_Db(Email_Base):

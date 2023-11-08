@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 
 import motor.motor_asyncio
 import pymongo.results as results
+from pymongo import ReturnDocument
 
 from app.utils.secrets import get_secret
 
@@ -50,6 +51,14 @@ class DatabaseOperations:
             .skip(skip)
             .limit(limit)
             .to_list(limit)
+        )
+
+    async def find_one_and_update(self, collection: str, query: Dict, update: Dict) -> Optional[dict]:
+        return await self.sail_db[collection].find_one_and_update(
+            query,
+            update,
+            upsert=False,
+            return_document=ReturnDocument.AFTER,
         )
 
     async def find_by_query(self, collection: str, query) -> List[Dict[str, Any]]:
