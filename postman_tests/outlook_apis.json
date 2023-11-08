@@ -1,0 +1,432 @@
+{
+    "info": {
+        "_postman_id": "655365f9-9cc3-4f8b-ab17-d7889b29a8db",
+        "name": "Outlook",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Get access token from code",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = JSON.parse(responseBody);\r",
+                            "pm.collectionVariables.set(\"access_token\", jsonData.access_token);\r",
+                            "pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);\r",
+                            ""
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded",
+                        "type": "default",
+                        "disabled": true
+                    }
+                ],
+                "body": {
+                    "mode": "urlencoded",
+                    "urlencoded": [
+                        {
+                            "key": "grant_type",
+                            "value": "authorization_code",
+                            "type": "default"
+                        },
+                        {
+                            "key": "client_id",
+                            "value": "{{client_id}}",
+                            "type": "default"
+                        },
+                        {
+                            "key": "client_secret",
+                            "value": "{{client_secret}}",
+                            "type": "default"
+                        },
+                        {
+                            "key": "redirect_uri",
+                            "value": "https://tallulah-backend.proudwave-bf1b2d7c.westus.azurecontainerapps.io/mailbox/authorize",
+                            "type": "default"
+                        },
+                        {
+                            "key": "code",
+                            "value": "0.AXwA7-V0Pmp-8EyFc2gMpJtk2ER0JF_4_7JCk2IdL-UkbeF8AGg.AgABAAIAAAAtyolDObpQQ5VtlI4uGjEPAgDs_wUA9P9ZkTZGUweu1DydrbUO-S3nscXfQWvcBwbpfZFvg9odWi0Hn9q1zE7yHcURUsmPEWFDaKPFj3eH1AgzqPZU_LwMilXgz38fEl2g3F5gvZ_7i8LXAQ_Cp1Nw4i27jPDnU8m6MmvJof5M2Z1ePQgTs-v36nzBhPU-kW0JHuj6vDaWmHt8eLd7MdkdUw95NxU0EfWow8Wi2LmxkBIlgT__3XkJmKopgT2_VwicFVxDwx4X_VuHYsWDhz9GikOxr1j1czLJ2gAFvqs6yT5xEKaQF8zNlrEo6oJrCSegz1fkSBiwcJAaQX3dbi49wAJW2vW8Kl_HLnfQzN8_6Rr3gYQjMwrU8OklTF8U2-HsD7I47TlFL9qGn-xwxtwYtwoA1L4ujeCNlV55_JIDgnfV7obyE5mxrCmOHx_Kw1uSN0HR-e8LdiOLQ_3EH3m5giJR2ead-V-Ub0JppNa1KIyt7WGfa3BVS-UpV8DQ8mQTRagn2eZQXPY9_Y5ndBmUQ3AD7D5ooW80NRkVgFse84uwiGmPJ_Ujd4Znr-34144zcEMUEM-VPkP_2swRZRP2Ub4OEXa-W2_xGlTtCkpJmRn15d1Tbp_nX6qamG8Sq7iiuzgWN_2lWsI3z2-a-a1F5lDXvmBzTR5pvdMt7OPTUnCKA5wkMN9F1BHVj67WhiFqUGiWh4S8fLc0iLbk2580MEfTLQ_BbmJ2wCP4Cw76iUQ3THuceByHsGO43m6Mk3Fep2FXNAEKcxQ0fx45r-z17wrI6mvxVy9eENrgugOKAys0d9QTjqygq-0osJzgu3p7O_iFHM-XMjy-jZgYvO44KvbJy_GV5VuVdwkWkvWdIitf",
+                            "type": "default"
+                        },
+                        {
+                            "key": "scope",
+                            "value": "Mail.Read Mail.Send",
+                            "type": "default"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "https://login.microsoftonline.com/organizations/oauth2/v2.0/token",
+                    "protocol": "https",
+                    "host": [
+                        "login",
+                        "microsoftonline",
+                        "com"
+                    ],
+                    "path": [
+                        "organizations",
+                        "oauth2",
+                        "v2.0",
+                        "token"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Refresh Token",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = JSON.parse(responseBody);\r",
+                            "pm.collectionVariables.set(\"access_token\", jsonData.access_token);\r",
+                            "pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);\r",
+                            ""
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded",
+                        "type": "default"
+                    }
+                ],
+                "body": {
+                    "mode": "urlencoded",
+                    "urlencoded": [
+                        {
+                            "key": "grant_type",
+                            "value": "refresh_token",
+                            "type": "default"
+                        },
+                        {
+                            "key": "client_id",
+                            "value": "{{client_id}}",
+                            "type": "default"
+                        },
+                        {
+                            "key": "client_secret",
+                            "value": "{{client_secret}}",
+                            "type": "default"
+                        },
+                        {
+                            "key": "redirect_uri",
+                            "value": "https://tallulah-backend.proudwave-bf1b2d7c.westus.azurecontainerapps.io/mailbox/authorize",
+                            "type": "default"
+                        },
+                        {
+                            "key": "refresh_token",
+                            "value": "{{refresh_token}}",
+                            "type": "default"
+                        },
+                        {
+                            "key": "scope",
+                            "value": "Mail.Read Mail.Send",
+                            "type": "default"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "https://login.microsoftonline.com/organizations/oauth2/v2.0/token",
+                    "protocol": "https",
+                    "host": [
+                        "login",
+                        "microsoftonline",
+                        "com"
+                    ],
+                    "path": [
+                        "organizations",
+                        "oauth2",
+                        "v2.0",
+                        "token"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Read Emails",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "default"
+                    }
+                ],
+                "url": {
+                    "raw": "https://graph.microsoft.com/v1.0/me/mailFolders('inbox')/messages?top=10&skip=0",
+                    "protocol": "https",
+                    "host": [
+                        "graph",
+                        "microsoft",
+                        "com"
+                    ],
+                    "path": [
+                        "v1.0",
+                        "me",
+                        "mailFolders('inbox')",
+                        "messages"
+                    ],
+                    "query": [
+                        {
+                            "key": "top",
+                            "value": "10"
+                        },
+                        {
+                            "key": "skip",
+                            "value": "0"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Respond to Emails",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "default"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"message\": {\r\n        \"body\": {\r\n            \"content\": \"This is how a proper response looks like, not the previous comment that was sent\",\r\n            \"contentType\": \"text\"\r\n        }\r\n    },  \r\n    \"comment\": \"\"\r\n}"
+                },
+                "url": {
+                    "raw": "https://graph.microsoft.com/v1.0/me/messages/AAMkADlmMmIxMWI4LTVmNmItNDcwOC05ZTdmLWE1NDRkYjg2YTg3OABGAAAAAADMu7trhk6RQLO5sGsqWBc8BwA_wRy01OaZSo74bM5uImM6AAAAAAEMAAA_wRy01OaZSo74bM5uImM6AAIREUlrAAA=/reply",
+                    "protocol": "https",
+                    "host": [
+                        "graph",
+                        "microsoft",
+                        "com"
+                    ],
+                    "path": [
+                        "v1.0",
+                        "me",
+                        "messages",
+                        "AAMkADlmMmIxMWI4LTVmNmItNDcwOC05ZTdmLWE1NDRkYjg2YTg3OABGAAAAAADMu7trhk6RQLO5sGsqWBc8BwA_wRy01OaZSo74bM5uImM6AAAAAAEMAAA_wRy01OaZSo74bM5uImM6AAIREUlrAAA=",
+                        "reply"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Read Emails Next",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "default"
+                    }
+                ],
+                "url": {
+                    "raw": "https://graph.microsoft.com/v1.0/me/mailFolders('inbox')/messages?top=10&skip=10",
+                    "protocol": "https",
+                    "host": [
+                        "graph",
+                        "microsoft",
+                        "com"
+                    ],
+                    "path": [
+                        "v1.0",
+                        "me",
+                        "mailFolders('inbox')",
+                        "messages"
+                    ],
+                    "query": [
+                        {
+                            "key": "top",
+                            "value": "10"
+                        },
+                        {
+                            "key": "skip",
+                            "value": "10"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Read Emails After time",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "default"
+                    }
+                ],
+                "url": {
+                    "raw": "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=5&$filter=receivedDateTime gt 2023-11-06T10:42:44Z&$orderby=receivedDateTime+DESC",
+                    "protocol": "https",
+                    "host": [
+                        "graph",
+                        "microsoft",
+                        "com"
+                    ],
+                    "path": [
+                        "v1.0",
+                        "me",
+                        "mailFolders",
+                        "inbox",
+                        "messages"
+                    ],
+                    "query": [
+                        {
+                            "key": "$top",
+                            "value": "5"
+                        },
+                        {
+                            "key": "$filter",
+                            "value": "receivedDateTime gt 2023-11-06T10:42:44Z"
+                        },
+                        {
+                            "key": "$orderby",
+                            "value": "receivedDateTime+DESC"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get User Info",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "https://graph.microsoft.com/v1.0/me",
+                    "protocol": "https",
+                    "host": [
+                        "graph",
+                        "microsoft",
+                        "com"
+                    ],
+                    "path": [
+                        "v1.0",
+                        "me"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "access_token",
+            "value": "**"
+        },
+        {
+            "key": "client_id",
+            "value": "**"
+        },
+        {
+            "key": "client_secret",
+            "value": "***"
+        },
+        {
+            "key": "refresh_token",
+            "value": "***",
+            "type": "default"
+        }
+    ]
+}
