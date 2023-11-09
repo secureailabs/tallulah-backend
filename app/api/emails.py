@@ -13,18 +13,19 @@
 # -------------------------------------------------------------------------------
 
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from fastapi_utils.tasks import repeat_every
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMultipleEmail_Out
-from app.models.mailbox import Mailboxes
+from app.models.mailbox import Mailbox_Db, Mailboxes
+from app.models.response_templates import EmailBody
 from app.utils.background_couroutines import AsyncTaskManager
-from app.utils.emails import OutlookClient
+from app.utils.emails import Message, MessageResponse, OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
 from app.utils.secrets import get_keyvault_secret, get_secret, set_keyvault_secret
 
@@ -77,12 +78,13 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
                     # Create an email object in the database
                     email_db = Email_Db(
                         mailbox_id=mailbox_id,
+                        user_id=mailbox[0].user_id,
                         subject=email["subject"],
                         body=email["body"],
                         received_time=email["receivedDateTime"],
                         from_address=email["sender"],
                         outlook_id=email["id"],
-                        message_state=EmailState.UNPROCESSED,
+                        message_state=EmailState.NEW,
                     )
                     await Emails.create(email=email_db)
 
@@ -105,6 +107,67 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
     finally:
         # Unlock the mailbox
         await Mailboxes.unlock(query_mailbox_id=mailbox_id)
+
+
+async def reply_emails(
+    mailbox: Mailbox_Db,
+    reply: EmailBody,
+    current_user: TokenData,
+    email_ids: Optional[List[PyObjectId]] = None,
+    tags: Optional[List[str]] = None,
+):
+    # store all the outlook ids of the emails as a set
+    outlook_ids: Dict[PyObjectId, str] = {}
+
+    # Get the list of all the email_ids
+    if email_ids:
+        for id in email_ids:
+            email = await Emails.read(
+                email_id=id, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
+            )
+            outlook_ids[id] = email[0].outlook_id
+
+    # Get the list of all the emails with tags
+    if tags:
+        emails = await Emails.read(
+            filter_tags=tags, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
+        )
+        for email in emails:
+            outlook_ids[email.id] = email.outlook_id
+
+    # Get the refresh token for the mailbox
+    refresh_token = await get_keyvault_secret(str(mailbox.refresh_token_id))
+    if not refresh_token:
+        print(f"Refresh token not found for mailbox {mailbox.id}")
+        raise Exception(f"Refresh token not found for mailbox {mailbox.id}")
+
+    # Connect to the mailbox
+    client = OutlookClient(
+        client_id=get_secret("outlook_client_id"),
+        client_secret=get_secret("outlook_client_secret"),
+        redirect_uri=get_secret("outlook_redirect_uri"),
+    )
+    await client.connect_with_refresh_token(refresh_token)
+    if not client.refresh_token:
+        print(f"Refresh token not found after authentication for mailbox {mailbox.id}")
+        raise Exception(f"Refresh token not found after authentication for mailbox {mailbox.id}")
+
+    # update the refresh token secret
+    await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
+
+    message = MessageResponse(message=Message(body=Body(content=reply.content, contentType=reply.contentType)))
+
+    # Reply to all the emails
+    for id, outlook_id in outlook_ids.items():
+        try:
+            await client.reply_email(email_id=outlook_id, message=message)
+        except Exception as exception:
+            print(f"Error: while replying to email {outlook_id}: {exception}")
+            await Emails.update(
+                query_message_id=id, update_message_state=EmailState.FAILED, update_message_note=str(exception)
+            )
+        else:
+            await Emails.update(query_message_id=id, update_message_state=EmailState.RESPONDED)
 
 
 @router.on_event("startup")
@@ -176,3 +239,27 @@ async def get_all_emails(
         next=skip + limit,
         limit=limit,
     )
+
+
+@router.post(
+    path="/replies",
+    description="Reply to one email or a tag, or a list of emails or tags",
+    status_code=status.HTTP_202_ACCEPTED,
+    operation_id="reply_to_emails",
+)
+async def reply_to_emails(
+    mailbox_id: PyObjectId = Query(description="Mailbox id"),
+    email_ids: Optional[List[PyObjectId]] = Query(default=None, description="List of email ids"),
+    tags: Optional[List[str]] = Query(default=None, description="List of tag ids"),
+    reply: EmailBody = Body(default=None, description="Reply to the email"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+    if not email_ids and not tags:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No emails or tags provided")
+
+    mailbox = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
+
+    async_task_manager = AsyncTaskManager()
+    async_task_manager.create_task(reply_emails(mailbox[0], reply, current_user, email_ids, tags))
+
+    return Response(status_code=status.HTTP_202_ACCEPTED)
