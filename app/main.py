@@ -95,11 +95,11 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     }
 
     # if the slack webhook is set, send the error to slack via aiohttp
-    if get_secret("slack_webhook"):
+    if get_secret("SLACK_WEBHOOK"):
         headers = {"Content-type": "application/json"}
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                get_secret("slack_webhook"),
+                get_secret("SLACK_WEBHOOK"),
                 headers=headers,
                 json={
                     "text": json.dumps(

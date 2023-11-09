@@ -43,12 +43,12 @@ async def drop_database(
 
 # Create MSAL application instance
 app_instance = ConfidentialClientApplication(
-    client_id=get_secret("outlook_client_id"),
+    client_id=get_secret("OUTLOOK_CLIENT_ID"),
     authority="https://login.microsoftonline.com/organizations",
-    client_credential=get_secret("outlook_client_secret"),
+    client_credential=get_secret("OUTLOOK_CLIENT_SECRET"),
 )
 # Create OAuth2 Authorization URL
-redirect_uri = get_secret("outlook_redirect_uri")
+redirect_uri = get_secret("OUTLOOK_REDIRECT_URI")
 scopes = ["User.Read", "Mail.Read", "Mail.Send"]
 authorization_url = app_instance.get_authorization_request_url(scopes=scopes, redirect_uri=redirect_uri)
 

@@ -37,8 +37,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 def get_password_hash(salt, password):
-    password_pepper = get_secret("password_pepper")
-    return pwd_context.hash(f"{salt}{password}{password_pepper}")
+    PASSWORD_PEPPER = get_secret("PASSWORD_PEPPER")
+    return pwd_context.hash(f"{salt}{password}{PASSWORD_PEPPER}")
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -48,7 +48,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, get_secret("jwt_secret"), algorithms=[ALGORITHM])
+        payload = jwt.decode(token, get_secret("JWT_SECRET"), algorithms=[ALGORITHM])
         token_data = TokenData(**payload)
         user_id = token_data.id
         if not user_id:
@@ -110,9 +110,9 @@ async def login_for_access_token(
             detail=f"User account is {found_user_db.account_state.value}. Contact SAIL support.",
         )
 
-    password_pepper = get_secret("password_pepper")
+    PASSWORD_PEPPER = get_secret("PASSWORD_PEPPER")
     if not pwd_context.verify(
-        secret=f"{found_user_db.email}{form_data.password}{password_pepper}",
+        secret=f"{found_user_db.email}{form_data.password}{PASSWORD_PEPPER}",
         hash=found_user_db.hashed_password,
     ):
         # If this is a 5th failed attempt, lock the account and increase the failed login attempts
@@ -146,12 +146,12 @@ async def login_for_access_token(
     )
     access_token = jwt.encode(
         claims=jsonable_encoder(token_data),
-        key=get_secret("jwt_secret"),
+        key=get_secret("JWT_SECRET"),
         algorithm=ALGORITHM,
     )
     refresh_token = jwt.encode(
         claims=jsonable_encoder(token_data),
-        key=get_secret("refresh_secret"),
+        key=get_secret("REFRESH_SECRET"),
         algorithm=ALGORITHM,
     )
 
@@ -172,7 +172,7 @@ async def refresh_for_access_token(
     )
     try:
         # TODO: Prawal harden the security around the refresh token
-        payload = jwt.decode(refresh_token_request.refresh_token, get_secret("refresh_secret"), algorithms=[ALGORITHM])
+        payload = jwt.decode(refresh_token_request.refresh_token, get_secret("REFRESH_SECRET"), algorithms=[ALGORITHM])
         token_data = TokenData(**payload)
         user_id = token_data.id
         if not user_id:
@@ -189,13 +189,13 @@ async def refresh_for_access_token(
 
         access_token = jwt.encode(
             claims=jsonable_encoder(token_data),
-            key=get_secret("jwt_secret"),
+            key=get_secret("JWT_SECRET"),
             algorithm=ALGORITHM,
         )
 
         refresh_token = jwt.encode(
             claims=jsonable_encoder(token_data),
-            key=get_secret("refresh_secret"),
+            key=get_secret("REFRESH_SECRET"),
             algorithm=ALGORITHM,
         )
 

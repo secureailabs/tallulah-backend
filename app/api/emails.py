@@ -64,8 +64,8 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         )
 
         # Connect to the message queue
-        rabbit_mq_connect_url = get_secret("rabbit_mq_host")
-        rabbit_mq_queue_name = get_secret("rabbit_mq_queue_name")
+        rabbit_mq_connect_url = get_secret("RABBIT_MQ_HOST")
+        rabbit_mq_queue_name = get_secret("RABBIT_MQ_QUEUE_NAME")
         rabbit_mq_client = MessageQueueClient(
             RabbitMQWorkQueue(url=f"{rabbit_mq_connect_url}:5672", queue_name=rabbit_mq_queue_name)
         )

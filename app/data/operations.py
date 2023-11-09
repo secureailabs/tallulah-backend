@@ -27,9 +27,9 @@ class DatabaseOperations:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
-            cls.mongodb_host = get_secret("mongo_connection_url")
+            cls.mongodb_host = get_secret("MONGO_CONNECTION_URL")
             cls.client = motor.motor_asyncio.AsyncIOMotorClient(cls.mongodb_host)
-            cls.sail_db = cls.client[get_secret("mongo_db_name")]
+            cls.sail_db = cls.client[get_secret("MONGO_DB_NAME")]
         return cls._instance
 
     async def find_one(self, collection, query) -> Optional[dict]:

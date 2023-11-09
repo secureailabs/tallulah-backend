@@ -29,13 +29,14 @@ from app.models.accounts import (
 )
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
+from app.utils.secrets import get_secret
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(tags=["users"])
 
 
 @router.post(
-    path="/",
-    description="Add new user to organization",
+    path="/users",
+    description="Register new user",
     response_model=RegisterUser_Out,
     response_model_by_alias=False,
     status_code=status.HTTP_201_CREATED,
@@ -68,7 +69,7 @@ async def register_user(
 
 
 @router.get(
-    path="/{user_id}",
+    path="/users/{user_id}",
     description="Get information about a user",
     response_model=GetUsers_Out,
     response_model_by_alias=False,
@@ -87,7 +88,7 @@ async def get_user(
 
 
 @router.patch(
-    path="/{user_id}",
+    path="/users/{user_id}",
     description="Update user information.",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="update_user_info",
@@ -116,7 +117,7 @@ async def update_user_info(
 
 
 @router.delete(
-    path="/{user_id}",
+    path="/users/{user_id}",
     description="Soft Delete user",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="soft_delete_user",
@@ -153,7 +154,7 @@ async def add_tallulah_admin():
         email=EmailStr("admin@tallulah.net"),
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",
-        hashed_password=get_password_hash("admin@tallulah.net", "password"),
+        hashed_password=get_password_hash("admin@tallulah.net", get_secret("TALLULAH_ADMIN_PASSWORD")),
         account_state=UserAccountState.ACTIVE,
     )
 

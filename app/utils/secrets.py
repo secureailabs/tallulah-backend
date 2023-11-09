@@ -38,7 +38,7 @@ def get_secret(secret_name: str) -> str:
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
 async def get_keyvault_secret(secret_name: str) -> Union[str, None]:
     credential = DefaultAzureCredential()
-    secret_client = SecretClient(vault_url=get_secret("azure_keyvault_url"), credential=credential)  # type: ignore
+    secret_client = SecretClient(vault_url=get_secret("AZURE_KEYVAULT_URL"), credential=credential)  # type: ignore
 
     async with credential:
         async with secret_client:
@@ -49,7 +49,7 @@ async def get_keyvault_secret(secret_name: str) -> Union[str, None]:
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
 async def set_keyvault_secret(secret_name: str, secret_value: str) -> None:
     credential = DefaultAzureCredential()
-    secret_client = SecretClient(vault_url=get_secret("azure_keyvault_url"), credential=credential)  # type: ignore
+    secret_client = SecretClient(vault_url=get_secret("AZURE_KEYVAULT_URL"), credential=credential)  # type: ignore
 
     async with credential:
         async with secret_client:
@@ -59,9 +59,8 @@ async def set_keyvault_secret(secret_name: str, secret_value: str) -> None:
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
 async def delete_keyvault_secret(secret_name: str) -> None:
     credential = DefaultAzureCredential()
-    secret_client = SecretClient(vault_url=get_secret("azure_keyvault_url"), credential=credential)  # type: ignore
+    secret_client = SecretClient(vault_url=get_secret("AZURE_KEYVAULT_URL"), credential=credential)  # type: ignore
 
     async with credential:
         async with secret_client:
             await secret_client.delete_secret(secret_name)
-
