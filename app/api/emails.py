@@ -23,9 +23,8 @@ from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMultipleEmail_Out
 from app.models.mailbox import Mailbox_Db, Mailboxes
-from app.models.response_templates import EmailBody
 from app.utils.background_couroutines import AsyncTaskManager
-from app.utils.emails import Message, MessageResponse, OutlookClient
+from app.utils.emails import EmailBody, Message, MessageResponse, OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
 from app.utils.secrets import get_keyvault_secret, get_secret, set_keyvault_secret
 
@@ -72,7 +71,7 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         )
         await rabbit_mq_client.connect()
 
-        while emails:
+        while len(emails) > 0:
             for email in emails:
                 try:
                     # Create an email object in the database
@@ -155,7 +154,7 @@ async def reply_emails(
     # update the refresh token secret
     await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
 
-    message = MessageResponse(message=Message(body=Body(content=reply.content, contentType=reply.contentType)))
+    message = MessageResponse(message=Message(body=reply))
 
     # Reply to all the emails
     for id, outlook_id in outlook_ids.items():

@@ -1,12 +1,11 @@
-from multiprocessing.spawn import old_main_modules
-from typing import Annotated, List, Optional, Union
+from typing import List, Optional, Union
 
 import aiohttp
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 
-class Body(BaseModel):
+class EmailBody(BaseModel):
     contentType: str
     content: str
 
@@ -21,7 +20,7 @@ class ToRecipient(BaseModel):
 
 
 class Message(BaseModel):
-    body: Optional[Body] = None
+    body: Optional[EmailBody] = None
     toRecipients: Optional[List[ToRecipient]] = None
 
 
@@ -155,7 +154,7 @@ class OutlookClient:
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(self.email_endpoint, headers=headers) as response:
+            async with session.get(f"{self.email_endpoint}{query}", headers=headers) as response:
                 if response.status >= 200 and response.status < 300:
                     email_r = await response.json()
                     if "value" not in email_r:
