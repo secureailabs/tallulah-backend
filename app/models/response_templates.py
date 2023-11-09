@@ -21,11 +21,7 @@ from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
-
-
-class EmailBody(SailBaseModel):
-    contentType: StrictStr = Field()
-    content: StrictStr = Field()
+from app.utils.emails import EmailBody
 
 
 class ResponseTemplate_Base(SailBaseModel):

@@ -25,8 +25,9 @@ from app.models.common import PyObjectId, SailBaseModel
 
 
 class EmailState(Enum):
-    UNPROCESSED = "UNPROCESSED"
-    PROCESSED = "PROCESSED"
+    NEW = "NEW"
+    TAGGED = "TAGGED"
+    RESPONDED = "RESPONDED"
     FAILED = "FAILED"
 
 
@@ -43,9 +44,11 @@ class Email_Base(SailBaseModel):
     from_address: Dict = Field()
     received_time: str = Field()
     mailbox_id: PyObjectId = Field()
+    user_id: PyObjectId = Field()
     annotations: List[Annotation] = Field(default=[])
     note: Optional[StrictStr] = Field(default=None)
-    message_state: EmailState = Field(default=EmailState.UNPROCESSED)
+    message_state: EmailState = Field(default=EmailState.NEW)
+    outlook_id: StrictStr = Field()
 
 
 class Email_Db(Email_Base):
@@ -85,6 +88,7 @@ class Emails:
     @staticmethod
     async def read(
         mailbox_id: Optional[PyObjectId] = None,
+        user_id: Optional[PyObjectId] = None,
         email_id: Optional[PyObjectId] = None,
         filter_tags: Optional[List[str]] = None,
         skip: Optional[int] = None,
@@ -98,6 +102,8 @@ class Emails:
         query = {}
         if email_id:
             query["_id"] = str(email_id)
+        if user_id:
+            query["user_id"] = str(user_id)
         if mailbox_id:
             query["mailbox_id"] = str(mailbox_id)
         if filter_tags:
@@ -138,6 +144,7 @@ class Emails:
     async def update(
         query_message_id: Optional[PyObjectId] = None,
         update_message_state: Optional[EmailState] = None,
+        update_message_note: Optional[StrictStr] = None,
     ):
         query = {}
         if query_message_id:
@@ -146,6 +153,8 @@ class Emails:
         update_request = {"$set": {}}
         if update_message_state:
             update_request["$set"]["message_state"] = update_message_state.value
+        if update_message_note:
+            update_request["$set"]["note"] = update_message_note
 
         update_response = await Emails.data_service.update_many(
             collection=Emails.DB_COLLECTION_EMAILS,
