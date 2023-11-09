@@ -6,7 +6,8 @@
  * An enumeration.
  */
 export enum EmailState {
-    UNPROCESSED = 'UNPROCESSED',
-    PROCESSED = 'PROCESSED',
+    NEW = 'NEW',
+    TAGGED = 'TAGGED',
+    RESPONDED = 'RESPONDED',
     FAILED = 'FAILED',
 }

@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { EmailBody } from '../models/EmailBody';
 import type { GetMultipleEmail_Out } from '../models/GetMultipleEmail_Out';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -41,6 +42,39 @@ export class EmailsService {
                 'filter_tags': filterTags,
             },
             errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Reply To Emails
+     * Reply to one email or a tag, or a list of emails or tags
+     * @param mailboxId Mailbox id
+     * @param emailIds List of email ids
+     * @param tags List of tag ids
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static replyToEmails(
+        mailboxId: string,
+        emailIds?: Array<string>,
+        tags?: Array<string>,
+        requestBody?: EmailBody,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/emails/replies',
+            query: {
+                'mailbox_id': mailboxId,
+                'email_ids': emailIds,
+                'tags': tags,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `No emails or tags provided`,
                 422: `Validation Error`,
             },
         });
