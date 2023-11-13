@@ -29,7 +29,7 @@ from app.models.accounts import (
 )
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
-from app.utils.secrets import get_secret
+from app.utils.secrets import secret_store
 
 router = APIRouter(tags=["users"])
 
@@ -154,7 +154,7 @@ async def add_tallulah_admin():
         email=EmailStr("admin@tallulah.net"),
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",
-        hashed_password=get_password_hash("admin@tallulah.net", get_secret("TALLULAH_ADMIN_PASSWORD")),
+        hashed_password=get_password_hash("admin@tallulah.net", secret_store.TALLULAH_ADMIN_PASSWORD),
         account_state=UserAccountState.ACTIVE,
     )
 

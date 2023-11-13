@@ -20,7 +20,7 @@ from app.api.accounts import add_tallulah_admin
 from app.api.authentication import RoleChecker, get_current_user
 from app.data.operations import DatabaseOperations
 from app.models.authentication import TokenData
-from app.utils.secrets import get_secret
+from app.utils.secrets import secret_store
 
 router = APIRouter(tags=["internal"])
 
@@ -43,12 +43,12 @@ async def drop_database(
 
 # Create MSAL application instance
 app_instance = ConfidentialClientApplication(
-    client_id=get_secret("OUTLOOK_CLIENT_ID"),
+    client_id=secret_store.OUTLOOK_CLIENT_ID,
     authority="https://login.microsoftonline.com/organizations",
-    client_credential=get_secret("OUTLOOK_CLIENT_SECRET"),
+    client_credential=secret_store.OUTLOOK_CLIENT_SECRET,
 )
 # Create OAuth2 Authorization URL
-redirect_uri = get_secret("OUTLOOK_REDIRECT_URI")
+redirect_uri = secret_store.OUTLOOK_REDIRECT_URI
 scopes = ["User.Read", "Mail.Read", "Mail.Send"]
 authorization_url = app_instance.get_authorization_request_url(scopes=scopes, redirect_uri=redirect_uri)
 

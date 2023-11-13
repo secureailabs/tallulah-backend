@@ -18,7 +18,7 @@ import motor.motor_asyncio
 import pymongo.results as results
 from pymongo import ReturnDocument
 
-from app.utils.secrets import get_secret
+from app.utils.secrets import secret_store
 
 
 class DatabaseOperations:
@@ -27,9 +27,9 @@ class DatabaseOperations:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
-            cls.mongodb_host = get_secret("MONGO_CONNECTION_URL")
+            cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
             cls.client = motor.motor_asyncio.AsyncIOMotorClient(cls.mongodb_host)
-            cls.sail_db = cls.client[get_secret("MONGO_DB_NAME")]
+            cls.sail_db = cls.client[secret_store.MONGO_DB_NAME]
         return cls._instance
 
     async def find_one(self, collection, query) -> Optional[dict]:

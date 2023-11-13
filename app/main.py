@@ -36,7 +36,7 @@ from app.api import accounts, authentication, emails, internal_utils, mailbox, r
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
 from app.utils.logging import LogLevel, Resource, add_log_message
-from app.utils.secrets import get_secret
+from app.utils.secrets import secret_store
 
 server = FastAPI(
     title="Tallulah",
@@ -95,11 +95,11 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     }
 
     # if the slack webhook is set, send the error to slack via aiohttp
-    if get_secret("SLACK_WEBHOOK"):
+    if secret_store.SLACK_WEBHOOK:
         headers = {"Content-type": "application/json"}
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                get_secret("SLACK_WEBHOOK"),
+                secret_store.SLACK_WEBHOOK,
                 headers=headers,
                 json={
                     "text": json.dumps(

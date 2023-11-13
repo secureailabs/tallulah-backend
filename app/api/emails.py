@@ -26,7 +26,7 @@ from app.models.mailbox import Mailbox_Db, Mailboxes
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import EmailBody, Message, MessageResponse, OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
-from app.utils.secrets import get_keyvault_secret, get_secret, set_keyvault_secret
+from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_secret
 
 router = APIRouter(prefix="/emails", tags=["emails"])
 
@@ -64,8 +64,8 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         )
 
         # Connect to the message queue
-        rabbit_mq_connect_url = get_secret("RABBIT_MQ_HOST")
-        rabbit_mq_queue_name = get_secret("RABBIT_MQ_QUEUE_NAME")
+        rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
+        rabbit_mq_queue_name = secret_store.RABBIT_MQ_QUEUE_NAME
         rabbit_mq_client = MessageQueueClient(
             RabbitMQWorkQueue(url=f"{rabbit_mq_connect_url}:5672", queue_name=rabbit_mq_queue_name)
         )
@@ -142,9 +142,9 @@ async def reply_emails(
 
     # Connect to the mailbox
     client = OutlookClient(
-        client_id=get_secret("outlook_client_id"),
-        client_secret=get_secret("outlook_client_secret"),
-        redirect_uri=get_secret("outlook_redirect_uri"),
+        client_id=secret_store.OUTLOOK_CLIENT_ID,
+        client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+        redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
     )
     await client.connect_with_refresh_token(refresh_token)
     if not client.refresh_token:
@@ -187,9 +187,9 @@ async def read_emails_hourly():
 
         # Connect to the mailbox
         client = OutlookClient(
-            client_id=get_secret("outlook_client_id"),
-            client_secret=get_secret("outlook_client_secret"),
-            redirect_uri=get_secret("outlook_redirect_uri"),
+            client_id=secret_store.OUTLOOK_CLIENT_ID,
+            client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+            redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
         )
         await client.connect_with_refresh_token(refresh_token)
         if not client.refresh_token:

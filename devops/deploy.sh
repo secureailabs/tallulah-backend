@@ -157,17 +157,17 @@ az containerapp create \
   --name $product_name-classifier \
   --resource-group $resource_group \
   --environment $container_env_name \
-  --image $CONTAINER_REGISTRY_SERVER/$product_name/classifier:v0.1.0_7f67c94 \
+  --image $CONTAINER_REGISTRY_SERVER/$product_name/classifier:v0.1.0_45f3430 \
   --cpu 0.5 \
   --memory 1Gi \
   --min-replicas 1 \
   --env-vars \
-      rabbit_mq_port=5672 \
-      rabbit_mq_queue_name=email_queue \
-      RABBIT_MQ_HOSTname=secretref:rabbit-mq-host \
+      RABBIT_MQ_PORT=5672 \
+      RABBIT_MQ_QUEUE_NAME=email_queue \
+      RABBIT_MQ_HOSTNAME=secretref:rabbit-mq-host \
       MONGO_DB_NAME=tallulah-$deployment_id \
       MONGO_CONNECTION_URL=secretref:mongo-connection-url \
-      mongodb_collection_name=emails \
+      MONGODB_COLLECTION_NAME=emails \
   --secrets \
       mongo-connection-url=mongodb+srv://$MONGO_ATLAS_USER:$MONGO_ATLAS_PASSWORD@$MONGO_ATLAS_HOST \
       rabbit-mq-host=amqp://$RABBIT_MQ_USER:$RABBIT_MQ_PASSWORD@$product_name-rabbitmq \
