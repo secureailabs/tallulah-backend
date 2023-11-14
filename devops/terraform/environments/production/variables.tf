@@ -18,11 +18,6 @@ variable "azure_client_secret" {
   type = string
 }
 
-variable "azure_subscription_id" {
-  description = "Azure subscription ID"
-  type = string
-}
-
 variable "container_registry_password" {
   description = "Container registry password"
   type = string
