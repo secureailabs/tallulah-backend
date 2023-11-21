@@ -73,6 +73,8 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.tallulah_admin_password
   }
   template {
+    min_replicas = 1
+    max_replicas = 10
     container {
       cpu    = 0.5
       image  = var.docker_image

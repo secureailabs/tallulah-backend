@@ -31,21 +31,22 @@ module "application_gateway" {
   resource_group_name           = module.resource_group.resource_group_name
   infrastructure_subnet_id      = module.virtual_network.container_apps_subnet_id
   gateway_subnet_id             = module.virtual_network.gateway_subnet_id
-  backend_address               = module.container_apps_env.container_app_environment_default_domain
+  backend_address               = "tallulah-backend.${module.container_apps_env.container_app_environment_default_domain}"
 }
 
 module "private_dns_zone" {
-  source                        = "../../modules/private_dns_zone"
-  resource_group_name           = module.resource_group.resource_group_name
-  private_dns_zone_name         = module.container_apps_env.container_app_environment_default_domain
-  virtual_network_id            = module.virtual_network.virtual_network_id
+  source                                = "../../modules/private_dns_zone"
+  resource_group_name                   = module.resource_group.resource_group_name
+  private_dns_zone_name                 = module.container_apps_env.container_app_environment_default_domain
+  virtual_network_id                    = module.virtual_network.virtual_network_id
+  container_apps_environment_static_ip  = module.container_apps_env.container_app_environment_static_ip
 }
 
 module "container_app_backend" {
   source                        = "../../modules/container_apps/backend"
   resource_group_name           = module.resource_group.resource_group_name
   container_app_env_id          = module.container_apps_env.container_app_environment_id
-  docker_image                  = "tallulah.azurecr.io/tallulah-backend:latest"
+  docker_image                  = format("%s/%s",var.container_registry_server, "tallulah/backend:v0.1.0_4097ea5")
   container_registry_server     = var.container_registry_server
   container_registry_username   = var.container_registry_username
   container_registry_password   = var.container_registry_password
@@ -70,7 +71,7 @@ module "container_app_rabbit_mq" {
   source                        = "../../modules/container_apps/rabbit_mq"
   resource_group_name           = module.resource_group.resource_group_name
   container_app_env_id          = module.container_apps_env.container_app_environment_id
-  docker_image                  = "rabbitmq:3-management"
+  docker_image                  = format("%s/%s",var.container_registry_server, "tallulah/rabbitmq:v0.1.0_4097ea5")
   container_registry_server     = var.container_registry_server
   container_registry_username   = var.container_registry_username
   container_registry_password   = var.container_registry_password
@@ -82,7 +83,7 @@ module "container_app_classifier" {
   source                        = "../../modules/container_apps/classifier"
   resource_group_name           = module.resource_group.resource_group_name
   container_app_env_id          = module.container_apps_env.container_app_environment_id
-  docker_image                  = "tallulah.azurecr.io/tallulah-classifier:latest"
+  docker_image                  = format("%s/%s",var.container_registry_server, "tallulah/classifier:v0.1.0_45f3430")
   container_registry_server     = var.container_registry_server
   container_registry_username   = var.container_registry_username
   container_registry_password   = var.container_registry_password
@@ -95,7 +96,7 @@ module "container_app_frontend" {
   source                        = "../../modules/container_apps/frontend"
   resource_group_name           = module.resource_group.resource_group_name
   container_app_env_id          = module.container_apps_env.container_app_environment_id
-  docker_image                  = "tallulah.azurecr.io/tallulah-frontend:latest"
+  docker_image                  = format("%s/%s",var.container_registry_server, "tallulah-ui:v0.1.0_29763b4")
   container_registry_server     = var.container_registry_server
   container_registry_username   = var.container_registry_username
   container_registry_password   = var.container_registry_password

@@ -15,7 +15,7 @@ resource "azurerm_web_application_firewall_policy" "web_application_firewall_pol
 resource "azurerm_public_ip" "public_ip" {
   allocation_method   = "Static"
   location            = "westus"
-  name                = "frontend-ui"
+  name                = "frontend-ui-ip"
   resource_group_name = var.resource_group_name
   sku                 = "Standard"
 }
@@ -31,12 +31,12 @@ resource "azurerm_application_gateway" "application_gateway" {
     min_capacity = 0
   }
   backend_address_pool {
-    fqdns = [var.backend_address]
     name  = "tallulah-backend-pool"
+    fqdns = [var.backend_address]
   }
   backend_http_settings {
-    cookie_based_affinity               = "Disabled"
     name                                = "my-agw-backend-setting"
+    cookie_based_affinity               = "Disabled"
     pick_host_name_from_backend_address = true
     port                                = 443
     protocol                            = "Https"
@@ -56,9 +56,9 @@ resource "azurerm_application_gateway" "application_gateway" {
     subnet_id = var.gateway_subnet_id
   }
   http_listener {
+    name                           = "my-agw-listener"
     frontend_ip_configuration_name = "appGwPublicFrontendIpIPv4"
     frontend_port_name             = "port_80"
-    name                           = "my-agw-listener"
     protocol                       = "Http"
   }
   private_link_configuration {
@@ -71,10 +71,10 @@ resource "azurerm_application_gateway" "application_gateway" {
     }
   }
   request_routing_rule {
+    name                       = "my-agw-routing-rule"
     backend_address_pool_name  = "tallulah-backend-pool"
     backend_http_settings_name = "my-agw-backend-setting"
     http_listener_name         = "my-agw-listener"
-    name                       = "my-agw-routing-rule"
     priority                   = 1
     rule_type                  = "Basic"
   }

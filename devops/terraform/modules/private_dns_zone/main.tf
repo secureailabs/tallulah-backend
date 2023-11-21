@@ -5,7 +5,7 @@ resource "azurerm_private_dns_zone" "private_dns_zone" {
 
 resource "azurerm_private_dns_a_record" "dns_a_record-1" {
   name                = "*"
-  records             = ["10.0.0.62"]
+  records             = [var.container_apps_environment_static_ip]
   resource_group_name = var.resource_group_name
   ttl                 = 3600
   zone_name           = azurerm_private_dns_zone.private_dns_zone.name
@@ -13,7 +13,7 @@ resource "azurerm_private_dns_a_record" "dns_a_record-1" {
 
 resource "azurerm_private_dns_a_record" "dns_a_record-2" {
   name                = "@"
-  records             = ["10.0.0.62"]
+  records             = [var.container_apps_environment_static_ip]
   resource_group_name = var.resource_group_name
   ttl                 = 3600
   zone_name           = azurerm_private_dns_zone.private_dns_zone.name

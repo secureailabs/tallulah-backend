@@ -7,21 +7,18 @@ resource "azurerm_virtual_network" "vnet" {
 
 resource "azurerm_subnet" "gateway_subnet" {
   address_prefixes     = ["10.0.16.0/24"]
-  name                 = "GatewaySubnet"
+  name                 = "gateway"
   resource_group_name  = var.resource_group_name
   virtual_network_name = var.virtual_network_name
-  depends_on = [
-    azurerm_virtual_network.vnet,
-  ]
+  depends_on = [ azurerm_virtual_network.vnet ]
 }
 
 resource "azurerm_subnet" "container_apps_subnet" {
-  address_prefixes     = ["10.0.0.0/20"]
-  name                 = "default"
-  resource_group_name  = var.resource_group_name
-  service_endpoints    = ["Microsoft.KeyVault", "Microsoft.Storage"]
-  virtual_network_name = var.virtual_network_name
-  depends_on = [
-    azurerm_virtual_network.vnet,
-  ]
+  address_prefixes                              = ["10.0.0.0/20"]
+  name                                          = "default"
+  resource_group_name                           = var.resource_group_name
+  private_link_service_network_policies_enabled = false
+  service_endpoints                             = ["Microsoft.KeyVault", "Microsoft.Storage"]
+  virtual_network_name                          = var.virtual_network_name
+  depends_on = [ azurerm_virtual_network.vnet ]
 }

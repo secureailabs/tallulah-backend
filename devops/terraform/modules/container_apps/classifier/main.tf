@@ -21,6 +21,8 @@ resource "azurerm_container_app" "container_app_classifier" {
     value = var.rabbit_mq_host
   }
   template {
+    min_replicas = 1
+    max_replicas = 10
     container {
       cpu    = 0.5
       image  = var.docker_image

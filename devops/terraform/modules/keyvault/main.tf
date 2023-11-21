@@ -1,6 +1,14 @@
+resource "random_string" "azurerm_key_vault_name" {
+  length  = 5
+  lower   = true
+  numeric = false
+  special = false
+  upper   = false
+}
+
 resource "azurerm_key_vault" "keyvault" {
-  name                        = var.keyvault_name
-  location                    = "East US"
+  name                        = "${var.keyvault_name}${random_string.azurerm_key_vault_name.result}"
+  location                    = "westus"
   resource_group_name         = var.resource_group_name
   tenant_id                   = var.azure_tenant_id
   sku_name                    = "standard"

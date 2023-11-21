@@ -11,5 +11,9 @@ variable "virtual_network_id" {
 variable "private_dns_zone_name" {
     description = "The name of the private DNS zone"
     type        = string
-    default     = "proudglacier-f81badf3.westus.azurecontainerapps.io"
+}
+
+variable "container_apps_environment_static_ip" {
+    description = "The static IP address of the container apps environment"
+    type        = string
 }
