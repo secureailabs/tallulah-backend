@@ -1,6 +1,6 @@
 resource "azurerm_container_app" "container_app_frontend" {
   container_app_environment_id = var.container_app_env_id
-  name                         = "tallulah-frontend"
+  name                         = "frontend"
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
   ingress {
@@ -27,7 +27,7 @@ resource "azurerm_container_app" "container_app_frontend" {
       cpu    = 0.5
       image  = var.docker_image
       memory = "1Gi"
-      name   = "tallulah-frontend"
+      name   = "frontend"
     }
   }
 }

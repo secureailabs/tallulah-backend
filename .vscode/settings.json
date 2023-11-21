@@ -40,4 +40,12 @@
     "autoDocstring.startOnNewLine": true,
     "diffEditor.ignoreTrimWhitespace": false,
     "diffEditor.codeLens": true,
+    "[terraform]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "hashicorp.terraform",
+        "editor.tabSize": 2,
+    },
+    "[terraform-vars]": {
+        "editor.tabSize": 2
+    },
 }

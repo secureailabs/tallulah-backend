@@ -1,6 +1,6 @@
 resource "azurerm_container_app" "container_app_rabbit_mq" {
   container_app_environment_id = var.container_app_env_id
-  name                         = "tallulah-rabbitmq"
+  name                         = "rabbitmq"
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
   ingress {
@@ -27,7 +27,7 @@ resource "azurerm_container_app" "container_app_rabbit_mq" {
       cpu    = 0.5
       image  = var.docker_image
       memory = "1Gi"
-      name   = "tallulah-rabbitmq"
+      name   = "rabbitmq"
       env {
         name  = "RABBITMQ_DEFAULT_USER"
         value = var.rabbit_mq_user

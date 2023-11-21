@@ -1,6 +1,6 @@
 resource "azurerm_container_app" "container_app_backend" {
   container_app_environment_id = var.container_app_env_id
-  name                         = "tallulah-backend"
+  name                         = "backend"
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
   ingress {
@@ -79,7 +79,7 @@ resource "azurerm_container_app" "container_app_backend" {
       cpu    = 0.5
       image  = var.docker_image
       memory = "1Gi"
-      name   = "tallulah-backend"
+      name   = "backend"
       env {
         name = "SLACK_WEBHOOK"
       }

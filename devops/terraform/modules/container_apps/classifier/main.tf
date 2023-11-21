@@ -1,6 +1,6 @@
 resource "azurerm_container_app" "container_app_classifier" {
   container_app_environment_id = var.container_app_env_id
-  name                         = "tallulah-classifier"
+  name                         = "classifier"
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
   registry {
@@ -27,7 +27,7 @@ resource "azurerm_container_app" "container_app_classifier" {
       cpu    = 0.5
       image  = var.docker_image
       memory = "1Gi"
-      name   = "tallulah-classifier"
+      name   = "classifier"
       env {
         name  = "RABBIT_MQ_PORT"
         value = "5672"
