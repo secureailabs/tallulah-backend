@@ -39,6 +39,7 @@ module "application_gateway" {
   container_app_subnet_id   = module.virtual_network.container_apps_subnet_id
   gateway_subnet_id         = module.virtual_network.gateway_subnet_id
   backend_address           = "backend.${module.container_apps_env.container_app_environment_default_domain}"
+  ui_address                = "frontend.${module.container_apps_env.container_app_environment_default_domain}"
   gateway_public_ip_id      = module.public_ip.public_ip_id
   react_app_address         = "ui.${module.container_apps_env.container_app_environment_default_domain}"
   ssl_certificate_file_path = var.ssl_certificate_file_path

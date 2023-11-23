@@ -18,6 +18,11 @@ variable "backend_address" {
   type        = string
 }
 
+variable "ui_address" {
+  description = "The UI address"
+  type        = string
+}
+
 variable "react_app_address" {
   description = "The react app address"
   type        = string

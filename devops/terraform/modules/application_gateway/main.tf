@@ -20,7 +20,7 @@ resource "azurerm_application_gateway" "application_gateway" {
   resource_group_name = var.resource_group_name
   autoscale_configuration {
     max_capacity = 10
-    min_capacity = 0
+    min_capacity = 1
   }
   private_link_configuration {
     name = "app-gateway-private-link"
@@ -57,17 +57,37 @@ resource "azurerm_application_gateway" "application_gateway" {
     ssl_certificate_name           = "app-gateway-ssl-cert"
     host_name                      = var.host_name
   }
+  url_path_map {
+    name                               = "app-gateway-url-path-map"
+    default_backend_address_pool_name  = "app-gateway-ui-pool"
+    default_backend_http_settings_name = "app-gateway-backend-setting"
+    path_rule {
+      name                       = "app-gateway-path-rule-1"
+      paths                      = ["/*"]
+      backend_address_pool_name  = "app-gateway-ui-pool"
+      backend_http_settings_name = "app-gateway-backend-setting"
+    }
+    path_rule {
+      name                       = "app-gateway-path-rule-2"
+      paths                      = ["/docs", "/openapi.json"]
+      backend_address_pool_name  = "app-gateway-backend-pool"
+      backend_http_settings_name = "app-gateway-backend-setting"
+    }
+  }
   request_routing_rule {
-    name                       = "app-gateway-routing-rule"
-    backend_address_pool_name  = "app-gateway-backend-pool"
-    backend_http_settings_name = "app-gateway-backend-setting"
-    http_listener_name         = "app-gateway-listener"
-    priority                   = 1
-    rule_type                  = "Basic"
+    name               = "app-gateway-routing-rule"
+    http_listener_name = "app-gateway-listener"
+    priority           = 1
+    rule_type          = "PathBasedRouting"
+    url_path_map_name  = "app-gateway-url-path-map"
   }
   backend_address_pool {
     name  = "app-gateway-backend-pool"
     fqdns = [var.backend_address]
+  }
+  backend_address_pool {
+    name  = "app-gateway-ui-pool"
+    fqdns = [var.ui_address]
   }
   backend_http_settings {
     name                                = "app-gateway-backend-setting"
