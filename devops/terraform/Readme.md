@@ -45,6 +45,15 @@ Apply the Terraform configuration to create resources.
 terraform apply
 ```
 
+### Apply Configuration to Specific Environment:
+Apply the Terraform configuration to create resources in a specific environment.
+
+``` bash
+terraform apply -var-file=environments/staging/terraform.tfvars
+```
+
+
+
 ### Destruction (If Necessary):
 To destroy the resources managed by Terraform.
 

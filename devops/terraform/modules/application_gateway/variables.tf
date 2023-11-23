@@ -27,3 +27,18 @@ variable "gateway_public_ip_id" {
   description = "The ID of the gateway public IP"
   type        = string
 }
+
+variable "ssl_certificate_file_path" {
+  description = "SSL certificate file path"
+  type        = string
+}
+
+variable "ssl_certificate_password" {
+  description = "SSL certificate password"
+  type        = string
+}
+
+variable "host_name" {
+  description = "Host name that the application gateway will listen to"
+  type        = string
+}

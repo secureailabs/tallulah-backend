@@ -99,3 +99,18 @@ variable "tallulah_admin_password" {
   description = "Tallulah admin password"
   type        = string
 }
+
+variable "ssl_certificate_file_path" {
+  description = "SSL certificate file path"
+  type        = string
+}
+
+variable "ssl_certificate_password" {
+  description = "SSL certificate password"
+  type        = string
+}
+
+variable "host_name" {
+  description = "Host name that the application gateway will listen to"
+  type        = string
+}

@@ -37,18 +37,25 @@ resource "azurerm_application_gateway" "application_gateway" {
     public_ip_address_id            = var.gateway_public_ip_id
   }
   frontend_port {
-    name = "port_80"
-    port = 80
+    name = "port_443"
+    port = 443
   }
   gateway_ip_configuration {
     name      = "appGatewayIpConfig"
     subnet_id = var.gateway_subnet_id
   }
+  ssl_certificate {
+    name     = "app-gateway-ssl-cert"
+    data     = filebase64(var.ssl_certificate_file_path)
+    password = var.ssl_certificate_password
+  }
   http_listener {
     name                           = "app-gateway-listener"
     frontend_ip_configuration_name = "appGwPublicFrontendIpIPv4"
-    frontend_port_name             = "port_80"
-    protocol                       = "Http"
+    frontend_port_name             = "port_443"
+    protocol                       = "Https"
+    ssl_certificate_name           = "app-gateway-ssl-cert"
+    host_name                      = var.host_name
   }
   request_routing_rule {
     name                       = "app-gateway-routing-rule"
