@@ -34,7 +34,7 @@ from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
 from app.utils.secrets import delete_keyvault_secret, secret_store, set_keyvault_secret
 
-router = APIRouter(prefix="/mailbox", tags=["mailbox"])
+router = APIRouter(prefix="/api/mailbox", tags=["mailbox"])
 
 
 @router.post(

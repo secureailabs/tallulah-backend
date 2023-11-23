@@ -24,23 +24,6 @@ from app.utils.secrets import secret_store
 
 router = APIRouter(tags=["internal"])
 
-
-@router.delete(
-    path="/database",
-    description="Drop the database",
-    status_code=status.HTTP_204_NO_CONTENT,
-    operation_id="drop_database",
-    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
-)
-async def drop_database(
-    _: TokenData = Depends(get_current_user),
-) -> Response:
-    data_service = DatabaseOperations()
-    await data_service.drop()
-    await add_tallulah_admin()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
 # Create MSAL application instance
 app_instance = ConfidentialClientApplication(
     client_id=secret_store.OUTLOOK_CLIENT_ID,
@@ -53,7 +36,7 @@ scopes = ["User.Read", "Mail.Read", "Mail.Send"]
 authorization_url = app_instance.get_authorization_request_url(scopes=scopes, redirect_uri=redirect_uri)
 
 
-@router.get("/", response_class=HTMLResponse)
+@router.get("/api/", response_class=HTMLResponse)
 async def read_root():
     html_content = f"""
     <html>

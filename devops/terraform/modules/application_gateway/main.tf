@@ -69,7 +69,7 @@ resource "azurerm_application_gateway" "application_gateway" {
     }
     path_rule {
       name                       = "app-gateway-path-rule-2"
-      paths                      = ["/docs", "/openapi.json"]
+      paths                      = ["/api/*"]
       backend_address_pool_name  = "app-gateway-backend-pool"
       backend_http_settings_name = "app-gateway-backend-setting"
     }

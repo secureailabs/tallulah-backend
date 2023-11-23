@@ -42,6 +42,7 @@ server = FastAPI(
     title="Tallulah",
     description="All the private and public APIs for Tallulah - Patient Story Management Platform",
     version="0.1.0",
+    openapi_url="/api/openapi.json",
     docs_url=None,
 )
 server.openapi = custom_openapi(server)
@@ -128,19 +129,24 @@ async def server_error_exception_handler(request: Request, exc: Exception):
 
 
 # Serve the Swagger UI on the /docs route and use the pre-downloaded js and css files
-@server.get("/docs", include_in_schema=False)
+@server.get("/api/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
     if server.openapi_url is None:
         raise RequestValidationError("openapi_url must be provided to serve Swagger UI")
 
-    server.mount("/static", StaticFiles(directory="./app/static"), name="static")
+    server.mount("/api/static", StaticFiles(directory="./app/static"), name="static")
     return get_swagger_ui_html(
         openapi_url=server.openapi_url,
         title=server.title + " - Swagger UI",
         oauth2_redirect_url=server.swagger_ui_oauth2_redirect_url,
-        swagger_js_url="/static/swagger-ui-bundle.js",
-        swagger_css_url="/static/swagger-ui.css",
+        swagger_js_url="/api/static/swagger-ui-bundle.js",
+        swagger_css_url="/api/static/swagger-ui.css",
     )
+
+
+@server.get("/", include_in_schema=False)
+async def health_probe():
+    return Response(status_code=status.HTTP_200_OK)
 
 
 async def set_body(request: Request, body: bytes):

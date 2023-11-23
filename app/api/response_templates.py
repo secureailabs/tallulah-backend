@@ -13,31 +13,24 @@
 # -------------------------------------------------------------------------------
 
 
-import time
 from datetime import datetime
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
+from fastapi import APIRouter, Body, Depends, Path, Response, status
 
 from app.api.authentication import get_current_user
-from app.api.emails import read_emails
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
-from app.models.email import Emails
 from app.models.response_templates import (
     GetMultipleResponseTemplate_Out,
     GetResponseTemplate_Out,
     RegisterResponseTemplate_In,
     RegisterResponseTemplate_Out,
-    ResponseTemplate_Base,
     ResponseTemplate_Db,
     ResponseTemplates,
     UpdateResponseTemplate_In,
 )
-from app.utils.background_couroutines import AsyncTaskManager
-from app.utils.emails import OutlookClient
-from app.utils.secrets import delete_keyvault_secret, set_keyvault_secret
 
-router = APIRouter(prefix="/response-templates", tags=["response-templates"])
+router = APIRouter(prefix="/api/response-templates", tags=["response-templates"])
 
 
 @router.post(

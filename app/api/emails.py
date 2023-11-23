@@ -28,7 +28,7 @@ from app.utils.emails import EmailBody, Message, MessageResponse, OutlookClient
 from app.utils.message_queue import MessageQueueClient, RabbitMQWorkQueue
 from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_secret
 
-router = APIRouter(prefix="/emails", tags=["emails"])
+router = APIRouter(prefix="/api/emails", tags=["emails"])
 
 
 async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):

@@ -75,7 +75,7 @@ class RoleChecker:
 
 
 @router.post(
-    path="/login",
+    path="/api/login",
     description="User login with email and password",
     response_model=LoginSuccess_Out,
     response_model_by_alias=False,
@@ -159,7 +159,7 @@ async def login_for_access_token(
 
 
 @router.post(
-    path="/refresh-token",
+    path="/api/refresh-token",
     description="Refresh the JWT token for the user",
     response_model=LoginSuccess_Out,
     operation_id="get_refresh_token",
@@ -206,7 +206,7 @@ async def refresh_for_access_token(
 
 
 @router.get(
-    path="/me",
+    path="/api/me",
     description="Get the current user information",
     response_description="The current user information",
     response_model=UserInfo_Out,
@@ -223,7 +223,7 @@ async def get_current_user_info(
 
 
 @router.put(
-    path="/unlock-account/{user_id}",
+    path="/api/unlock-account/{user_id}",
     description="Unlock the user account",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(RoleChecker(allowed_roles=[]))],

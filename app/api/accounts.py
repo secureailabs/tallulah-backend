@@ -35,7 +35,7 @@ router = APIRouter(tags=["users"])
 
 
 @router.post(
-    path="/users",
+    path="/api/users",
     description="Register new user",
     response_model=RegisterUser_Out,
     response_model_by_alias=False,
@@ -69,7 +69,7 @@ async def register_user(
 
 
 @router.get(
-    path="/users/{user_id}",
+    path="/api/users/{user_id}",
     description="Get information about a user",
     response_model=GetUsers_Out,
     response_model_by_alias=False,
@@ -88,7 +88,7 @@ async def get_user(
 
 
 @router.patch(
-    path="/users/{user_id}",
+    path="/api/users/{user_id}",
     description="Update user information.",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="update_user_info",
@@ -117,7 +117,7 @@ async def update_user_info(
 
 
 @router.delete(
-    path="/users/{user_id}",
+    path="/api/users/{user_id}",
     description="Soft Delete user",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="soft_delete_user",
