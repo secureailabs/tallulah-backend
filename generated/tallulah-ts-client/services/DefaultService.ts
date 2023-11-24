@@ -24,7 +24,7 @@ export class DefaultService {
     ): CancelablePromise<LoginSuccess_Out> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/login',
+            url: '/api/login',
             formData: formData,
             mediaType: 'application/x-www-form-urlencoded',
             errors: {
@@ -46,7 +46,7 @@ export class DefaultService {
     ): CancelablePromise<LoginSuccess_Out> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/refresh-token',
+            url: '/api/refresh-token',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -65,7 +65,7 @@ export class DefaultService {
     public static getCurrentUserInfo(): CancelablePromise<UserInfo_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/me',
+            url: '/api/me',
         });
     }
 
@@ -81,7 +81,7 @@ export class DefaultService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/unlock-account/{user_id}',
+            url: '/api/unlock-account/{user_id}',
             path: {
                 'user_id': userId,
             },

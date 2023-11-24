@@ -21,7 +21,7 @@ export class MailboxService {
     public static getAllMailboxes(): CancelablePromise<GetMultipleMailboxes_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/mailbox/',
+            url: '/api/mailbox/',
         });
     }
 
@@ -37,7 +37,7 @@ export class MailboxService {
     ): CancelablePromise<RegisterMailbox_Out> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/mailbox/',
+            url: '/api/mailbox/',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -59,7 +59,7 @@ export class MailboxService {
     ): CancelablePromise<GetMailbox_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/mailbox/{mailbox_id}',
+            url: '/api/mailbox/{mailbox_id}',
             path: {
                 'mailbox_id': mailboxId,
             },
@@ -81,7 +81,7 @@ export class MailboxService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/mailbox/{mailbox_id}',
+            url: '/api/mailbox/{mailbox_id}',
             path: {
                 'mailbox_id': mailboxId,
             },

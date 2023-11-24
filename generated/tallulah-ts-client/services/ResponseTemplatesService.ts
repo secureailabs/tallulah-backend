@@ -22,7 +22,7 @@ export class ResponseTemplatesService {
     public static getAllResponseTemplates(): CancelablePromise<GetMultipleResponseTemplate_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/response-templates/',
+            url: '/api/response-templates/',
         });
     }
 
@@ -38,7 +38,7 @@ export class ResponseTemplatesService {
     ): CancelablePromise<RegisterResponseTemplate_Out> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/response-templates/',
+            url: '/api/response-templates/',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -59,7 +59,7 @@ export class ResponseTemplatesService {
     ): CancelablePromise<GetResponseTemplate_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/response-templates/{response_template_id}',
+            url: '/api/response-templates/{response_template_id}',
             path: {
                 'response_template_id': responseTemplateId,
             },
@@ -81,7 +81,7 @@ export class ResponseTemplatesService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/response-templates/{response_template_id}',
+            url: '/api/response-templates/{response_template_id}',
             path: {
                 'response_template_id': responseTemplateId,
             },
@@ -105,7 +105,7 @@ export class ResponseTemplatesService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/response-templates/{response_template_id}',
+            url: '/api/response-templates/{response_template_id}',
             path: {
                 'response_template_id': responseTemplateId,
             },

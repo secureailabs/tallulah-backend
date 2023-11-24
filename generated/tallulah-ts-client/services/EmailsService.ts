@@ -32,7 +32,7 @@ export class EmailsService {
     ): CancelablePromise<GetMultipleEmail_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/emails/',
+            url: '/api/emails/',
             query: {
                 'mailbox_id': mailboxId,
                 'skip': skip,
@@ -65,7 +65,7 @@ export class EmailsService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/emails/replies',
+            url: '/api/emails/replies',
             query: {
                 'mailbox_id': mailboxId,
                 'email_ids': emailIds,

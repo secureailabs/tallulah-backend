@@ -14,7 +14,7 @@ export class UsersService {
 
     /**
      * Register User
-     * Add new user to organization
+     * Register new user
      * @param requestBody
      * @returns RegisterUser_Out Successful Response
      * @throws ApiError
@@ -24,7 +24,7 @@ export class UsersService {
     ): CancelablePromise<RegisterUser_Out> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/users/',
+            url: '/api/users',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -47,7 +47,7 @@ export class UsersService {
     ): CancelablePromise<GetUsers_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/users/{user_id}',
+            url: '/api/users/{user_id}',
             path: {
                 'user_id': userId,
             },
@@ -69,7 +69,7 @@ export class UsersService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/users/{user_id}',
+            url: '/api/users/{user_id}',
             path: {
                 'user_id': userId,
             },
@@ -94,7 +94,7 @@ export class UsersService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/users/{user_id}',
+            url: '/api/users/{user_id}',
             path: {
                 'user_id': userId,
             },
