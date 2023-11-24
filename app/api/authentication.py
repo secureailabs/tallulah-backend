@@ -25,7 +25,7 @@ from passlib.context import CryptContext
 from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users
 from app.models.authentication import LoginSuccess_Out, RefreshToken_In, TokenData
 from app.models.common import BasicObjectInfo, PyObjectId
-from app.utils.secrets import get_secret
+from app.utils.secrets import secret_store
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter()
@@ -37,8 +37,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 def get_password_hash(salt, password):
-    password_pepper = get_secret("password_pepper")
-    return pwd_context.hash(f"{salt}{password}{password_pepper}")
+    PASSWORD_PEPPER = secret_store.PASSWORD_PEPPER
+    return pwd_context.hash(f"{salt}{password}{PASSWORD_PEPPER}")
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -48,7 +48,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, get_secret("jwt_secret"), algorithms=[ALGORITHM])
+        payload = jwt.decode(token, secret_store.JWT_SECRET, algorithms=[ALGORITHM])
         token_data = TokenData(**payload)
         user_id = token_data.id
         if not user_id:
@@ -75,7 +75,7 @@ class RoleChecker:
 
 
 @router.post(
-    path="/login",
+    path="/api/login",
     description="User login with email and password",
     response_model=LoginSuccess_Out,
     response_model_by_alias=False,
@@ -110,9 +110,9 @@ async def login_for_access_token(
             detail=f"User account is {found_user_db.account_state.value}. Contact SAIL support.",
         )
 
-    password_pepper = get_secret("password_pepper")
+    PASSWORD_PEPPER = secret_store.PASSWORD_PEPPER
     if not pwd_context.verify(
-        secret=f"{found_user_db.email}{form_data.password}{password_pepper}",
+        secret=f"{found_user_db.email}{form_data.password}{PASSWORD_PEPPER}",
         hash=found_user_db.hashed_password,
     ):
         # If this is a 5th failed attempt, lock the account and increase the failed login attempts
@@ -146,12 +146,12 @@ async def login_for_access_token(
     )
     access_token = jwt.encode(
         claims=jsonable_encoder(token_data),
-        key=get_secret("jwt_secret"),
+        key=secret_store.JWT_SECRET,
         algorithm=ALGORITHM,
     )
     refresh_token = jwt.encode(
         claims=jsonable_encoder(token_data),
-        key=get_secret("refresh_secret"),
+        key=secret_store.REFRESH_SECRET,
         algorithm=ALGORITHM,
     )
 
@@ -159,7 +159,7 @@ async def login_for_access_token(
 
 
 @router.post(
-    path="/refresh-token",
+    path="/api/refresh-token",
     description="Refresh the JWT token for the user",
     response_model=LoginSuccess_Out,
     operation_id="get_refresh_token",
@@ -172,7 +172,7 @@ async def refresh_for_access_token(
     )
     try:
         # TODO: Prawal harden the security around the refresh token
-        payload = jwt.decode(refresh_token_request.refresh_token, get_secret("refresh_secret"), algorithms=[ALGORITHM])
+        payload = jwt.decode(refresh_token_request.refresh_token, secret_store.REFRESH_SECRET, algorithms=[ALGORITHM])
         token_data = TokenData(**payload)
         user_id = token_data.id
         if not user_id:
@@ -189,13 +189,13 @@ async def refresh_for_access_token(
 
         access_token = jwt.encode(
             claims=jsonable_encoder(token_data),
-            key=get_secret("jwt_secret"),
+            key=secret_store.JWT_SECRET,
             algorithm=ALGORITHM,
         )
 
         refresh_token = jwt.encode(
             claims=jsonable_encoder(token_data),
-            key=get_secret("refresh_secret"),
+            key=secret_store.REFRESH_SECRET,
             algorithm=ALGORITHM,
         )
 
@@ -206,7 +206,7 @@ async def refresh_for_access_token(
 
 
 @router.get(
-    path="/me",
+    path="/api/me",
     description="Get the current user information",
     response_description="The current user information",
     response_model=UserInfo_Out,
@@ -223,7 +223,7 @@ async def get_current_user_info(
 
 
 @router.put(
-    path="/unlock-account/{user_id}",
+    path="/api/unlock-account/{user_id}",
     description="Unlock the user account",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(RoleChecker(allowed_roles=[]))],

@@ -32,9 +32,9 @@ from app.models.mailbox import (
 )
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
-from app.utils.secrets import delete_keyvault_secret, get_secret, set_keyvault_secret
+from app.utils.secrets import delete_keyvault_secret, secret_store, set_keyvault_secret
 
-router = APIRouter(prefix="/mailbox", tags=["mailbox"])
+router = APIRouter(prefix="/api/mailbox", tags=["mailbox"])
 
 
 @router.post(
@@ -54,9 +54,9 @@ async def add_new_mailbox(
         client = None
         if mailbox_info.provider == MailboxProvider.OUTLOOK:
             client = OutlookClient(
-                client_id=get_secret("outlook_client_id"),
-                client_secret=get_secret("outlook_client_secret"),
-                redirect_uri=get_secret("outlook_redirect_uri"),
+                client_id=secret_store.OUTLOOK_CLIENT_ID,
+                client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+                redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
             )
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid mailbox provider")
