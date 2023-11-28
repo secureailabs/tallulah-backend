@@ -20,6 +20,7 @@ class ToRecipient(BaseModel):
 
 
 class Message(BaseModel):
+    subject: Optional[str] = None
     body: Optional[EmailBody] = None
     toRecipients: Optional[List[ToRecipient]] = None
 

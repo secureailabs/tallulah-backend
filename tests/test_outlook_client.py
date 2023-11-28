@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from app.utils.emails import Body, EmailAddress, Message, MessageResponse, OutlookClient, ToRecipient
+from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 
 
 @pytest.fixture
@@ -94,7 +94,7 @@ async def test_receive_email_later(client: OutlookClient, refresh_token: str):
 def test_message_response_object():
     response = MessageResponse(
         message=Message(
-            body=Body(content="test", contentType="Text"),
+            body=EmailBody(content="test", contentType="Text"),
             toRecipients=[ToRecipient(emailAddress=EmailAddress(address="test@arin.com", name="test"))],
         )
     )
@@ -104,7 +104,7 @@ def test_message_response_comment_body_both_present_validation():
     with pytest.raises(ValueError):
         MessageResponse(
             message=Message(
-                body=Body(content="test", contentType="Text"),
+                body=EmailBody(content="test", contentType="Text"),
                 toRecipients=[ToRecipient(emailAddress=EmailAddress(address="test@arin.com", name="test"))],
             ),
             comment="test",
@@ -130,6 +130,24 @@ async def test_reply_email(client: OutlookClient, refresh_token: str):
     await client.reply_email(
         email_id=result[0]["id"],
         message=MessageResponse(
-            message=Message(body=Body(content="this is a test response. Kindly ignore", contentType="text")),
+            message=Message(body=EmailBody(content="this is a test response. Kindly ignore", contentType="text")),
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_reply_email_with_subject(client: OutlookClient, refresh_token: str):
+    await client.connect_with_refresh_token(refresh_token)
+    result = await client.receive_email()
+    assert type(result) == list
+    assert len(result) > 0
+
+    await client.reply_email(
+        email_id=result[0]["id"],
+        message=MessageResponse(
+            message=Message(
+                subject="Test reply subject",
+                body=EmailBody(content="this is a test response. Kindly ignore", contentType="text"),
+            ),
         ),
     )

@@ -8,6 +8,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Annotation } from './models/Annotation';
 export type { Body_login } from './models/Body_login';
+export type { Body_reply_to_emails } from './models/Body_reply_to_emails';
 export type { EmailBody } from './models/EmailBody';
 export { EmailState } from './models/EmailState';
 export type { GetEmail_Out } from './models/GetEmail_Out';

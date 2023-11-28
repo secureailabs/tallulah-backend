@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EmailBody } from '../models/EmailBody';
+import type { Body_reply_to_emails } from '../models/Body_reply_to_emails';
 import type { GetMultipleEmail_Out } from '../models/GetMultipleEmail_Out';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -61,7 +61,7 @@ export class EmailsService {
         mailboxId: string,
         emailIds?: Array<string>,
         tags?: Array<string>,
-        requestBody?: EmailBody,
+        requestBody?: Body_reply_to_emails,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
