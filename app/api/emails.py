@@ -110,6 +110,7 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
 
 async def reply_emails(
     mailbox: Mailbox_Db,
+    subject: str,
     reply: EmailBody,
     current_user: TokenData,
     email_ids: Optional[List[PyObjectId]] = None,
@@ -154,7 +155,7 @@ async def reply_emails(
     # update the refresh token secret
     await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
 
-    message = MessageResponse(message=Message(body=reply))
+    message = MessageResponse(message=Message(subject=subject, body=reply))
 
     # Reply to all the emails
     for id, outlook_id in outlook_ids.items():
@@ -250,6 +251,7 @@ async def reply_to_emails(
     mailbox_id: PyObjectId = Query(description="Mailbox id"),
     email_ids: Optional[List[PyObjectId]] = Query(default=None, description="List of email ids"),
     tags: Optional[List[str]] = Query(default=None, description="List of tag ids"),
+    subject: str = Body(default=None, description="Subject of the email"),
     reply: EmailBody = Body(default=None, description="Reply to the email"),
     current_user: TokenData = Depends(get_current_user),
 ) -> Response:
@@ -259,6 +261,6 @@ async def reply_to_emails(
     mailbox = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
 
     async_task_manager = AsyncTaskManager()
-    async_task_manager.create_task(reply_emails(mailbox[0], reply, current_user, email_ids, tags))
+    async_task_manager.create_task(reply_emails(mailbox[0], subject, reply, current_user, email_ids, tags))
 
     return Response(status_code=status.HTTP_202_ACCEPTED)
