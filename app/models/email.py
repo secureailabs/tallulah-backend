@@ -91,6 +91,7 @@ class Emails:
         user_id: Optional[PyObjectId] = None,
         email_id: Optional[PyObjectId] = None,
         filter_tags: Optional[List[str]] = None,
+        filter_state: Optional[List[EmailState]] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
         sort_key: str = "received_time",
@@ -108,6 +109,8 @@ class Emails:
             query["mailbox_id"] = str(mailbox_id)
         if filter_tags:
             query["annotations.label"] = {"$in": filter_tags}
+        if filter_state:
+            query["message_state"] = {"$in": [state.value for state in filter_state]}
 
         if skip is None and limit is None:
             response = await Emails.data_service.find_by_query(

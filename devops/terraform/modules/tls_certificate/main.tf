@@ -72,7 +72,7 @@ resource "local_file" "issuer_pem" {
 
 resource "null_resource" "convert_to_pfx" {
   provisioner "local-exec" {
-    command = "openssl pkcs12 -export -out certificate.pfx -inkey private_key.pem -in certificate.pem -certfile issuer.pem"
+    command = "openssl pkcs12 -export -out certificate.pfx -inkey private_key.pem -in certificate.pem -certfile issuer.pem -passout pass:hello"
   }
   depends_on = [local_file.certificate]
 }

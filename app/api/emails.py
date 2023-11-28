@@ -218,6 +218,7 @@ async def get_all_emails(
     sort_key: str = Query(default="received_time", description="Sort key"),
     sort_direction: int = Query(default=-1, description="Sort direction"),
     filter_tags: Optional[List[str]] = Query(default=None, description="Filter tags"),
+    filter_state: Optional[List[EmailState]] = Query(default=None, description="Filter state"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleEmail_Out:
     # Check if the mailbox belongs to the user
@@ -225,6 +226,7 @@ async def get_all_emails(
     emails = await Emails.read(
         mailbox_id=mailbox_id,
         filter_tags=filter_tags,
+        filter_state=filter_state,
         skip=skip,
         limit=limit,
         sort_key=sort_key,

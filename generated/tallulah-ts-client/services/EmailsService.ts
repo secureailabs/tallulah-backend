@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Body_reply_to_emails } from '../models/Body_reply_to_emails';
+import type { EmailState } from '../models/EmailState';
 import type { GetMultipleEmail_Out } from '../models/GetMultipleEmail_Out';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -19,6 +20,7 @@ export class EmailsService {
      * @param sortKey Sort key
      * @param sortDirection Sort direction
      * @param filterTags Filter tags
+     * @param filterState Filter state
      * @returns GetMultipleEmail_Out Successful Response
      * @throws ApiError
      */
@@ -29,6 +31,7 @@ export class EmailsService {
         sortKey: string = 'received_time',
         sortDirection: number = -1,
         filterTags?: Array<string>,
+        filterState?: Array<EmailState>,
     ): CancelablePromise<GetMultipleEmail_Out> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -40,6 +43,7 @@ export class EmailsService {
                 'sort_key': sortKey,
                 'sort_direction': sortDirection,
                 'filter_tags': filterTags,
+                'filter_state': filterState,
             },
             errors: {
                 422: `Validation Error`,

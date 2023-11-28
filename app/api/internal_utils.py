@@ -12,14 +12,10 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 from msal import ConfidentialClientApplication
 
-from app.api.accounts import add_tallulah_admin
-from app.api.authentication import RoleChecker, get_current_user
-from app.data.operations import DatabaseOperations
-from app.models.authentication import TokenData
 from app.utils.secrets import secret_store
 
 router = APIRouter(tags=["internal"])

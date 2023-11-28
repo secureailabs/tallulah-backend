@@ -102,7 +102,7 @@ generate_client() {
     rm -f docs/openapi.json
 
     # Download the API spec
-    wget http://127.0.0.1:8000/openapi.json -P docs/ --no-check-certificate
+    wget http://127.0.0.1:8000/api/openapi.json -P docs/ --no-check-certificate
 
     # Rename all "_id" in openapi.json to "id"
     # This is done because the openapi spec generates the keys of the models with "_id" instead of "id"
