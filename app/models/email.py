@@ -171,10 +171,13 @@ class Emails:
     @staticmethod
     async def count(
         mailbox_id: Optional[PyObjectId] = None,
+        filter_tags: Optional[List[str]] = None,
     ) -> int:
         query = {}
         if mailbox_id:
             query["mailbox_id"] = str(mailbox_id)
+        if filter_tags:
+            query["annotations.label"] = {"$in": filter_tags}
 
         return await Emails.data_service.sail_db[Emails.DB_COLLECTION_EMAILS].count_documents(query)
 

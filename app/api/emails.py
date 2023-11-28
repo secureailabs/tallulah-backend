@@ -231,7 +231,10 @@ async def get_all_emails(
         sort_direction=sort_direction,
         throw_on_not_found=False,
     )
-    email_count = await Emails.count(mailbox_id=mailbox_id)
+    email_count = await Emails.count(
+        mailbox_id=mailbox_id,
+        filter_tags=filter_tags,
+    )
 
     return GetMultipleEmail_Out(
         messages=[GetEmail_Out(**email.dict()) for email in emails],
