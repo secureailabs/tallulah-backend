@@ -27,8 +27,9 @@ module "development" {
 
 
 module "tls_certificates" {
-  source               = "./modules/tls_certificate"
-  godaddy_api_key      = var.godaddy_key
-  godaddy_api_secret   = var.godaddy_secret
-  google_domains_token = var.google_domains_token
+  source                   = "./modules/tls_certificate"
+  godaddy_api_key          = var.godaddy_key
+  godaddy_api_secret       = var.godaddy_secret
+  google_domains_token     = var.google_domains_token
+  ssl_certificate_password = var.ssl_certificate_password
 }

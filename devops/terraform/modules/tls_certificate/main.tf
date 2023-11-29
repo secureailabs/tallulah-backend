@@ -17,37 +17,37 @@ resource "tls_private_key" "private_key" {
 
 resource "acme_registration" "reg" {
   account_key_pem = tls_private_key.private_key.private_key_pem
-  email_address   = "prawal@arrayinsights.com"
+  email_address   = "engineering@arrayinsights.com"
 }
 
 resource "acme_certificate" "certificate" {
   account_key_pem = acme_registration.reg.account_key_pem
-  common_name     = "touch.prawalgangwar.in"
-
-  dns_challenge {
-    provider = "googledomains"
-
-    config = {
-      GOOGLE_DOMAINS_ACCESS_TOKEN        = var.google_domains_token
-      GOOGLE_DOMAINS_HTTP_TIMEOUT        = 600
-      GOOGLE_DOMAINS_POLLING_INTERVAL    = 300
-      GOOGLE_DOMAINS_PROPAGATION_TIMEOUT = 300
-    }
-  }
-
+  common_name     = "touch.tallulah.ai"
 
   # dns_challenge {
-  #   provider = "godaddy"
+  #   provider = "googledomains"
 
   #   config = {
-  #     GODADDY_API_KEY             = var.godaddy_api_key
-  #     GODADDY_API_SECRET          = var.godaddy_api_secret
-  #     GODADDY_HTTP_TIMEOUT        = 600
-  #     GODADDY_POLLING_INTERVAL    = 300
-  #     GODADDY_PROPAGATION_TIMEOUT = 300
-  #     GODADDY_TTL                 = 600
+  #     GOOGLE_DOMAINS_ACCESS_TOKEN        = var.google_domains_token
+  #     GOOGLE_DOMAINS_HTTP_TIMEOUT        = 600
+  #     GOOGLE_DOMAINS_POLLING_INTERVAL    = 300
+  #     GOOGLE_DOMAINS_PROPAGATION_TIMEOUT = 300
   #   }
   # }
+
+
+  dns_challenge {
+    provider = "godaddy"
+
+    config = {
+      GODADDY_API_KEY             = var.godaddy_api_key
+      GODADDY_API_SECRET          = var.godaddy_api_secret
+      GODADDY_HTTP_TIMEOUT        = 600
+      GODADDY_POLLING_INTERVAL    = 300
+      GODADDY_PROPAGATION_TIMEOUT = 300
+      GODADDY_TTL                 = 600
+    }
+  }
 }
 
 resource "local_file" "certificate" {
@@ -72,7 +72,7 @@ resource "local_file" "issuer_pem" {
 
 resource "null_resource" "convert_to_pfx" {
   provisioner "local-exec" {
-    command = "openssl pkcs12 -export -out certificate.pfx -inkey private_key.pem -in certificate.pem -certfile issuer.pem -passout pass:hello"
+    command = "openssl pkcs12 -export -out certificate.pfx -inkey private_key.pem -in certificate.pem -certfile issuer.pem -passout pass:${var.ssl_certificate_password}"
   }
   depends_on = [local_file.certificate]
 }

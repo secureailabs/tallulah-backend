@@ -1,6 +1,6 @@
 module "resource_group" {
   source                     = "../../modules/resource_group"
-  resource_group_name_prefix = "myResourceGroup"
+  resource_group_name_prefix = "tallulah-prod"
   resource_group_location    = "westus"
 }
 
@@ -59,7 +59,7 @@ module "container_app_backend" {
   source                      = "../../modules/container_apps/backend"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_0f6c8ed")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_a013acb")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
@@ -84,7 +84,7 @@ module "container_app_rabbit_mq" {
   source                      = "../../modules/container_apps/rabbit_mq"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_0f6c8ed")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_a013acb")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
@@ -109,7 +109,7 @@ module "container_app_frontend" {
   source                      = "../../modules/container_apps/frontend"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah-ui:v0.1.0_29763b4")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/ui:v0.1.0_d50567f")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
