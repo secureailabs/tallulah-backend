@@ -59,7 +59,7 @@ module "container_app_backend" {
   source                      = "../../modules/container_apps/backend"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_4097ea5")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_0f6c8ed")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
@@ -84,7 +84,7 @@ module "container_app_rabbit_mq" {
   source                      = "../../modules/container_apps/rabbit_mq"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_4097ea5")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_0f6c8ed")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
@@ -96,7 +96,7 @@ module "container_app_classifier" {
   source                      = "../../modules/container_apps/classifier"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/classifier:v0.1.0_45f3430")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/classifier:v0.1.0_ecaffb5")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password

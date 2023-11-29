@@ -42,7 +42,7 @@ resource "azurerm_container_app" "container_app_classifier" {
       }
       env {
         name  = "MONGO_DB_NAME"
-        value = "tallulah-a6bb5f02"
+        value = var.resource_group_name
       }
       env {
         name        = "MONGO_CONNECTION_URL"

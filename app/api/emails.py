@@ -236,6 +236,7 @@ async def get_all_emails(
     email_count = await Emails.count(
         mailbox_id=mailbox_id,
         filter_tags=filter_tags,
+        filter_state=filter_state,
     )
 
     return GetMultipleEmail_Out(
