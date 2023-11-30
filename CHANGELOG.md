@@ -25,6 +25,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+
+## [0.2.0] - 2023-11-30
+
+### Added
+
+- **Email sort and filter**
+  - Users can now sort and filter their emails based on tags and other metadata.
+  - Implemented a backend service that fetches emails from the database and sorts them based on user preferences.
+
+- **Email response**
+  - Users can now respond to emails directly from the application based on tags or even individually.
+  - Implemented a backend service that responds to emails on behalf of the user.
+
+- **Email templates**
+  - Users can now create email templates for frequently sent emails.
+  - Implemented a backend service that fetches email templates from the database and sends them to the user.
+  - The templates can be customized by the user before sending.
+  - The templates also support images in the signature.
+
+- **Mailbox deletion**
+  - Users can now delete their mailboxes from the application.
+  - Implemented a backend service that deletes the mailbox from the database and the corresponding token from Azure Key Vault.
+
+
+### Changed
+
+- **Migration to Terraform**
+  - Included a terraform deployment script for rolling out all services on Azure Container apps.
+  - The application is accessible via the custom domain: `touch.tallulah.ai`, the certificate for which is managed by Terraform.
+
+- **Azure Application Gateway**
+  - Included Azure Application Gateway for load balancing, security and traffic management.
+
+- **MongoDB Atlas**
+  - Mongodb Atlas now connects via a private endpoint, enhancing security and data integrity.
+
+
 ## [0.1.0] - 2023-10-30
 
 We are thrilled to announce the first release of our product! This release lays the groundwork for efficient email management and processing, with several robust services ensuring security, data integrity, and seamless integration. Our services are containerized for ease of deployment and scalability.
