@@ -18,7 +18,7 @@ from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from pydantic import EmailStr, Field, StrictStr
+from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
@@ -32,7 +32,7 @@ class EmailState(Enum):
 
 
 class Annotation(SailBaseModel):
-    annotation_id: PyObjectId = Field(default_factory=PyObjectId)
+    id: PyObjectId = Field(default_factory=PyObjectId)
     source: StrictStr = Field()
     label: StrictStr = Field()
     label_scores: Dict[str, float] = Field()
@@ -45,6 +45,7 @@ class Email_Base(SailBaseModel):
     received_time: str = Field()
     mailbox_id: PyObjectId = Field()
     user_id: PyObjectId = Field()
+    label: Optional[StrictStr] = Field(default=None)
     annotations: List[Annotation] = Field(default=[])
     note: Optional[StrictStr] = Field(default=None)
     message_state: EmailState = Field(default=EmailState.NEW)
@@ -90,7 +91,7 @@ class Emails:
         mailbox_id: Optional[PyObjectId] = None,
         user_id: Optional[PyObjectId] = None,
         email_id: Optional[PyObjectId] = None,
-        filter_tags: Optional[List[str]] = None,
+        filter_labels: Optional[List[str]] = None,
         filter_state: Optional[List[EmailState]] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
@@ -107,8 +108,8 @@ class Emails:
             query["user_id"] = str(user_id)
         if mailbox_id:
             query["mailbox_id"] = str(mailbox_id)
-        if filter_tags:
-            query["annotations.label"] = {"$in": filter_tags}
+        if filter_labels:
+            query["label"] = {"$in": filter_labels}
         if filter_state:
             query["message_state"] = {"$in": [state.value for state in filter_state]}
 
@@ -146,18 +147,24 @@ class Emails:
     @staticmethod
     async def update(
         query_message_id: Optional[PyObjectId] = None,
+        query_user_id: Optional[PyObjectId] = None,
         update_message_state: Optional[EmailState] = None,
+        update_email_label: Optional[StrictStr] = None,
         update_message_note: Optional[StrictStr] = None,
     ):
         query = {}
         if query_message_id:
             query["_id"] = str(query_message_id)
+        if query_user_id:
+            query["user_id"] = str(query_user_id)
 
         update_request = {"$set": {}}
         if update_message_state:
             update_request["$set"]["message_state"] = update_message_state.value
         if update_message_note:
             update_request["$set"]["note"] = update_message_note
+        if update_email_label:
+            update_request["$set"]["label"] = update_email_label
 
         update_response = await Emails.data_service.update_many(
             collection=Emails.DB_COLLECTION_EMAILS,
@@ -174,14 +181,14 @@ class Emails:
     @staticmethod
     async def count(
         mailbox_id: Optional[PyObjectId] = None,
-        filter_tags: Optional[List[str]] = None,
+        filter_labels: Optional[List[str]] = None,
         filter_state: Optional[List[EmailState]] = None,
     ) -> int:
         query = {}
         if mailbox_id:
             query["mailbox_id"] = str(mailbox_id)
-        if filter_tags:
-            query["annotations.label"] = {"$in": filter_tags}
+        if filter_labels:
+            query["label"] = {"$in": filter_labels}
         if filter_state:
             query["message_state"] = {"$in": [state.value for state in filter_state]}
 

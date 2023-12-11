@@ -12,6 +12,7 @@ export type GetEmail_Out = {
     received_time: string;
     mailbox_id: string;
     user_id: string;
+    label?: string;
     annotations?: Array<Annotation>;
     note?: string;
     message_state?: EmailState;

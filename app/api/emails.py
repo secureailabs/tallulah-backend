@@ -15,7 +15,7 @@
 
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi_utils.tasks import repeat_every
 
 from app.api.authentication import get_current_user
@@ -114,7 +114,7 @@ async def reply_emails(
     reply: EmailBody,
     current_user: TokenData,
     email_ids: Optional[List[PyObjectId]] = None,
-    tags: Optional[List[str]] = None,
+    labels: Optional[List[str]] = None,
 ):
     # store all the outlook ids of the emails as a set
     outlook_ids: Dict[PyObjectId, str] = {}
@@ -128,9 +128,9 @@ async def reply_emails(
             outlook_ids[id] = email[0].outlook_id
 
     # Get the list of all the emails with tags
-    if tags:
+    if labels:
         emails = await Emails.read(
-            filter_tags=tags, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
+            filter_labels=labels, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
         )
         for email in emails:
             outlook_ids[email.id] = email.outlook_id
@@ -217,7 +217,7 @@ async def get_all_emails(
     limit: int = Query(default=20, description="Number of emails to return"),
     sort_key: str = Query(default="received_time", description="Sort key"),
     sort_direction: int = Query(default=-1, description="Sort direction"),
-    filter_tags: Optional[List[str]] = Query(default=None, description="Filter tags"),
+    filter_labels: Optional[List[str]] = Query(default=None, description="Filter tags"),
     filter_state: Optional[List[EmailState]] = Query(default=None, description="Filter state"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleEmail_Out:
@@ -225,7 +225,7 @@ async def get_all_emails(
     _ = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
     emails = await Emails.read(
         mailbox_id=mailbox_id,
-        filter_tags=filter_tags,
+        filter_labels=filter_labels,
         filter_state=filter_state,
         skip=skip,
         limit=limit,
@@ -235,7 +235,7 @@ async def get_all_emails(
     )
     email_count = await Emails.count(
         mailbox_id=mailbox_id,
-        filter_tags=filter_tags,
+        filter_labels=filter_labels,
         filter_state=filter_state,
     )
 
@@ -256,17 +256,33 @@ async def get_all_emails(
 async def reply_to_emails(
     mailbox_id: PyObjectId = Query(description="Mailbox id"),
     email_ids: Optional[List[PyObjectId]] = Query(default=None, description="List of email ids"),
-    tags: Optional[List[str]] = Query(default=None, description="List of tag ids"),
+    labels: Optional[List[str]] = Query(default=None, description="List of tag ids"),
     subject: str = Body(default=None, description="Subject of the email"),
     reply: EmailBody = Body(default=None, description="Reply to the email"),
     current_user: TokenData = Depends(get_current_user),
 ) -> Response:
-    if not email_ids and not tags:
+    if not email_ids and not labels:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No emails or tags provided")
 
     mailbox = await Mailboxes.read(mailbox_id=mailbox_id, user_id=current_user.id, throw_on_not_found=True)
 
     async_task_manager = AsyncTaskManager()
-    async_task_manager.create_task(reply_emails(mailbox[0], subject, reply, current_user, email_ids, tags))
+    async_task_manager.create_task(reply_emails(mailbox[0], subject, reply, current_user, email_ids, labels))
 
     return Response(status_code=status.HTTP_202_ACCEPTED)
+
+
+@router.patch(
+    path="/{email_id}",
+    description="Update the label of an email",
+    status_code=status.HTTP_200_OK,
+    operation_id="update_email_label",
+)
+async def update_email_label(
+    email_id: PyObjectId = Path(description="Email id"),
+    label: str = Body(default=None, description="Label of the email"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+    await Emails.update(query_user_id=current_user.id, query_message_id=email_id, update_email_label=label)
+
+    return Response(status_code=status.HTTP_200_OK)
