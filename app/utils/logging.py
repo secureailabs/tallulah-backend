@@ -17,18 +17,12 @@ class LogLevel(Enum):
     ERROR = "ERROR"
 
 
-class Resource(Enum):
-    USER_ACTIVITY = "USER_ACTIVITY"
-
-
 def add_log_message(
     level: LogLevel,
-    operation_resource: Resource,
     message: Dict,
 ):
     message["timestamp"] = time()
     message["level"] = level.value
-    message["resource"] = operation_resource.value
     message_str = json.dumps(message)
 
     if level == LogLevel.INFO:

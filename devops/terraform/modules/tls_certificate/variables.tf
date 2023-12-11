@@ -17,3 +17,12 @@ variable "google_domains_token" {
   description = "google domains token"
   type        = string
 }
+variable "ssl_certificate_file_path" {
+  description = "ssl certificate file path"
+  type        = string
+}
+
+variable "host_name" {
+  description = "domain name"
+  type        = string
+}

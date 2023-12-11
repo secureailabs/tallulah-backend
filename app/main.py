@@ -15,6 +15,7 @@
 import base64
 import json
 import logging
+import time
 import traceback
 from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
@@ -35,7 +36,7 @@ from pydantic import BaseModel, Field, StrictStr
 from app.api import accounts, authentication, emails, internal_utils, mailbox, response_templates
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
-from app.utils.logging import LogLevel, Resource, add_log_message
+from app.utils.logging import LogLevel, add_log_message
 from app.utils.secrets import secret_store
 
 server = FastAPI(
@@ -119,7 +120,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     await data_service.insert_one("errors", jsonable_encoder(message))
 
     # Add the exception to the audit log as well
-    add_log_message(LogLevel.ERROR, Resource.USER_ACTIVITY, message)
+    add_log_message(LogLevel.ERROR, message)
 
     # Respond with a 500 error
     return Response(
@@ -196,7 +197,11 @@ async def add_audit_log(request: Request, call_next: Callable):
                 request_body["password"][0] = "****"
             request_body = urlencode(request_body, doseq=True)
 
+    # calculate the response time
+    start_time = time.time()
     response: Response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
 
     # Extract the user id from the JWT token in the request header
     user_id = None
@@ -214,8 +219,9 @@ async def add_audit_log(request: Request, call_next: Callable):
         "url": f"{request.url.path}",
         "request_body": f"{request_body}",
         "response": f"{response.status_code}",
+        "response_time": f"{process_time}",
     }
 
-    add_log_message(LogLevel.INFO, Resource.USER_ACTIVITY, message)
+    add_log_message(LogLevel.INFO, message)
 
     return response

@@ -1,0 +1,31 @@
+# ============================== Filebeat inputs ===============================
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /audit.log  # Replace with the path to your audit.log file
+
+# ================================== Outputs ===================================
+
+# Configure Logstash output
+output.logstash:
+  hosts: ["logstash:5044"]  # Replace with your Logstash server address
+
+# ================================= Processors =================================
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+# =========================== Filebeat global options ==========================
+
+# Uncomment the following line to enable filebeat logging to a file.
+# logging.to_files: true
+
+# Logging level
+# logging.level: info
+
