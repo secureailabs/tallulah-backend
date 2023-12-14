@@ -65,7 +65,7 @@ resource "azurerm_application_gateway" "application_gateway" {
       name                       = "app-gateway-path-rule-1"
       paths                      = ["/*"]
       backend_address_pool_name  = "app-gateway-ui-pool"
-      backend_http_settings_name = "app-gateway-backend-setting"
+      backend_http_settings_name = "app-gateway-ui-setting"
     }
     path_rule {
       name                       = "app-gateway-path-rule-2"
@@ -93,8 +93,16 @@ resource "azurerm_application_gateway" "application_gateway" {
     name                                = "app-gateway-backend-setting"
     cookie_based_affinity               = "Disabled"
     pick_host_name_from_backend_address = true
-    port                                = 443
-    protocol                            = "Https"
+    port                                = 8000
+    protocol                            = "Http"
+    request_timeout                     = 20
+  }
+  backend_http_settings {
+    name                                = "app-gateway-ui-setting"
+    cookie_based_affinity               = "Disabled"
+    pick_host_name_from_backend_address = true
+    port                                = 500
+    protocol                            = "Http"
     request_timeout                     = 20
   }
   sku {

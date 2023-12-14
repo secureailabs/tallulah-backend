@@ -205,7 +205,7 @@ class Emails:
         if mailbox_id:
             query["mailbox_id"] = str(mailbox_id)
 
-        delete_response = await Emails.data_service.delete(
+        delete_response = await Emails.data_service.delete_many(
             collection=Emails.DB_COLLECTION_EMAILS,
             query=query,
         )

@@ -25,6 +25,7 @@ module "development" {
   host_name                   = var.host_name
   elastic_cloud_username      = var.elastic_cloud_username
   elastic_cloud_password      = var.elastic_cloud_password
+  elastic_cloud_host          = var.elastic_cloud_host
 }
 
 

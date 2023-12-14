@@ -200,8 +200,8 @@ async def add_audit_log(request: Request, call_next: Callable):
     # calculate the response time
     start_time = time.time()
     response: Response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
+    process_time = (time.time() - start_time) * 1000
+    response.headers["X-Process-Time"] = str(process_time) + "ms"
 
     # Extract the user id from the JWT token in the request header
     user_id = None
@@ -218,8 +218,8 @@ async def add_audit_log(request: Request, call_next: Callable):
         "method": f"{request.method}",
         "url": f"{request.url.path}",
         "request_body": f"{request_body}",
-        "response": f"{response.status_code}",
-        "response_time": f"{process_time}",
+        "response": response.status_code,
+        "response_time": process_time,
     }
 
     add_log_message(LogLevel.INFO, message)

@@ -142,3 +142,8 @@ variable "elastic_cloud_password" {
   description = "The password of the Elastic Cloud"
   type        = string
 }
+
+variable "elastic_cloud_host" {
+  description = "The URL of the Elastic Cloud"
+  type        = string
+}

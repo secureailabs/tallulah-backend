@@ -28,6 +28,10 @@ resource "azurerm_container_app" "container_app_logstash" {
     name  = "elastic-cloud-password"
     value = var.elastic_cloud_password
   }
+  secret {
+    name  = "elastic-cloud-host"
+    value = var.elastic_cloud_host
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -43,6 +47,10 @@ resource "azurerm_container_app" "container_app_logstash" {
       env {
         name        = "ELASTIC_CLOUD_PASSWORD"
         secret_name = "elastic-cloud-password"
+      }
+      env {
+        name        = "ELASTIC_CLOUD_HOST"
+        secret_name = "elastic-cloud-host"
       }
     }
   }
