@@ -22,7 +22,7 @@ resource "acme_registration" "reg" {
 
 resource "acme_certificate" "certificate" {
   account_key_pem = acme_registration.reg.account_key_pem
-  common_name     = "touch.tallulah.ai"
+  common_name     = var.host_name
 
   # dns_challenge {
   #   provider = "googledomains"
@@ -72,7 +72,7 @@ resource "local_file" "issuer_pem" {
 
 resource "null_resource" "convert_to_pfx" {
   provisioner "local-exec" {
-    command = "openssl pkcs12 -export -out certificate.pfx -inkey private_key.pem -in certificate.pem -certfile issuer.pem -passout pass:${var.ssl_certificate_password}"
+    command = "openssl pkcs12 -export -out ${var.ssl_certificate_file_path} -inkey private_key.pem -in certificate.pem -certfile issuer.pem -passout pass:${var.ssl_certificate_password}"
   }
   depends_on = [local_file.certificate]
 }

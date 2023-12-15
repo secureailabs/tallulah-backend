@@ -16,7 +16,7 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from pydantic import EmailStr
 
-from app.api.authentication import get_current_user, get_password_hash
+from app.api.authentication import RoleChecker, get_current_user, get_password_hash
 from app.models.accounts import (
     GetUsers_Out,
     RegisterUser_In,
@@ -40,10 +40,12 @@ router = APIRouter(tags=["users"])
     response_model=RegisterUser_Out,
     response_model_by_alias=False,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
     operation_id="register_user",
 )
 async def register_user(
     user: RegisterUser_In = Body(description="User details to register with the organization"),
+    _: TokenData = Depends(get_current_user),
 ) -> RegisterUser_Out:
     # Check if the user already exists
     user_db = await Users.read(email=user.email, throw_on_not_found=False)

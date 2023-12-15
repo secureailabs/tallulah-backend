@@ -23,13 +23,18 @@ module "development" {
   ssl_certificate_file_path   = var.ssl_certificate_file_path
   ssl_certificate_password    = var.ssl_certificate_password
   host_name                   = var.host_name
+  elastic_cloud_username      = var.elastic_cloud_username
+  elastic_cloud_password      = var.elastic_cloud_password
+  elastic_cloud_host          = var.elastic_cloud_host
 }
 
 
 module "tls_certificates" {
-  source                   = "./modules/tls_certificate"
-  godaddy_api_key          = var.godaddy_key
-  godaddy_api_secret       = var.godaddy_secret
-  google_domains_token     = var.google_domains_token
-  ssl_certificate_password = var.ssl_certificate_password
+  source                    = "./modules/tls_certificate"
+  godaddy_api_key           = var.godaddy_key
+  godaddy_api_secret        = var.godaddy_secret
+  google_domains_token      = var.google_domains_token
+  ssl_certificate_password  = var.ssl_certificate_password
+  ssl_certificate_file_path = var.ssl_certificate_file_path
+  host_name                 = var.host_name
 }

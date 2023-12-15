@@ -76,5 +76,8 @@ class DatabaseOperations:
     async def delete(self, collection: str, query: dict) -> results.DeleteResult:
         return await self.sail_db[collection].delete_one(query)
 
+    async def delete_many(self, collection: str, query: dict) -> results.DeleteResult:
+        return await self.sail_db[collection].delete_many(query)
+
     async def drop(self):
         return await self.client.drop_database(self.sail_db)

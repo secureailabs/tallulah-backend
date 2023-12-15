@@ -53,6 +53,9 @@ build_image() {
     # Tag the rabbitmq image
     docker pull rabbitmq:3
     docker tag rabbitmq:3 tallulah/rabbitmq
+
+    # Build the logstash image
+    docker build . -f devops/docker/logstash/Dockerfile -t tallulah/logstash
 }
 
 # Run the docker image
