@@ -26,6 +26,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -
 
 
+## [0.3.0] - 2023-12-15
+
+### Added
+
+- **Elasticsearch + Logstash + Kibana (ELK)**
+  - Included ELK stack for logging and monitoring.
+  - All logs are pushed to Elasticsearch via Logstash.
+  - Kibana is used for visualizing the logs and monitoring the API calls.
+
+- **Customer logo in the email signature**
+  - Users can now use their company logo to the email signature.
+  - The logo is stored in Azure Blob Storage.
+
+- **Automatic certificate creation in the Terraform script**
+  - Included a Terraform script for automatic certificate creation using LetsEncrypt and GoDaddy and binding to the Azure Application Gateway.
+
+### Fixed
+
+- ** Email delete bug **
+  - Fixed a bug where emails were not being deleted from the database after delete mailbox call was made.
+
+
 ## [0.2.0] - 2023-11-30
 
 ### Added
