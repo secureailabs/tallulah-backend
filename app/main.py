@@ -26,6 +26,7 @@ from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
@@ -33,7 +34,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
 from pydantic import BaseModel, Field, StrictStr
 
-from app.api import accounts, authentication, emails, internal_utils, mailbox, response_templates
+from app.api import (
+    accounts,
+    authentication,
+    emails,
+    form_data,
+    form_templates,
+    internal_utils,
+    mailbox,
+    response_templates,
+)
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
 from app.utils.logging import LogLevel, add_log_message
@@ -56,19 +66,17 @@ server.include_router(internal_utils.router)
 server.include_router(mailbox.router)
 server.include_router(emails.router)
 server.include_router(response_templates.router)
-
+server.include_router(form_templates.router)
+server.include_router(form_data.router)
 
 # Setup CORS to allow all origins
 origins = [
     "*",
 ]
 server.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
 )
+server.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 # Override the default validation error handler as it throws away a lot of information
