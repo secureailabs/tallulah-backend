@@ -83,6 +83,9 @@ class FormDatas:
         if form_template_id:
             query["form_template_id"] = str(form_template_id)
 
+        # only read the non deleted ones
+        query["state"] = FormDataState.ACTIVE.value
+
         response = await FormDatas.data_service.find_by_query(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,
             query=jsonable_encoder(query),

@@ -1,6 +1,6 @@
 variable "resource_group_name" {
-  description = "The name of the resource group"
-  type        = string
+    description = "The name of the resource group"
+    type        = string
 }
 
 variable "container_app_env_id" {
@@ -100,5 +100,20 @@ variable "container_registry_server" {
 
 variable "container_registry_username" {
     description = "The username of the container registry"
+    type = string
+}
+
+variable "storage_account_connection_string" {
+    description = "The connection string of the storage account"
+    type = string
+}
+
+variable "elastic_password" {
+    description = "The password of the Elastic instance"
+    type = string
+}
+
+variable "elastic_cloud_id" {
+    description = "The ID of the Elastic instance"
     type = string
 }

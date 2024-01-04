@@ -1,8 +1,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FormMediaTypes } from '../models/FormMediaTypes';
 import type { GetFormData_Out } from '../models/GetFormData_Out';
 import type { GetMultipleFormData_Out } from '../models/GetMultipleFormData_Out';
+import type { GetStorageUrl_Out } from '../models/GetStorageUrl_Out';
 import type { RegisterFormData_In } from '../models/RegisterFormData_In';
 import type { RegisterFormData_Out } from '../models/RegisterFormData_Out';
 
@@ -49,6 +51,53 @@ export class FormDataService {
             url: '/api/form-data/',
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Get Upload Url
+     * Get the upload url for the form data
+     * @param mediaType Media type
+     * @returns GetStorageUrl_Out Successful Response
+     * @throws ApiError
+     */
+    public static getUploadUrl(
+        mediaType: FormMediaTypes,
+    ): CancelablePromise<GetStorageUrl_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-data/upload',
+            query: {
+                'media_type': mediaType,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Get Download Url
+     * Get the download url for the form media
+     * @param formDataId Form media id
+     * @param mediaType Media type
+     * @returns GetStorageUrl_Out Successful Response
+     * @throws ApiError
+     */
+    public static getDownloadUrl(
+        formDataId: string,
+        mediaType: FormMediaTypes,
+    ): CancelablePromise<GetStorageUrl_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-data/download',
+            query: {
+                'form_data_id': formDataId,
+                'media_type': mediaType,
+            },
             errors: {
                 422: `Validation Error`,
             },

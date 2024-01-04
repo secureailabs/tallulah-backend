@@ -27,7 +27,10 @@ from app.models.form_data import (
     RegisterFormData_In,
     RegisterFormData_Out,
 )
-from app.models.form_templates import FormTemplates
+from app.models.form_templates import FormMediaTypes, FormTemplates, GetStorageUrl_Out
+from app.utils.azure_blob_manager import AzureBlobManager
+from app.utils.elastic_search import ElasticsearchClient
+from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
@@ -46,6 +49,12 @@ async def add_form_data(
         values=form_data.values,
     )
     await FormDatas.create(form_data_db)
+
+    # Add the form data to elasticsearch for search
+    elastic_client = ElasticsearchClient()
+    await elastic_client.insert_document(
+        index_name=str(form_data.form_template_id), id=str(form_data_db.id), document=form_data.values
+    )
 
     return RegisterFormData_Out(_id=form_data_db.id)
 
@@ -67,6 +76,42 @@ async def get_all_form_data(
     form_data_list = await FormDatas.read(form_template_id=form_template_id, throw_on_not_found=False)
 
     return GetMultipleFormData_Out(form_data=[GetFormData_Out(**form_data.dict()) for form_data in form_data_list])
+
+
+@router.get(
+    path="/upload",
+    description="Get the upload url for the form data",
+    status_code=status.HTTP_200_OK,
+    operation_id="get_upload_url",
+)
+async def get_upload_url(
+    media_type: FormMediaTypes = Query(description="Media type"),
+) -> GetStorageUrl_Out:
+    storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-" + media_type.value)
+
+    # Get the upload url
+    media_id = PyObjectId()
+    upload_url = storage_manager.generate_write_sas(str(media_id))
+
+    return GetStorageUrl_Out(id=media_id, url=upload_url)
+
+
+@router.get(
+    path="/download",
+    description="Get the download url for the form media",
+    status_code=status.HTTP_200_OK,
+    operation_id="get_download_url",
+)
+async def get_download_url(
+    form_data_id: PyObjectId = Query(description="Form media id"),
+    media_type: FormMediaTypes = Query(description="Media type"),
+) -> GetStorageUrl_Out:
+    storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-" + media_type.value)
+
+    # Get the download url
+    download_url = storage_manager.generate_read_sas(str(form_data_id))
+
+    return GetStorageUrl_Out(id=form_data_id, url=download_url)
 
 
 @router.get(

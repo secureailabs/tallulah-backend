@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { FormField } from './FormField';
+import type { FormFieldGroup } from './FormFieldGroup';
 
 export type UpdateFormTemplate_In = {
     name?: string;
     description?: string;
-    fields?: Array<FormField>;
+    field_groups?: Array<FormFieldGroup>;
 };

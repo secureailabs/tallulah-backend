@@ -48,14 +48,14 @@ push_image_to_registry() {
 build_image() {
     check_docker
     poetry export -f requirements.txt --output requirements.txt --without-hashes
-    docker build -t $1 .
+    docker build -t $1 --platform linux/amd64 .
 
     # Tag the rabbitmq image
-    docker pull rabbitmq:3
+    docker pull rabbitmq:3 --platform linux/amd64 
     docker tag rabbitmq:3 tallulah/rabbitmq
 
     # Build the logstash image
-    docker build . -f devops/docker/logstash/Dockerfile -t tallulah/logstash
+    docker build . -f devops/docker/logstash/Dockerfile -t tallulah/logstash --platform linux/amd64
 }
 
 # Run the docker image
@@ -112,7 +112,7 @@ generate_client() {
     # It is not a bug, it happens because the openapi spec uses alias of the keys used in the models
     # For example, if a model has a field called "id", it will be renamed to "_id", because that's what mongodb uses
     # But _is is considered a private member so "id" is used instead
-    sed -i 's/\"_id\"/\"id\"/g' docs/openapi.json
+    sed -i '' 's/\"_id\"/\"id\"/g' docs/openapi.json
 
     # Generate the python client
     rm -rf tallulah-client/

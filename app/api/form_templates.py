@@ -48,7 +48,7 @@ async def add_new_form_template(
     form_template_db = FormTemplate_Db(
         name=form_template.name,
         description=form_template.description,
-        fields=form_template.fields,
+        field_groups=form_template.field_groups,
         user_id=current_user.id,
     )
     await FormTemplates.create(form_template_db)
@@ -122,7 +122,7 @@ async def update_form_template(
         query_user_id=current_user.id,
         update_form_template_name=form_template.name,
         update_form_template_description=form_template.description,
-        update_form_template_fields=form_template.fields,
+        update_form_template_field_groups=form_template.field_groups,
         update_form_template_last_edit_time=datetime.utcnow(),
     )
 
