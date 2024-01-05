@@ -23,6 +23,11 @@ variable "azure_subscription_id" {
   type        = string
 }
 
+variable "resource_group_name" {
+  description = "Azure Resource Group name"
+  type        = string
+}
+
 variable "container_registry_password" {
   description = "Container registry password"
   type        = string
@@ -146,4 +151,19 @@ variable "elastic_cloud_password" {
 variable "elastic_cloud_host" {
   description = "The URL of the Elastic Cloud"
   type        = string
+}
+
+variable "storage_account_connection_string" {
+    description = "The connection string of the storage account"
+    type = string
+}
+
+variable "elastic_password" {
+    description = "The password of the Elastic instance"
+    type = string
+}
+
+variable "elastic_cloud_id" {
+    description = "The ID of the Elastic instance"
+    type = string
 }

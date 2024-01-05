@@ -1,5 +1,6 @@
 module "development" {
   source                      = "./environments/development"
+  resource_group_name         = var.resource_group_name
   azure_tenant_id             = var.azure_tenant_id
   azure_object_id             = var.azure_object_id
   azure_client_id             = var.azure_client_id
@@ -26,6 +27,10 @@ module "development" {
   elastic_cloud_username      = var.elastic_cloud_username
   elastic_cloud_password      = var.elastic_cloud_password
   elastic_cloud_host          = var.elastic_cloud_host
+  storage_account_connection_string = var.storage_account_connection_string
+  elastic_cloud_id = var.elastic_cloud_id
+  elastic_password = var.elastic_password
+
 }
 
 

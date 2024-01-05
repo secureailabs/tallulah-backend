@@ -12,7 +12,9 @@ export type { Body_reply_to_emails } from './models/Body_reply_to_emails';
 export type { EmailBody } from './models/EmailBody';
 export { EmailState } from './models/EmailState';
 export type { FormField } from './models/FormField';
+export type { FormFieldGroup } from './models/FormFieldGroup';
 export { FormFieldTypes } from './models/FormFieldTypes';
+export { FormMediaTypes } from './models/FormMediaTypes';
 export { FormTemplateState } from './models/FormTemplateState';
 export type { GetEmail_Out } from './models/GetEmail_Out';
 export type { GetFormData_Out } from './models/GetFormData_Out';
@@ -24,6 +26,7 @@ export type { GetMultipleFormTemplate_Out } from './models/GetMultipleFormTempla
 export type { GetMultipleMailboxes_Out } from './models/GetMultipleMailboxes_Out';
 export type { GetMultipleResponseTemplate_Out } from './models/GetMultipleResponseTemplate_Out';
 export type { GetResponseTemplate_Out } from './models/GetResponseTemplate_Out';
+export type { GetStorageUrl_Out } from './models/GetStorageUrl_Out';
 export type { GetUsers_Out } from './models/GetUsers_Out';
 export type { HTTPException } from './models/HTTPException';
 export type { HTTPValidationError } from './models/HTTPValidationError';

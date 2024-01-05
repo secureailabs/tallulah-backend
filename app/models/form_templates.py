@@ -43,6 +43,12 @@ class FormFieldTypes(Enum):
     VIDEO = "VIDEO"
 
 
+class FormMediaTypes(Enum):
+    FILE = "FILE"
+    IMAGE = "IMAGE"
+    VIDEO = "VIDEO"
+
+
 class FormTemplateState(Enum):
     TEMPLATE = "TEMPLATE"
     PUBLISHED = "PUBLISHED"
@@ -58,10 +64,21 @@ class FormField(SailBaseModel):
     options: List[StrictStr] = Field(default=None)
 
 
-class FormTemplate_Base(SailBaseModel):
+class FormFieldGroup(SailBaseModel):
     name: StrictStr = Field()
     description: Optional[StrictStr] = Field(default=None)
     fields: List[FormField] = Field(default=None)
+
+
+class FormTemplate_Base(SailBaseModel):
+    name: StrictStr = Field()
+    description: Optional[StrictStr] = Field(default=None)
+    field_groups: List[FormFieldGroup] = Field(default=None)
+
+
+class GetStorageUrl_Out(SailBaseModel):
+    id: PyObjectId = Field()
+    url: StrictStr = Field()
 
 
 class RegisterFormTemplate_In(FormTemplate_Base):
@@ -94,7 +111,7 @@ class GetMultipleFormTemplate_Out(SailBaseModel):
 class UpdateFormTemplate_In(SailBaseModel):
     name: Optional[StrictStr] = Field(default=None)
     description: Optional[StrictStr] = Field(default=None)
-    fields: Optional[List[FormField]] = Field(default=None)
+    field_groups: Optional[List[FormFieldGroup]] = Field(default=None)
 
 
 class FormTemplates:
@@ -152,7 +169,7 @@ class FormTemplates:
         update_form_template_name: Optional[StrictStr] = None,
         update_form_template_state: Optional[FormTemplateState] = None,
         update_form_template_description: Optional[StrictStr] = None,
-        update_form_template_fields: Optional[List[FormField]] = None,
+        update_form_template_field_groups: Optional[List[FormFieldGroup]] = None,
         update_form_template_last_edit_time: Optional[datetime] = None,
     ):
         query = {}
@@ -166,8 +183,8 @@ class FormTemplates:
             update_request["$set"]["name"] = update_form_template_name
         if update_form_template_description:
             update_request["$set"]["description"] = update_form_template_description
-        if update_form_template_fields:
-            update_request["$set"]["fields"] = update_form_template_fields
+        if update_form_template_field_groups:
+            update_request["$set"]["field_groups"] = update_form_template_field_groups
         if update_form_template_last_edit_time:
             update_request["$set"]["last_edit_time"] = update_form_template_last_edit_time
         if update_form_template_state:

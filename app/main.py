@@ -46,7 +46,8 @@ from app.api import (
 )
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
-from app.utils.logging import LogLevel, add_log_message
+from app.utils.elastic_search import ElasticsearchClient
+from app.utils.log_manager import LogLevel, add_log_message
 from app.utils.secrets import secret_store
 
 server = FastAPI(
@@ -74,9 +75,20 @@ origins = [
     "*",
 ]
 server.add_middleware(
-    CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 server.add_middleware(GZipMiddleware, minimum_size=1000)
+
+
+# Initialize the elasticsearch client
+elasticsearch_client = ElasticsearchClient(
+    cloud_id=secret_store.ELASTIC_CLOUD_ID,
+    password=secret_store.ELASTIC_PASSWORD,
+)
 
 
 # Override the default validation error handler as it throws away a lot of information

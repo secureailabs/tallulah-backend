@@ -22,3 +22,21 @@ resource "azurerm_storage_container" "blob_container" {
   container_access_type = "blob"
   storage_account_name  = azurerm_storage_account.storage_account.name
 }
+
+resource "azurerm_storage_container" "image_container" {
+  name                  = "form-image"
+  container_access_type = "private"
+  storage_account_name  = azurerm_storage_account.storage_account.name
+}
+
+resource "azurerm_storage_container" "video_container" {
+  name                  = "form-video"
+  container_access_type = "private"
+  storage_account_name  = azurerm_storage_account.storage_account.name
+}
+
+resource "azurerm_storage_container" "file_container" {
+  name                  = "form-file"
+  container_access_type = "private"
+  storage_account_name  = azurerm_storage_account.storage_account.name
+}

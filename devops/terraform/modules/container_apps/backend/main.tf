@@ -74,6 +74,18 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "tallulah-admin-password"
     value = var.tallulah_admin_password
   }
+  secret {
+    name = "storage-account-connection-string"
+    value = var.storage_account_connection_string
+  }
+  secret {
+    name = "elastic-password"
+    value = var.elastic_password
+  }
+  secret {
+    name = "elastic-cloud-id"
+    value = var.elastic_cloud_id
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -152,6 +164,18 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "TALLULAH_ADMIN_PASSWORD"
         secret_name = "tallulah-admin-password"
+      }
+      env {
+        name       = "STORAGE_ACCOUNT_CONNECTION_STRING"
+        secret_name = "storage-account-connection-string"
+      }
+      env {
+        name      = "ELASTIC_PASSWORD"
+        secret_name = "elastic-password"
+      }
+      env {
+        name = "ELASTIC_CLOUD_ID"
+        secret_name = "elastic-cloud-id"
       }
     }
   }

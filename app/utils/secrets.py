@@ -35,6 +35,9 @@ class SecretStore(BaseModel):
     REFRESH_SECRET: str
     SLACK_WEBHOOK: str
     TALLULAH_ADMIN_PASSWORD: str
+    STORAGE_ACCOUNT_CONNECTION_STRING: str
+    ELASTIC_PASSWORD: str
+    ELASTIC_CLOUD_ID: str
 
     class Config:
         frozen = True
@@ -61,6 +64,9 @@ secret_store = SecretStore(
     REFRESH_SECRET=get_secret_env("REFRESH_SECRET"),
     SLACK_WEBHOOK=get_secret_env("SLACK_WEBHOOK"),
     TALLULAH_ADMIN_PASSWORD=get_secret_env("TALLULAH_ADMIN_PASSWORD"),
+    STORAGE_ACCOUNT_CONNECTION_STRING=get_secret_env("STORAGE_ACCOUNT_CONNECTION_STRING"),
+    ELASTIC_PASSWORD=get_secret_env("ELASTIC_PASSWORD"),
+    ELASTIC_CLOUD_ID=get_secret_env("ELASTIC_CLOUD_ID"),
 )
 
 
