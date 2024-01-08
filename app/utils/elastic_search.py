@@ -45,3 +45,11 @@ class ElasticsearchClient:
 
         resp = await self.client.index(index=index_name, document=document, id=id)
         return resp
+
+    async def delete_document(self, index_name: str, id: str):
+        resp = await self.client.delete(index=index_name, id=id)
+        return resp
+
+    async def search(self, index_name: str, search_query: str):
+        resp = await self.client.search(index=index_name, query={"query": {"query_string": {"query": search_query}}})
+        return resp

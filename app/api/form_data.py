@@ -115,6 +115,27 @@ async def get_download_url(
 
 
 @router.get(
+    path="/search",
+    description="Search the text form data for the current user for the template",
+    status_code=status.HTTP_200_OK,
+    operation_id="search_form_data",
+)
+async def search_form_data(
+    form_template_id: PyObjectId = Query(description="Form template id"),
+    search_query: str = Query(description="Search query"),
+    current_user: TokenData = Depends(get_current_user),
+):
+    # Check if the user is the owner of the response template
+    _ = await FormTemplates.read(template_id=form_template_id, user_id=current_user.id, throw_on_not_found=True)
+
+    # Search the form data
+    elastic_client = ElasticsearchClient()
+    response = await elastic_client.search(index_name=str(form_template_id), search_query=search_query)
+
+    return response
+
+
+@router.get(
     path="/{form_data_id}",
     description="Get the response data for the form",
     status_code=status.HTTP_200_OK,
@@ -157,5 +178,9 @@ async def delete_form_data(
         query_form_data_id=form_data_id,
         form_data_state=FormDataState.DELETED,
     )
+
+    # Delete from the elastic search cluster as well
+    elastic_client = ElasticsearchClient()
+    await elastic_client.delete_document(index_name=str(form_data[0].form_template_id), id=str(form_data_id))
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
