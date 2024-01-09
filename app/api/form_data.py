@@ -87,7 +87,9 @@ async def get_all_form_data(
 async def get_upload_url(
     media_type: FormMediaTypes = Query(description="Media type"),
 ) -> GetStorageUrl_Out:
-    storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-" + media_type.value)
+    storage_manager = AzureBlobManager(
+        secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-" + media_type.value.lower()
+    )
 
     # Get the upload url
     media_id = PyObjectId()
@@ -106,7 +108,9 @@ async def get_download_url(
     form_data_id: PyObjectId = Query(description="Form media id"),
     media_type: FormMediaTypes = Query(description="Media type"),
 ) -> GetStorageUrl_Out:
-    storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-" + media_type.value)
+    storage_manager = AzureBlobManager(
+        secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-" + media_type.value.lower()
+    )
 
     # Get the download url
     download_url = storage_manager.generate_read_sas(str(form_data_id))
