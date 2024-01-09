@@ -105,6 +105,31 @@ export class FormDataService {
     }
 
     /**
+     * Search Form Data
+     * Search the text form data for the current user for the template
+     * @param formTemplateId Form template id
+     * @param searchQuery Search query
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static searchFormData(
+        formTemplateId: string,
+        searchQuery: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-data/search',
+            query: {
+                'form_template_id': formTemplateId,
+                'search_query': searchQuery,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Get Form Data
      * Get the response data for the form
      * @param formDataId Form data id
