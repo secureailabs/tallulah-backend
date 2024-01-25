@@ -51,5 +51,5 @@ class ElasticsearchClient:
         return resp
 
     async def search(self, index_name: str, search_query: str):
-        resp = await self.client.search(index=index_name, query={"query": {"query_string": {"query": search_query}}})
+        resp = await self.client.search(index=index_name, body={"query": {"query_string": {"query": search_query}}})
         return resp

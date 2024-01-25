@@ -24,18 +24,19 @@ from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
 
 
+class FormDataState(Enum):
+    ACTIVE = "ACTIVE"
+    DELETED = "DELETED"
+
+
 class FormData_Base(SailBaseModel):
     form_template_id: PyObjectId = Field()
     values: Dict[StrictStr, Any] = Field(default=None)
+    state: FormDataState = Field(default=FormDataState.ACTIVE)
 
 
 class RegisterFormData_In(FormData_Base):
     pass
-
-
-class FormDataState(Enum):
-    ACTIVE = "ACTIVE"
-    DELETED = "DELETED"
 
 
 class RegisterFormData_Out(SailBaseModel):

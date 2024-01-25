@@ -22,7 +22,6 @@ from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
-from app.utils.emails import EmailBody
 
 
 class FormFieldTypes(Enum):
@@ -41,6 +40,7 @@ class FormFieldTypes(Enum):
     FILE = "FILE"
     IMAGE = "IMAGE"
     VIDEO = "VIDEO"
+    CONSENT_CHECKBOX = "CONSENT_CHECKBOX"
 
 
 class FormMediaTypes(Enum):
@@ -57,6 +57,7 @@ class FormTemplateState(Enum):
 
 class FormField(SailBaseModel):
     name: StrictStr = Field()
+    label: StrictStr = Field()
     description: Optional[StrictStr] = Field(default=None)
     place_holder: StrictStr = Field(default=None)
     type: FormFieldTypes = Field(default=FormFieldTypes.TEXT)

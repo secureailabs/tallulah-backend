@@ -59,6 +59,7 @@ async def register_user(
     # Create the user and add it to the database
     user_db = User_Db(
         name=user.name,
+        organization=user.organization,
         email=user.email,
         roles=user.roles,
         job_title=user.job_title,
@@ -153,6 +154,7 @@ async def add_tallulah_admin():
     # Create the user and add it to the database
     user_db = User_Db(
         name="Tallulah Admin",
+        organization="Array Insights",
         email=EmailStr("admin@tallulah.net"),
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",

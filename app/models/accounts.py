@@ -37,6 +37,7 @@ class UserAccountState(Enum):
 
 class User_Base(SailBaseModel):
     name: StrictStr = Field()
+    organization: Optional[StrictStr] = Field(default=None)
     email: EmailStr = Field()
     job_title: StrictStr = Field()
     roles: List[UserRole] = Field()

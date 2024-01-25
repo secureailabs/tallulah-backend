@@ -51,7 +51,7 @@ build_image() {
     docker build -t $1 --platform linux/amd64 .
 
     # Tag the rabbitmq image
-    docker pull rabbitmq:3 --platform linux/amd64 
+    docker pull rabbitmq:3 --platform linux/amd64
     docker tag rabbitmq:3 tallulah/rabbitmq
 
     # Build the logstash image
