@@ -21,4 +21,5 @@ export enum FormFieldTypes {
     FILE = 'FILE',
     IMAGE = 'IMAGE',
     VIDEO = 'VIDEO',
+    CONSENT_CHECKBOX = 'CONSENT_CHECKBOX',
 }

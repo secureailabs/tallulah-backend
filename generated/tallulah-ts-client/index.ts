@@ -11,6 +11,7 @@ export type { Body_login } from './models/Body_login';
 export type { Body_reply_to_emails } from './models/Body_reply_to_emails';
 export type { EmailBody } from './models/EmailBody';
 export { EmailState } from './models/EmailState';
+export { FormDataState } from './models/FormDataState';
 export type { FormField } from './models/FormField';
 export type { FormFieldGroup } from './models/FormFieldGroup';
 export { FormFieldTypes } from './models/FormFieldTypes';

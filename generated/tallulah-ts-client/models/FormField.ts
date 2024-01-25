@@ -6,6 +6,7 @@ import type { FormFieldTypes } from './FormFieldTypes';
 
 export type FormField = {
     name: string;
+    label: string;
     description?: string;
     place_holder?: string;
     type?: FormFieldTypes;
