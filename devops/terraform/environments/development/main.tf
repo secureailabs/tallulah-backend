@@ -1,7 +1,7 @@
 module "resource_group" {
-  source                     = "../../modules/resource_group"
-  resource_group_name        = var.resource_group_name
-  resource_group_location    = "westus"
+  source                  = "../../modules/resource_group"
+  resource_group_name     = var.resource_group_name
+  resource_group_location = "westus"
 }
 
 module "virtual_network" {
@@ -56,38 +56,38 @@ module "private_dns_zone" {
 }
 
 module "container_app_backend" {
-  source                      = "../../modules/container_apps/backend"
-  resource_group_name         = module.resource_group.resource_group_name
-  container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_2470042")
-  container_registry_server   = var.container_registry_server
-  container_registry_username = var.container_registry_username
-  container_registry_password = var.container_registry_password
-  azure_client_id             = var.azure_client_id
-  azure_client_secret         = var.azure_client_secret
-  azure_tenant_id             = var.azure_tenant_id
-  keyvault_url                = module.keyvault.keyvault_url
-  jwt_secret                  = var.jwt_secret
-  mongo_connection_url        = var.mongo_connection_url
-  outlook_client_id           = var.outlook_client_id
-  outlook_client_secret       = var.outlook_client_secret
-  outlook_tenant_id           = var.outlook_tenant_id
-  outlook_redirect_uri        = var.outlook_redirect_uri
-  password_pepper             = var.password_pepper
-  rabbit_mq_host              = var.rabbit_mq_host
-  refresh_secret              = var.refresh_secret
-  storage_container_sas_url   = var.storage_container_sas_url
-  tallulah_admin_password     = var.tallulah_admin_password
+  source                            = "../../modules/container_apps/backend"
+  resource_group_name               = module.resource_group.resource_group_name
+  container_app_env_id              = module.container_apps_env.container_app_environment_id
+  docker_image                      = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_5ab17ff")
+  container_registry_server         = var.container_registry_server
+  container_registry_username       = var.container_registry_username
+  container_registry_password       = var.container_registry_password
+  azure_client_id                   = var.azure_client_id
+  azure_client_secret               = var.azure_client_secret
+  azure_tenant_id                   = var.azure_tenant_id
+  keyvault_url                      = module.keyvault.keyvault_url
+  jwt_secret                        = var.jwt_secret
+  mongo_connection_url              = var.mongo_connection_url
+  outlook_client_id                 = var.outlook_client_id
+  outlook_client_secret             = var.outlook_client_secret
+  outlook_tenant_id                 = var.outlook_tenant_id
+  outlook_redirect_uri              = var.outlook_redirect_uri
+  password_pepper                   = var.password_pepper
+  rabbit_mq_host                    = var.rabbit_mq_host
+  refresh_secret                    = var.refresh_secret
+  storage_container_sas_url         = var.storage_container_sas_url
+  tallulah_admin_password           = var.tallulah_admin_password
   storage_account_connection_string = var.storage_account_connection_string
-  elastic_cloud_id = var.elastic_cloud_id
-  elastic_password = var.elastic_password
+  elastic_cloud_id                  = var.elastic_cloud_id
+  elastic_password                  = var.elastic_password
 }
 
 module "container_app_rabbit_mq" {
   source                      = "../../modules/container_apps/rabbit_mq"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_2470042")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_5ab17ff")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
@@ -123,7 +123,7 @@ module "container_app_logstash" {
   source                      = "../../modules/container_apps/logstash"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/logstash:v0.1.0_2470042")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/logstash:v0.1.0_5ab17ff")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password

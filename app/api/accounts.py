@@ -29,6 +29,7 @@ from app.models.accounts import (
 )
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
+from app.models.organizations import Organization_Db, Organizations
 from app.utils.secrets import secret_store
 
 router = APIRouter(tags=["users"])
@@ -47,6 +48,16 @@ async def register_user(
     user: RegisterUser_In = Body(description="User details to register with the organization"),
     _: TokenData = Depends(get_current_user),
 ) -> RegisterUser_Out:
+    # Check if the organization exists
+    if user.organization:
+        organization = await Organizations.read(name=user.organization)
+        if not organization:
+            organization = Organization_Db(
+                name=user.organization,
+                admin=user.email,
+            )
+            await Organizations.create(organization=organization)
+
     # Check if the user already exists
     user_db = await Users.read(email=user.email, throw_on_not_found=False)
     if user_db:
@@ -64,7 +75,7 @@ async def register_user(
         roles=user.roles,
         job_title=user.job_title,
         hashed_password=get_password_hash(user.email, user.password),
-        account_state=UserAccountState.ACTIVE,
+        state=UserAccountState.ACTIVE,
     )
     await Users.create(user=user_db)
 
@@ -159,7 +170,7 @@ async def add_tallulah_admin():
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",
         hashed_password=get_password_hash("admin@tallulah.net", secret_store.TALLULAH_ADMIN_PASSWORD),
-        account_state=UserAccountState.ACTIVE,
+        state=UserAccountState.ACTIVE,
     )
 
     await Users.create(user=user_db)

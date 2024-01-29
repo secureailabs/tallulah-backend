@@ -21,6 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
+from app.models import organizations
 from app.models.common import PyObjectId, SailBaseModel
 
 
@@ -93,6 +94,7 @@ class RegisterFormTemplate_Out(SailBaseModel):
 class FormTemplate_Db(FormTemplate_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
+    organization: StrictStr = Field()
     state: FormTemplateState = Field(default=FormTemplateState.TEMPLATE)
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)
@@ -131,6 +133,7 @@ class FormTemplates:
     @staticmethod
     async def read(
         user_id: Optional[PyObjectId] = None,
+        organization: Optional[StrictStr] = None,
         template_id: Optional[PyObjectId] = None,
         state: Optional[FormTemplateState] = None,
         throw_on_not_found: bool = True,
@@ -142,6 +145,8 @@ class FormTemplates:
             query["_id"] = str(template_id)
         if user_id:
             query["user_id"] = str(user_id)
+        if organization:
+            query["organization"] = organization
         if state:
             query["state"] = state.value
         else:

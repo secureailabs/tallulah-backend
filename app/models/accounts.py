@@ -27,6 +27,8 @@ from app.models.common import PyObjectId, SailBaseModel
 class UserRole(Enum):
     USER = "USER"
     TALLULAH_ADMIN = "TALLULAH_ADMIN"
+    FORM_INTAKE_USER = "FORM_INTAKE_USER"
+    EMAIL_INTEGRATION_USER = "EMAIL_INTEGRATION_USER"
 
 
 class UserAccountState(Enum):
@@ -37,7 +39,7 @@ class UserAccountState(Enum):
 
 class User_Base(SailBaseModel):
     name: StrictStr = Field()
-    organization: Optional[StrictStr] = Field(default=None)
+    organization: StrictStr = Field()
     email: EmailStr = Field()
     job_title: StrictStr = Field()
     roles: List[UserRole] = Field()
@@ -48,7 +50,7 @@ class User_Db(User_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     account_creation_time: datetime = Field(default_factory=datetime.utcnow)
     hashed_password: StrictStr = Field()
-    account_state: UserAccountState = Field()
+    state: UserAccountState = Field()
     last_login_time: Optional[datetime] = Field(default=None)
     failed_login_attempts: int = Field(default=0)
 
@@ -147,13 +149,13 @@ class Users:
 
         update_request = {"$set": {}}
         if update_last_login_time:
-            update_request["$set"]["state"] = update_last_login_time
+            update_request["$set"]["last_login_time"] = update_last_login_time
         if update_job_title:
             update_request["$set"]["job_title"] = update_job_title
         if update_avatar:
             update_request["$set"]["avatar"] = update_avatar
         if update_account_state:
-            update_request["$set"]["account_state"] = update_account_state.value
+            update_request["$set"]["state"] = update_account_state.value
         if update_failed_login_attempts:
             update_request["$set"]["failed_login_attempts"] = update_failed_login_attempts
         if increment_failed_login_attempts:

@@ -6,7 +6,7 @@ import type { UserRole } from './UserRole';
 
 export type RegisterUser_In = {
     name: string;
-    organization?: string;
+    organization: string;
     email: string;
     job_title: string;
     roles: Array<UserRole>;

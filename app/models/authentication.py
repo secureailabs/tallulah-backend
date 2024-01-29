@@ -28,16 +28,17 @@ class LoginSuccess_Out(SailBaseModel):
 
 class TokenData(SailBaseModel):
     id: PyObjectId = Field(alias="_id")
-    roles: List[UserRole] = Field(...)
-    exp: int = Field(...)
+    organization: StrictStr = Field()
+    roles: List[UserRole] = Field()
+    exp: int = Field()
 
 
 class RefreshTokenData(SailBaseModel):
     id: PyObjectId = Field(alias="_id")
-    organization_id: PyObjectId = Field(...)
-    roles: List[UserRole] = Field(...)
-    exp: int = Field(...)
+    organization: StrictStr = Field()
+    roles: List[UserRole] = Field()
+    exp: int = Field()
 
 
 class RefreshToken_In(SailBaseModel):
-    refresh_token: StrictStr = Field(...)
+    refresh_token: StrictStr = Field()

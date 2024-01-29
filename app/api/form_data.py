@@ -70,7 +70,9 @@ async def get_all_form_data(
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleFormData_Out:
     # Check if the user is the owner of the response template
-    _ = await FormTemplates.read(template_id=form_template_id, user_id=current_user.id, throw_on_not_found=True)
+    _ = await FormTemplates.read(
+        template_id=form_template_id, organization=current_user.organization, throw_on_not_found=True
+    )
 
     # TODO: Add pagination to this
     form_data_list = await FormDatas.read(form_template_id=form_template_id, throw_on_not_found=False)
@@ -130,7 +132,9 @@ async def search_form_data(
     current_user: TokenData = Depends(get_current_user),
 ):
     # Check if the user is the owner of the response template
-    _ = await FormTemplates.read(template_id=form_template_id, user_id=current_user.id, throw_on_not_found=True)
+    _ = await FormTemplates.read(
+        template_id=form_template_id, organization=current_user.organization, throw_on_not_found=True
+    )
 
     # Search the form data
     elastic_client = ElasticsearchClient()
@@ -153,7 +157,7 @@ async def get_form_data(
 
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_data[0].form_template_id, user_id=current_user.id, throw_on_not_found=True
+        template_id=form_data[0].form_template_id, organization=current_user.organization, throw_on_not_found=True
     )
 
     return GetFormData_Out(**form_data[0].dict())
@@ -174,7 +178,7 @@ async def delete_form_data(
 
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_data[0].form_template_id, user_id=current_user.id, throw_on_not_found=True
+        template_id=form_data[0].form_template_id, organization=current_user.organization, throw_on_not_found=True
     )
 
     # Delete the response template

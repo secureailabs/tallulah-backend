@@ -104,10 +104,10 @@ async def login_for_access_token(
         raise exception_authentication_failed
     found_user_db = found_user[0]
 
-    if found_user_db.account_state is not UserAccountState.ACTIVE:
+    if found_user_db.state is not UserAccountState.ACTIVE:
         raise HTTPException(
             status_code=403,
-            detail=f"User account is {found_user_db.account_state.value}. Contact SAIL support.",
+            detail=f"User account is {found_user_db.state.value}. Contact SAIL support.",
         )
 
     PASSWORD_PEPPER = secret_store.PASSWORD_PEPPER
@@ -142,6 +142,7 @@ async def login_for_access_token(
     token_data = TokenData(
         _id=found_user_db.id,
         roles=found_user_db.roles,
+        organization=found_user_db.organization,
         exp=int((time() * 1000) + (ACCESS_TOKEN_EXPIRE_MINUTES * 60 * 1000)),
     )
     access_token = jwt.encode(

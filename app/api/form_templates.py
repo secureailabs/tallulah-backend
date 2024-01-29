@@ -50,6 +50,7 @@ async def add_new_form_template(
         description=form_template.description,
         field_groups=form_template.field_groups,
         user_id=current_user.id,
+        organization=current_user.organization,
     )
     await FormTemplates.create(form_template_db)
 
