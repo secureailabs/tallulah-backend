@@ -21,25 +21,14 @@ module "development" {
   rabbit_mq_password          = var.rabbit_mq_password
   rabbit_mq_user              = var.rabbit_mq_user
   storage_container_sas_url   = var.storage_container_sas_url
-  ssl_certificate_file_path   = var.ssl_certificate_file_path
   ssl_certificate_password    = var.ssl_certificate_password
   host_name                   = var.host_name
   elastic_cloud_username      = var.elastic_cloud_username
   elastic_cloud_password      = var.elastic_cloud_password
   elastic_cloud_host          = var.elastic_cloud_host
-  storage_account_connection_string = var.storage_account_connection_string
-  elastic_cloud_id = var.elastic_cloud_id
-  elastic_password = var.elastic_password
-
-}
-
-
-module "tls_certificates" {
-  source                    = "./modules/tls_certificate"
-  godaddy_api_key           = var.godaddy_key
-  godaddy_api_secret        = var.godaddy_secret
-  google_domains_token      = var.google_domains_token
-  ssl_certificate_password  = var.ssl_certificate_password
-  ssl_certificate_file_path = var.ssl_certificate_file_path
-  host_name                 = var.host_name
+  elastic_cloud_id            = var.elastic_cloud_id
+  elastic_password            = var.elastic_password
+  godaddy_key                 = var.godaddy_key
+  godaddy_secret              = var.godaddy_secret
+  google_domains_token        = var.google_domains_token
 }

@@ -52,27 +52,27 @@ resource "acme_certificate" "certificate" {
 
 resource "local_file" "certificate" {
   content    = acme_certificate.certificate.certificate_pem
-  filename   = "certificate.pem"
+  filename   = "${var.host_name}_certificate.pem"
   depends_on = [acme_certificate.certificate]
 }
 
 
 resource "local_file" "private_key" {
   content    = acme_certificate.certificate.private_key_pem
-  filename   = "private_key.pem"
+  filename   = "${var.host_name}_private_key.pem"
   depends_on = [acme_certificate.certificate]
 }
 
 resource "local_file" "issuer_pem" {
   content    = acme_certificate.certificate.issuer_pem
-  filename   = "issuer.pem"
+  filename   = "${var.host_name}_issuer.pem"
   depends_on = [acme_certificate.certificate]
 }
 
 
 resource "null_resource" "convert_to_pfx" {
   provisioner "local-exec" {
-    command = "openssl pkcs12 -export -out ${var.ssl_certificate_file_path} -inkey private_key.pem -in certificate.pem -certfile issuer.pem -passout pass:${var.ssl_certificate_password}"
+    command = "openssl pkcs12 -export -out ${var.host_name}_certificate.pfx -inkey ${var.host_name}_private_key.pem -in ${var.host_name}_certificate.pem -certfile ${var.host_name}_issuer.pem -passout pass:${var.ssl_certificate_password}"
   }
   depends_on = [local_file.certificate]
 }

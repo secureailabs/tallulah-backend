@@ -105,11 +105,6 @@ variable "tallulah_admin_password" {
   type        = string
 }
 
-variable "ssl_certificate_file_path" {
-  description = "SSL certificate file path"
-  type        = string
-}
-
 variable "ssl_certificate_password" {
   description = "SSL certificate password"
   type        = string
@@ -135,17 +130,27 @@ variable "elastic_cloud_host" {
   type        = string
 }
 
-variable "storage_account_connection_string" {
-    description = "The connection string of the storage account"
-    type = string
-}
-
 variable "elastic_password" {
-    description = "The password of the Elastic instance"
-    type = string
+  description = "The password of the Elastic instance"
+  type        = string
 }
 
 variable "elastic_cloud_id" {
-    description = "The ID of the Elastic instance"
-    type = string
+  description = "The ID of the Elastic instance"
+  type        = string
+}
+
+variable "godaddy_secret" {
+  description = "value of godaddy secret"
+  type        = string
+}
+
+variable "godaddy_key" {
+  description = "value of godaddy key"
+  type        = string
+}
+
+variable "google_domains_token" {
+  description = "value of google domains token"
+  type        = string
 }

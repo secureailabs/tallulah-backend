@@ -40,3 +40,9 @@ resource "azurerm_storage_container" "file_container" {
   container_access_type = "private"
   storage_account_name  = azurerm_storage_account.storage_account.name
 }
+
+resource "azurerm_storage_container" "concent_container" {
+  name                  = "form-concent"
+  container_access_type = "blob"
+  storage_account_name  = azurerm_storage_account.storage_account.name
+}
