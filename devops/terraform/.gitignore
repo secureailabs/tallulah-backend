@@ -50,3 +50,8 @@ credentials/
 
 # Add additional rules here depending on other tools and scripts you might be using
 # For example, for IDE-specific files, OS-generated files etc.
+
+
+# Ignore the generated certificates
+*.pem
+*.pfx

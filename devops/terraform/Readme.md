@@ -49,7 +49,7 @@ terraform apply
 Apply the Terraform configuration to create resources in a specific environment.
 
 ``` bash
-terraform apply -var-file=environments/staging/terraform.tfvars
+terraform apply -var-file="development.tfvars"
 ```
 
 
