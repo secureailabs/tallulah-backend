@@ -38,12 +38,22 @@ variable "ssl_certificate_file_path" {
   type        = string
 }
 
+variable "ssl_certificate_file_path_2" {
+  description = "SSL certificate file path"
+  type        = string
+}
+
 variable "ssl_certificate_password" {
   description = "SSL certificate password"
   type        = string
 }
 
 variable "host_name" {
+  description = "Host name that the application gateway will listen to"
+  type        = string
+}
+
+variable "host_name_2" {
   description = "Host name that the application gateway will listen to"
   type        = string
 }

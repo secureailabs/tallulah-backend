@@ -133,6 +133,11 @@ variable "host_name" {
   type        = string
 }
 
+variable "host_name_2" {
+  description = "Host name that the application gateway will listen to"
+  type        = string
+}
+
 variable "elastic_cloud_username" {
   description = "The username of the Elastic Cloud"
   type        = string

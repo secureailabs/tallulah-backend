@@ -7,6 +7,15 @@ module "tls_certificates" {
   host_name                = var.host_name
 }
 
+module "tls_certificates_2" {
+  source                   = "./modules/tls_certificate"
+  godaddy_api_key          = var.godaddy_key
+  godaddy_api_secret       = var.godaddy_secret
+  google_domains_token     = var.google_domains_token
+  ssl_certificate_password = var.ssl_certificate_password
+  host_name                = var.host_name_2
+}
+
 module "resource_group" {
   source                  = "./modules/resource_group"
   resource_group_name     = var.resource_group_name
@@ -43,17 +52,19 @@ module "public_ip" {
 }
 
 module "application_gateway" {
-  source                    = "./modules/application_gateway"
-  resource_group_name       = module.resource_group.resource_group_name
-  container_app_subnet_id   = module.virtual_network.container_apps_subnet_id
-  gateway_subnet_id         = module.virtual_network.gateway_subnet_id
-  backend_address           = "backend.${module.container_apps_env.container_app_environment_default_domain}"
-  ui_address                = "frontend.${module.container_apps_env.container_app_environment_default_domain}"
-  gateway_public_ip_id      = module.public_ip.public_ip_id
-  react_app_address         = "ui.${module.container_apps_env.container_app_environment_default_domain}"
-  ssl_certificate_password  = var.ssl_certificate_password
-  ssl_certificate_file_path = module.tls_certificates.certificate_pfx
-  host_name                 = var.host_name
+  source                      = "./modules/application_gateway"
+  resource_group_name         = module.resource_group.resource_group_name
+  container_app_subnet_id     = module.virtual_network.container_apps_subnet_id
+  gateway_subnet_id           = module.virtual_network.gateway_subnet_id
+  backend_address             = "backend.${module.container_apps_env.container_app_environment_default_domain}"
+  ui_address                  = "frontend.${module.container_apps_env.container_app_environment_default_domain}"
+  gateway_public_ip_id        = module.public_ip.public_ip_id
+  react_app_address           = "ui.${module.container_apps_env.container_app_environment_default_domain}"
+  ssl_certificate_password    = var.ssl_certificate_password
+  ssl_certificate_file_path   = module.tls_certificates.certificate_pfx
+  ssl_certificate_file_path_2 = module.tls_certificates_2.certificate_pfx
+  host_name                   = var.host_name
+  host_name_2                 = var.host_name_2
 }
 
 module "private_dns_zone" {
@@ -121,7 +132,7 @@ module "container_app_frontend" {
   source                      = "./modules/container_apps/frontend"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/ui:v0.1.0_fd32f51")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/ui:v0.1.0_dae7a5c")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password

@@ -49,6 +49,11 @@ resource "azurerm_application_gateway" "application_gateway" {
     data     = filebase64(var.ssl_certificate_file_path)
     password = var.ssl_certificate_password
   }
+  ssl_certificate {
+    name     = "app-gateway-ssl-cert-2"
+    data     = filebase64(var.ssl_certificate_file_path_2)
+    password = var.ssl_certificate_password
+  }
   http_listener {
     name                           = "app-gateway-listener"
     frontend_ip_configuration_name = "appGwPublicFrontendIpIPv4"
@@ -56,6 +61,14 @@ resource "azurerm_application_gateway" "application_gateway" {
     protocol                       = "Https"
     ssl_certificate_name           = "app-gateway-ssl-cert"
     host_name                      = var.host_name
+  }
+  http_listener {
+    name                           = "app-gateway-listener-2"
+    frontend_ip_configuration_name = "appGwPublicFrontendIpIPv4"
+    frontend_port_name             = "port_443"
+    protocol                       = "Https"
+    ssl_certificate_name           = "app-gateway-ssl-cert-2"
+    host_name                      = var.host_name_2
   }
   url_path_map {
     name                               = "app-gateway-url-path-map"
@@ -78,6 +91,13 @@ resource "azurerm_application_gateway" "application_gateway" {
     name               = "app-gateway-routing-rule"
     http_listener_name = "app-gateway-listener"
     priority           = 1
+    rule_type          = "PathBasedRouting"
+    url_path_map_name  = "app-gateway-url-path-map"
+  }
+  request_routing_rule {
+    name               = "app-gateway-routing-rule-2"
+    http_listener_name = "app-gateway-listener-2"
+    priority           = 2
     rule_type          = "PathBasedRouting"
     url_path_map_name  = "app-gateway-url-path-map"
   }
