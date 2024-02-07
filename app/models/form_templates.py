@@ -132,7 +132,6 @@ class FormTemplates:
 
     @staticmethod
     async def read(
-        user_id: Optional[PyObjectId] = None,
         organization: Optional[StrictStr] = None,
         template_id: Optional[PyObjectId] = None,
         state: Optional[FormTemplateState] = None,
@@ -143,8 +142,6 @@ class FormTemplates:
         query = {}
         if template_id:
             query["_id"] = str(template_id)
-        if user_id:
-            query["user_id"] = str(user_id)
         if organization:
             query["organization"] = organization
         if state:
@@ -171,7 +168,7 @@ class FormTemplates:
     @staticmethod
     async def update(
         query_form_template_id: Optional[PyObjectId] = None,
-        query_user_id: Optional[PyObjectId] = None,
+        query_organization: Optional[StrictStr] = None,
         update_form_template_name: Optional[StrictStr] = None,
         update_form_template_state: Optional[FormTemplateState] = None,
         update_form_template_description: Optional[StrictStr] = None,
@@ -181,8 +178,8 @@ class FormTemplates:
         query = {}
         if query_form_template_id:
             query["_id"] = str(query_form_template_id)
-        if query_user_id:
-            query["user_id"] = str(query_user_id)
+        if query_organization:
+            query["organization"] = query_organization
 
         update_request = {"$set": {}}
         if update_form_template_name:

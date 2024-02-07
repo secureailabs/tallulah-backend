@@ -25,6 +25,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.4.0] - 2024-02-07
+
+### Added
+
+- **Form template editor and viewer**
+  - Users can now create and edit form templates for their surveys.
+  - Implemented a backend service that fetches form templates from the database and sends them to the user.
+  - The templates can be customized by the user before publishing.
+
+- **Survey response**
+  - Patients can respond to surveys directly from the Tallulah application or even the embedded form on PAOs website.
+  - Implemented a backend service that records survey responses and displays them on the dashboard.
+  - The form data is stored in a MongoDB database and Elasticsearch for easy retrieval and analysis.
+  - The responses are also visible to all the stakeholders in the PAO.
+
+- **User Roles and Permissions**
+  - Introduced user roles and permissions for different user types.
+  - Users get a different view of the tallulah web application based on their roles.
+
+- **Storage account to store the media files**
+  - Included an Azure Storage account to store media files like images and videos for the form templates.
+  - The storage account is created during the Terraform deployment and is accessible via the Tallulah web application.
+
+### Fixed
+
+- **Email Classifier**
+  - Fixed a bug where the email classifier did not reconnect to the RabbitMQ queue after a connection failure.
+  - Added a retry mechanism to the classifier service to ensure no emails are lost during classification.
+
 
 ## [0.3.0] - 2023-12-15
 
