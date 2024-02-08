@@ -48,6 +48,9 @@ async def register_user(
     user: RegisterUser_In = Body(description="User details to register with the organization"),
     _: TokenData = Depends(get_current_user),
 ) -> RegisterUser_Out:
+    # Make the user's email lowercase
+    user.email = EmailStr(user.email.lower())
+
     # Check if the organization exists
     if user.organization:
         organization = await Organizations.read(name=user.organization)

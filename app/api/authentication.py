@@ -24,7 +24,7 @@ from passlib.context import CryptContext
 
 from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users
 from app.models.authentication import LoginSuccess_Out, RefreshToken_In, TokenData
-from app.models.common import BasicObjectInfo, PyObjectId
+from app.models.common import PyObjectId
 from app.utils.secrets import secret_store
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -112,7 +112,7 @@ async def login_for_access_token(
 
     PASSWORD_PEPPER = secret_store.PASSWORD_PEPPER
     if not pwd_context.verify(
-        secret=f"{found_user_db.email}{form_data.password}{PASSWORD_PEPPER}",
+        secret=f"{found_user_db.email.lower()}{form_data.password}{PASSWORD_PEPPER}",
         hash=found_user_db.hashed_password,
     ):
         # If this is a 5th failed attempt, lock the account and increase the failed login attempts
