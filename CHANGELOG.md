@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.4.1] - 2024-02-08
+
+### Fixed
+
+- **User Email Case Sensitivity**
+  -User email changed to case insensitive for login and registration.
+
+
 ## [0.4.0] - 2024-02-07
 
 ### Added
