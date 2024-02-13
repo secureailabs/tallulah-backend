@@ -13,6 +13,8 @@
 # -------------------------------------------------------------------------------
 
 
+from datetime import datetime
+
 from fastapi import APIRouter, Body, Depends, Path, Query, Response, status
 
 from app.api.authentication import get_current_user
@@ -59,6 +61,38 @@ async def add_form_data(
     return RegisterFormData_Out(_id=form_data_db.id)
 
 
+@router.post(
+    path="/manual",
+    description="Add a new form data manually from an authenticated user",
+    status_code=status.HTTP_201_CREATED,
+    operation_id="add_form_data_manual",
+)
+async def add_form_data_manual(
+    form_data: RegisterFormData_In = Body(description="Form data information for manual entry"),
+    current_user: TokenData = Depends(get_current_user),
+) -> RegisterFormData_Out:
+
+    # Check if the user is the owner of the response template
+    _ = await FormTemplates.read(
+        template_id=form_data.form_template_id, organization=current_user.organization, throw_on_not_found=True
+    )
+
+    form_data_db = FormData_Db(
+        form_template_id=form_data.form_template_id,
+        values=form_data.values,
+        creation_time=form_data.creation_time if form_data.creation_time else datetime.utcnow(),
+    )
+    await FormDatas.create(form_data_db)
+
+    # Add the form data to elasticsearch for search
+    elastic_client = ElasticsearchClient()
+    await elastic_client.insert_document(
+        index_name=str(form_data.form_template_id), id=str(form_data_db.id), document=form_data.values
+    )
+
+    return RegisterFormData_Out(_id=form_data_db.id)
+
+
 @router.get(
     path="/",
     description="Get all the form data for the current user for the template",
@@ -67,6 +101,10 @@ async def add_form_data(
 )
 async def get_all_form_data(
     form_template_id: PyObjectId = Query(description="Form template id"),
+    skip: int = Query(default=0, description="Number of emails to skip"),
+    limit: int = Query(default=200, description="Number of emails to return"),
+    sort_key: str = Query(default="creation_time", description="Sort key"),
+    sort_direction: int = Query(default=-1, description="Sort direction"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleFormData_Out:
     # Check if the user is the owner of the response template
@@ -74,10 +112,23 @@ async def get_all_form_data(
         template_id=form_template_id, organization=current_user.organization, throw_on_not_found=True
     )
 
-    # TODO: Add pagination to this
-    form_data_list = await FormDatas.read(form_template_id=form_template_id, throw_on_not_found=False)
+    form_data_list = await FormDatas.read(
+        form_template_id=form_template_id,
+        skip=skip,
+        limit=limit,
+        sort_key=sort_key,
+        sort_direction=sort_direction,
+        throw_on_not_found=False,
+    )
 
-    return GetMultipleFormData_Out(form_data=[GetFormData_Out(**form_data.dict()) for form_data in form_data_list])
+    form_data_count = await FormDatas.count(form_template_id=form_template_id)
+
+    return GetMultipleFormData_Out(
+        form_data=[GetFormData_Out(**form_data.dict()) for form_data in form_data_list],
+        count=form_data_count,
+        next=skip + limit,
+        limit=limit,
+    )
 
 
 @router.get(

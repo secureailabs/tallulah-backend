@@ -36,7 +36,7 @@ class FormData_Base(SailBaseModel):
 
 
 class RegisterFormData_In(FormData_Base):
-    pass
+    creation_time: Optional[datetime] = Field()
 
 
 class RegisterFormData_Out(SailBaseModel):
@@ -55,6 +55,9 @@ class GetFormData_Out(FormData_Base):
 
 class GetMultipleFormData_Out(SailBaseModel):
     form_data: List[GetFormData_Out] = Field()
+    count: int = Field()
+    next: int = Field()
+    limit: int = Field()
 
 
 class FormDatas:
@@ -74,6 +77,10 @@ class FormDatas:
     async def read(
         form_data_id: Optional[PyObjectId] = None,
         form_template_id: Optional[PyObjectId] = None,
+        skip: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort_key: str = "creation_time",
+        sort_direction: int = -1,
         throw_on_not_found: bool = True,
     ) -> List[FormData_Db]:
         form_data_list = []
@@ -87,10 +94,25 @@ class FormDatas:
         # only read the non deleted ones
         query["state"] = FormDataState.ACTIVE.value
 
-        response = await FormDatas.data_service.find_by_query(
-            collection=FormDatas.DB_COLLECTION_FORM_DATA,
-            query=jsonable_encoder(query),
-        )
+        if skip is None and limit is None:
+            response = await FormDatas.data_service.find_by_query(
+                collection=FormDatas.DB_COLLECTION_FORM_DATA,
+                query=jsonable_encoder(query),
+            )
+        elif skip is not None and limit is not None:
+            response = await FormDatas.data_service.find_sorted_pagination(
+                collection=FormDatas.DB_COLLECTION_FORM_DATA,
+                query=jsonable_encoder(query),
+                sort_key=sort_key,
+                sort_direction=sort_direction,
+                skip=skip,
+                limit=limit,
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Both skip and limit need to be provided for pagination",
+            )
 
         if response:
             for form_data in response:
@@ -102,6 +124,16 @@ class FormDatas:
             )
 
         return form_data_list
+
+    @staticmethod
+    async def count(
+        form_template_id: Optional[PyObjectId] = None,
+    ) -> int:
+        query = {}
+        if form_template_id:
+            query["form_template_id"] = str(form_template_id)
+
+        return await FormDatas.data_service.sail_db[FormDatas.DB_COLLECTION_FORM_DATA].count_documents(query)
 
     @staticmethod
     async def update(query_form_data_id: PyObjectId, form_data_state: Optional[FormDataState] = None):
