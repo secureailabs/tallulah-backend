@@ -37,6 +37,8 @@ from pydantic import BaseModel, Field, StrictStr
 from app.api import (
     accounts,
     authentication,
+    content_generation,
+    content_generation_template,
     emails,
     form_data,
     form_templates,
@@ -69,6 +71,8 @@ server.include_router(emails.router)
 server.include_router(response_templates.router)
 server.include_router(form_templates.router)
 server.include_router(form_data.router)
+server.include_router(content_generation_template.router)
+server.include_router(content_generation.router)
 
 # Setup CORS to allow all origins
 origins = [

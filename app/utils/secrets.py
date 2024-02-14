@@ -38,6 +38,8 @@ class SecretStore(BaseModel):
     STORAGE_ACCOUNT_CONNECTION_STRING: str
     ELASTIC_PASSWORD: str
     ELASTIC_CLOUD_ID: str
+    OPENAI_API_BASE: str
+    OPENAI_API_KEY: str
 
     class Config:
         frozen = True
@@ -67,6 +69,8 @@ secret_store = SecretStore(
     STORAGE_ACCOUNT_CONNECTION_STRING=get_secret_env("STORAGE_ACCOUNT_CONNECTION_STRING"),
     ELASTIC_PASSWORD=get_secret_env("ELASTIC_PASSWORD"),
     ELASTIC_CLOUD_ID=get_secret_env("ELASTIC_CLOUD_ID"),
+    OPENAI_API_BASE=get_secret_env("OPENAI_API_BASE"),
+    OPENAI_API_KEY=get_secret_env("OPENAI_API_KEY"),
 )
 
 

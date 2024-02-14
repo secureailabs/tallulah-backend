@@ -5,3 +5,5 @@ __pycache__
 audit.log
 .env
 node_modules
+temp
+.DS_Store

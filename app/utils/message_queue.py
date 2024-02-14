@@ -1,29 +1,30 @@
-import abc
+from abc import ABC, abstractmethod
+from collections import deque
 from typing import Callable
 
 from aio_pika import DeliveryMode, Message, connect
 from aio_pika.abc import AbstractIncomingMessage
 
 
-class MessageQueueType(abc.ABC):
-    @abc.abstractmethod
+class AbstractMessageQueue(ABC):
+    @abstractmethod
     def connect(self):
         raise NotImplementedError
 
-    @abc.abstractmethod
+    @abstractmethod
     def push_message(self, message):
         raise NotImplementedError
 
-    @abc.abstractmethod
+    @abstractmethod
     def consume_messages(self, on_message: Callable):
         raise NotImplementedError
 
-    @abc.abstractmethod
+    @abstractmethod
     def disconnect(self):
         raise NotImplementedError
 
 
-class RabbitMQProducerConumer(MessageQueueType):
+class RabbitMQProducerConumer(AbstractMessageQueue):
     def __init__(self, url="amqp://guest:guest@localhost/", queue_name="hello"):
         self.url = url
         self.queue_name = queue_name
@@ -39,17 +40,17 @@ class RabbitMQProducerConumer(MessageQueueType):
             routing_key=self.queue.name,
         )
 
-    async def consume_messages(self):
+    async def consume_messages(self, on_message: Callable):
         async with self.queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():
-                    print(message.body)
+                    on_message(message.body)
 
     async def disconnect(self):
         await self.connection.close()
 
 
-class RabbitMQWorkQueue(MessageQueueType):
+class RabbitMQWorkQueue(AbstractMessageQueue):
     def __init__(self, url="amqp://guest:guest@localhost/", queue_name="task_queue"):
         self.url = url
         self.queue_name = queue_name
@@ -88,23 +89,6 @@ class RabbitMQWorkQueue(MessageQueueType):
         await self.connection.close()
 
 
-class MessageQueueClient:
-    def __init__(self, client: MessageQueueType) -> None:
-        self.client = client
-
-    async def connect(self):
-        await self.client.connect()
-
-    async def push_message(self, message: str):
-        await self.client.push_message(message)
-
-    async def consume_messages(self, on_message: Callable):
-        await self.client.consume_messages(on_message)
-
-    async def disconnect(self):
-        await self.client.disconnect()
-
-
 async def on_message(message: AbstractIncomingMessage) -> None:
     async with message.process(ignore_processed=True):
         await asyncio.sleep(message.body.count(b"."))
@@ -118,7 +102,7 @@ async def main():
     # await mq.consume_messages()
     # await mq.disconnect()
 
-    mq = MessageQueueClient(RabbitMQWorkQueue())
+    mq = RabbitMQWorkQueue()
     await mq.connect()
     await mq.push_message("Hello World! Work Queue 1")
     await mq.push_message("Hello World! Work Queue 2")
