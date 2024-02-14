@@ -161,3 +161,13 @@ variable "elastic_cloud_id" {
   description = "The ID of the Elastic instance"
   type        = string
 }
+
+variable "openai_api_base" {
+  description = "value of openai api base"
+  type        = string
+}
+
+variable "openai_api_key" {
+  description = "value of openai api key"
+  type        = string
+}

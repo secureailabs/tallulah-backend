@@ -75,16 +75,24 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.tallulah_admin_password
   }
   secret {
-    name = "storage-account-connection-string"
+    name  = "storage-account-connection-string"
     value = var.storage_account_connection_string
   }
   secret {
-    name = "elastic-password"
+    name  = "elastic-password"
     value = var.elastic_password
   }
   secret {
-    name = "elastic-cloud-id"
+    name  = "elastic-cloud-id"
     value = var.elastic_cloud_id
+  }
+  secret {
+    name  = "openai-api-base"
+    value = var.openai_api_base
+  }
+  secret {
+    name  = "openai-api-key"
+    value = var.openai_api_key
   }
   template {
     min_replicas = 1
@@ -166,16 +174,24 @@ resource "azurerm_container_app" "container_app_backend" {
         secret_name = "tallulah-admin-password"
       }
       env {
-        name       = "STORAGE_ACCOUNT_CONNECTION_STRING"
+        name        = "STORAGE_ACCOUNT_CONNECTION_STRING"
         secret_name = "storage-account-connection-string"
       }
       env {
-        name      = "ELASTIC_PASSWORD"
+        name        = "ELASTIC_PASSWORD"
         secret_name = "elastic-password"
       }
       env {
-        name = "ELASTIC_CLOUD_ID"
+        name        = "ELASTIC_CLOUD_ID"
         secret_name = "elastic-cloud-id"
+      }
+      env {
+        name        = "OPENAI_API_BASE"
+        secret_name = "openai-api-base"
+      }
+      env {
+        name        = "OPENAI_API_KEY"
+        secret_name = "openai-api-key"
       }
     }
   }

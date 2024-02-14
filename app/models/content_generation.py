@@ -40,6 +40,7 @@ class ContentGeneration_Base(SailBaseModel):
 class ContentGeneration_Db(ContentGeneration_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
+    organization: StrictStr = Field()
     generated: Optional[StrictStr] = Field(default=None)
     state: ContentGenerationState = Field(default=ContentGenerationState.RECEIVED)
     error_message: Optional[StrictStr] = Field(default=None)
@@ -48,6 +49,9 @@ class ContentGeneration_Db(ContentGeneration_Base):
 
 class GetContentGeneration_Out(ContentGeneration_Base):
     id: PyObjectId = Field()
+    state: ContentGenerationState = Field()
+    generated: Optional[StrictStr] = Field(default=None)
+    error_message: Optional[StrictStr] = Field(default=None)
     creation_time: datetime = Field()
 
 

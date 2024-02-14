@@ -48,6 +48,7 @@ async def create_content_generation(
         template_id=content_generation.template_id,
         values=content_generation.values,
         user_id=current_user.id,
+        organization=current_user.organization,
         creation_time=datetime.utcnow(),
     )
 
@@ -80,7 +81,7 @@ async def get_all_content_generations(
         limit=limit,
         throw_on_not_found=False,
     )
-    count = await ContentGenerations.count(content_generation_template_id=None)
+    count = await ContentGenerations.count(content_generation_template_id=content_generation_template_id)
 
     return GetMultipleContentGeneration_Out(
         content_generations=[
@@ -146,15 +147,14 @@ async def retry_content_generation(
 
 @router.on_event("startup")
 # 1 second interval between each run. No overlap as the next run will only start after the current run is finished
+# This is done to prevent the open ai rate limiter from blocking the requests. Only 1 request per second will be processed
 @repeat_every(seconds=1)
 async def generate_content():
-
-    # This is done to prevent the open ai rate limiter from blocking the requests. Only 1 request per second will be processed
-    print("Generating content from content generation objects...")
 
     # read the database to get the content generation object that is not processed yet and is the oldest one
     content_generation_req = await ContentGenerations.read(
         content_generation_state=ContentGenerationState.RECEIVED,
+        skip=0,
         limit=1,
         sort_key="creation_time",
         sort_direction=1,

@@ -63,26 +63,33 @@ class ContentGenerationState(Enum):
 class ContentGenerationTemplate_Base(SailBaseModel):
     name: StrictStr = Field()
     description: Optional[StrictStr] = Field(default=None)
-    user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
     parameters: List[ParameterField] = Field(default=None)
     context: List[Context] = Field(default=None)
     prompt: StrictStr = Field()
-    state: ContentGenerationState = Field(default=ContentGenerationState.ACTIVE)
 
 
 class ContentGenerationTemplate_Db(ContentGenerationTemplate_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: PyObjectId = Field()
+    organization: StrictStr = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
+    state: ContentGenerationState = Field(default=ContentGenerationState.ACTIVE)
 
 
 class GetContentGenerationTemplate_Out(ContentGenerationTemplate_Base):
     id: PyObjectId = Field()
+    user_id: PyObjectId = Field()
+    organization: StrictStr = Field()
     creation_time: datetime = Field()
+    state: ContentGenerationState = Field()
 
 
 class GetMultipleContentGenerationTemplate_Out(SailBaseModel):
     templates: List[GetContentGenerationTemplate_Out] = Field()
+
+
+class RegisterContentGenerationTemplate_In(ContentGenerationTemplate_Base):
+    pass
 
 
 class RegisterContentGenerationTemplate_Out(SailBaseModel):

@@ -79,7 +79,7 @@ module "container_app_backend" {
   source                            = "./modules/container_apps/backend"
   resource_group_name               = module.resource_group.resource_group_name
   container_app_env_id              = module.container_apps_env.container_app_environment_id
-  docker_image                      = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_b5ea3ca")
+  docker_image                      = format("%s/%s", var.container_registry_server, "tallulah/backend:v0.1.0_041c0cd")
   container_registry_server         = var.container_registry_server
   container_registry_username       = var.container_registry_username
   container_registry_password       = var.container_registry_password
@@ -101,13 +101,15 @@ module "container_app_backend" {
   storage_account_connection_string = module.storage_account.storage_account_connection_string
   elastic_cloud_id                  = var.elastic_cloud_id
   elastic_password                  = var.elastic_password
+  openai_api_base                   = var.openai_api_base
+  openai_api_key                    = var.openai_api_key
 }
 
 module "container_app_rabbit_mq" {
   source                      = "./modules/container_apps/rabbit_mq"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_b5ea3ca")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/rabbitmq:v0.1.0_041c0cd")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password
@@ -143,7 +145,7 @@ module "container_app_logstash" {
   source                      = "./modules/container_apps/logstash"
   resource_group_name         = module.resource_group.resource_group_name
   container_app_env_id        = module.container_apps_env.container_app_environment_id
-  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/logstash:v0.1.0_b5ea3ca")
+  docker_image                = format("%s/%s", var.container_registry_server, "tallulah/logstash:v0.1.0_041c0cd")
   container_registry_server   = var.container_registry_server
   container_registry_username = var.container_registry_username
   container_registry_password = var.container_registry_password

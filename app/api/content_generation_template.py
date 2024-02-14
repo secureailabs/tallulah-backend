@@ -20,11 +20,11 @@ from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.content_generation_template import (
     ContentGenerationState,
-    ContentGenerationTemplate_Base,
     ContentGenerationTemplate_Db,
     ContentGenerationTemplates,
     GetContentGenerationTemplate_Out,
     GetMultipleContentGenerationTemplate_Out,
+    RegisterContentGenerationTemplate_In,
     RegisterContentGenerationTemplate_Out,
     UpdateContentGenerationTemplate_In,
 )
@@ -39,7 +39,7 @@ router = APIRouter(prefix="/api/content-generation-templates", tags=["content-ge
     operation_id="add_new_content_generation_template",
 )
 async def add_new_content_generation_template(
-    content_generation_template: ContentGenerationTemplate_Base = Body(
+    content_generation_template: RegisterContentGenerationTemplate_In = Body(
         description="Content generation template information"
     ),
     current_user: TokenData = Depends(get_current_user),
