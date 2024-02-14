@@ -19,20 +19,20 @@ from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
 from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users
-from app.models.authentication import LoginSuccess_Out, RefreshToken_In, TokenData
+from app.models.authentication import LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData
 from app.models.common import PyObjectId
 from app.utils.secrets import secret_store
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-router = APIRouter()
+router = APIRouter(tags=["authentication"])
 
 # Authentication settings
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 20
+ACCESS_TOKEN_EXPIRE_MINUTES = 0.1
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
@@ -53,8 +53,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         user_id = token_data.id
         if not user_id:
             raise credentials_exception
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except JWTError as exception:
         raise credentials_exception
+
     return token_data
 
 
@@ -107,12 +114,11 @@ async def login_for_access_token(
     if found_user_db.state is not UserAccountState.ACTIVE:
         raise HTTPException(
             status_code=403,
-            detail=f"User account is {found_user_db.state.value}. Contact SAIL support.",
+            detail=f"User account is {found_user_db.state.value}. Contact Array Insights support.",
         )
 
-    PASSWORD_PEPPER = secret_store.PASSWORD_PEPPER
     if not pwd_context.verify(
-        secret=f"{found_user_db.email.lower()}{form_data.password}{PASSWORD_PEPPER}",
+        secret=f"{found_user_db.email.lower()}{form_data.password}{secret_store.PASSWORD_PEPPER}",
         hash=found_user_db.hashed_password,
     ):
         # If this is a 5th failed attempt, lock the account and increase the failed login attempts
@@ -143,7 +149,7 @@ async def login_for_access_token(
         _id=found_user_db.id,
         roles=found_user_db.roles,
         organization=found_user_db.organization,
-        exp=int((time() * 1000) + (ACCESS_TOKEN_EXPIRE_MINUTES * 60 * 1000)),
+        exp=int(time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60),
     )
     access_token = jwt.encode(
         claims=jsonable_encoder(token_data),
@@ -184,9 +190,7 @@ async def refresh_for_access_token(
             raise credentials_exception
 
         found_user_db = found_user[0]
-        token_data = TokenData(
-            **found_user_db.dict(), exp=int((time() * 1000) + (ACCESS_TOKEN_EXPIRE_MINUTES * 60 * 1000))
-        )
+        token_data = TokenData(**found_user_db.dict(), exp=int(time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60))
 
         access_token = jwt.encode(
             claims=jsonable_encoder(token_data),
@@ -221,6 +225,34 @@ async def get_current_user_info(
     found_user = await Users.read(user_id=current_user.id)
 
     return UserInfo_Out(**found_user[0].dict())
+
+
+@router.post(
+    path="/api/password-reset",
+    description="Reset the user password",
+    response_model_by_alias=False,
+    status_code=status.HTTP_200_OK,
+    operation_id="reset_user_password",
+)
+async def reset_user_password(
+    password_reset_req: ResetPassword_In = Body(description="Password reset request"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+
+    found_user = await Users.read(user_id=current_user.id)
+    found_user = found_user[0]
+
+    if not pwd_context.verify(
+        secret=f"{found_user.email.lower()}{password_reset_req.current_password}{secret_store.PASSWORD_PEPPER}",
+        hash=found_user.hashed_password,
+    ):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect current password")
+
+    # Update the user password
+    new_password_hash = get_password_hash(found_user.email.lower(), password_reset_req.new_password)
+    await Users.update(query_user_id=found_user.id, update_password_hash=new_password_hash)
+
+    return Response(status_code=status.HTTP_200_OK)
 
 
 @router.put(

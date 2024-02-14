@@ -40,5 +40,10 @@ class RefreshTokenData(SailBaseModel):
     exp: int = Field()
 
 
+class ResetPassword_In(SailBaseModel):
+    current_password: StrictStr = Field()
+    new_password: StrictStr = Field()
+
+
 class RefreshToken_In(SailBaseModel):
     refresh_token: StrictStr = Field()

@@ -141,6 +141,7 @@ class Users:
         update_account_state: Optional[UserAccountState] = None,
         update_last_login_time: Optional[datetime] = None,
         update_failed_login_attempts: Optional[int] = None,
+        update_password_hash: Optional[str] = None,
         increment_failed_login_attempts: Optional[bool] = None,
     ):
         query = {}
@@ -160,6 +161,8 @@ class Users:
             update_request["$set"]["failed_login_attempts"] = update_failed_login_attempts
         if increment_failed_login_attempts:
             update_request["$inc"] = {"failed_login_attempts": 1}
+        if update_password_hash:
+            update_request["$set"]["hashed_password"] = update_password_hash
 
         update_response = await Users.data_service.update_many(
             collection=Users.DB_COLLECTION_USERS,
