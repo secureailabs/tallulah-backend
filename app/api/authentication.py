@@ -32,7 +32,7 @@ router = APIRouter(tags=["authentication"])
 
 # Authentication settings
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 0.1
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
@@ -91,14 +91,6 @@ class RoleChecker:
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> LoginSuccess_Out:
-    """
-    User login with email and password
-
-    :param form_data: email and password of the user
-    :type form_data: OAuth2PasswordRequestForm, optional
-    :return: access token and refresh token
-    :rtype: LoginSuccess_Out
-    """
 
     exception_authentication_failed = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
