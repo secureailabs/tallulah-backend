@@ -18,17 +18,29 @@ export class FormDataService {
      * Get All Form Data
      * Get all the form data for the current user for the template
      * @param formTemplateId Form template id
+     * @param skip Number of emails to skip
+     * @param limit Number of emails to return
+     * @param sortKey Sort key
+     * @param sortDirection Sort direction
      * @returns GetMultipleFormData_Out Successful Response
      * @throws ApiError
      */
     public static getAllFormData(
         formTemplateId: string,
+        skip?: number,
+        limit: number = 200,
+        sortKey: string = 'creation_time',
+        sortDirection: number = -1,
     ): CancelablePromise<GetMultipleFormData_Out> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/form-data/',
             query: {
                 'form_template_id': formTemplateId,
+                'skip': skip,
+                'limit': limit,
+                'sort_key': sortKey,
+                'sort_direction': sortDirection,
             },
             errors: {
                 422: `Validation Error`,
@@ -49,6 +61,27 @@ export class FormDataService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/form-data/',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Add Form Data Manual
+     * Add a new form data manually from an authenticated user
+     * @param requestBody
+     * @returns RegisterFormData_Out Successful Response
+     * @throws ApiError
+     */
+    public static addFormDataManual(
+        requestBody: RegisterFormData_In,
+    ): CancelablePromise<RegisterFormData_Out> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/form-data/manual',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

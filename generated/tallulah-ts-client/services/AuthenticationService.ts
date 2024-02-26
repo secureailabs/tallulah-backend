@@ -4,13 +4,14 @@
 import type { Body_login } from '../models/Body_login';
 import type { LoginSuccess_Out } from '../models/LoginSuccess_Out';
 import type { RefreshToken_In } from '../models/RefreshToken_In';
+import type { ResetPassword_In } from '../models/ResetPassword_In';
 import type { UserInfo_Out } from '../models/UserInfo_Out';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
-export class DefaultService {
+export class AuthenticationService {
 
     /**
      * Login For Access Token
@@ -66,6 +67,28 @@ export class DefaultService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/me',
+        });
+    }
+
+    /**
+     * Reset User Password
+     * Reset the user password
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static resetUserPassword(
+        requestBody: ResetPassword_In,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/password-reset',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                401: `Incorrect current password`,
+                422: `Validation Error`,
+            },
         });
     }
 
