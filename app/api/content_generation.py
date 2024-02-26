@@ -29,6 +29,9 @@ from app.models.content_generation import (
     RegisterContentGeneration_In,
     RegisterContentGeneration_Out,
 )
+from app.models.content_generation_template import ContentGenerationTemplates, Context
+from app.utils.azure_openai import OpenAiGenerator
+from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/content-generations", tags=["content-generations"])
 
@@ -164,18 +167,33 @@ async def generate_content():
     if content_generation_req:
         content_generation_req = content_generation_req[0]
 
-        # Update the state to processing
-        await ContentGenerations.update(
-            query_content_generation_id=content_generation_req.id,
-            update_state=ContentGenerationState.PROCESSING,
-        )
-
-        # Make a call to OpenAI to generate the content
         try:
+            # Get the content generation template
+            content_generation_template = await ContentGenerationTemplates.read(
+                content_generation_template_id=content_generation_req.template_id
+            )
+
+            # prepare the content generation messages
+            messages = content_generation_template[0].context
+            prompt = content_generation_template[0].prompt.format(**content_generation_req.values)
+
+            messages.append(Context(role="user", content=prompt))
+            messages = [message.dict() for message in messages]
+
+            # Update the state to processing
+            await ContentGenerations.update(
+                query_content_generation_id=content_generation_req.id,
+                update_state=ContentGenerationState.PROCESSING,
+            )
+
+            # Make a call to OpenAI to generate the content
+            openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
+            generated_content = await openai.get_response(messages=messages)
+
             # Update the state to processed
             await ContentGenerations.update(
                 query_content_generation_id=content_generation_req.id,
-                update_generated_content="Generated content from OpenAI",
+                update_generated_content=generated_content,
                 update_state=ContentGenerationState.DONE,
             )
 
