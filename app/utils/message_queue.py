@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from collections import deque
 from typing import Callable
 
 from aio_pika import DeliveryMode, Message, connect

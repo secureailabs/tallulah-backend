@@ -171,3 +171,30 @@ variable "openai_api_key" {
   description = "value of openai api key"
   type        = string
 }
+
+variable "backend_container_image_tag" {
+  description = "The tag of the backend container image"
+  type        = string
+}
+
+variable "ui_container_image_tag" {
+  description = "The tag of the frontend container image"
+  type        = string
+}
+
+variable "rabbitmq_container_image_tag" {
+  description = "The tag of the rabbitmq container image"
+  type        = string
+}
+
+variable "logstash_container_image_tag" {
+  description = "The tag of the logstash container image"
+  type        = string
+
+}
+
+variable "classifier_container_image_tag" {
+  description = "The tag of the classifier container image"
+  type        = string
+}
+
