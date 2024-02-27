@@ -33,16 +33,21 @@ terraform init
 Update the terraform.tfvars or equivalent files in the environments directory with necessary values.
 
 ### Planning:
+Init the Terraform configuration
+``` bash
+terraform init -backend-config="backend.tfvars"
+```
+
 Review the changes that will be applied.
 ``` bash
-terraform plan
+terraform plan -var-file="development.tfvars"
 ```
 
 ### Apply Configuration:
 Apply the Terraform configuration to create resources.
 
 ``` bash
-terraform apply
+terraform apply -var-file="development.tfvars"
 ```
 
 ### Apply Configuration to Specific Environment:
