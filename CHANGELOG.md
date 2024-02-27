@@ -25,6 +25,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.5.0] - 2024-02-27
+
+### Added
+
+- **Content Generation Templates**
+  - Users can now create and edit content generation templates which can take in user inputs and generate content.
+  - The templates can be customized by the user before publishing.
+
+- **Content Generation Response**
+  - Users can send content generation requests parameter required by the template and get the generated content.
+  - Implemented a backend service that records content generation responses and displays them on the dashboard.
+  - The responses are also visible to all the stakeholders in the PAO.
+  - The generated content is generated using Azure OpenAI GPT-4 model.
+
+- **User Password change**
+  - Added APIs in the backend for users to change their password.
+  - Will come to frontend soon.
+
+### Fixed
+
+- **JWT Token Expiry**
+  - Fixed a bug where the JWT token was not expiring after the specified time.
+
+### Changed
+
+- **Terraform Deployment**
+  - The container tags are now part of the Terraform variables files instead of the main.tf file.
+
+- **Pagination for Form Data**
+  - Implemented pagination for the form data in the backend to improve performance and reduce load time.
+  - The form data is now fetched in chunks and displayed to the user.
+
+
 ## [0.4.1] - 2024-02-08
 
 ### Fixed
