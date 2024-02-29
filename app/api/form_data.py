@@ -15,7 +15,7 @@
 
 from datetime import datetime
 
-from fastapi import APIRouter, Body, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -28,6 +28,7 @@ from app.models.form_data import (
     GetMultipleFormData_Out,
     RegisterFormData_In,
     RegisterFormData_Out,
+    UpdateFormData_In,
 )
 from app.models.form_templates import FormMediaTypes, FormTemplates, GetStorageUrl_Out
 from app.utils.azure_blob_manager import AzureBlobManager
@@ -129,6 +130,46 @@ async def get_all_form_data(
         next=skip + limit,
         limit=limit,
     )
+
+
+@router.put(
+    path="/{form_data_id}",
+    description="Update the form data for the current user",
+    status_code=status.HTTP_200_OK,
+    operation_id="update_form_data",
+)
+async def update_form_data(
+    form_data_id: PyObjectId = Path(description="Form data id"),
+    form_data: UpdateFormData_In = Body(description="Form data values information to be updated"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+
+    current_form_data = await FormDatas.read(form_data_id=form_data_id, throw_on_not_found=True)
+    if not current_form_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No form data found for id: {form_data_id}",
+        )
+
+    # Check if the user is the owner of the response template
+    _ = await FormTemplates.read(
+        template_id=current_form_data[0].form_template_id,
+        organization=current_user.organization,
+        throw_on_not_found=True,
+    )
+
+    # Update the form data
+    await FormDatas.update(
+        query_form_data_id=form_data_id, update_form_data_values=form_data.values, throw_on_no_update=False
+    )
+
+    # Update the form data in elasticsearch for search
+    elastic_client = ElasticsearchClient()
+    await elastic_client.update_document(
+        index_name=str(current_form_data[0].form_template_id), id=str(form_data_id), document=form_data.values
+    )
+
+    return Response(status_code=status.HTTP_200_OK)
 
 
 @router.get(
@@ -237,7 +278,7 @@ async def delete_form_data(
     # Delete the response template
     await FormDatas.update(
         query_form_data_id=form_data_id,
-        form_data_state=FormDataState.DELETED,
+        update_form_data_state=FormDataState.DELETED,
     )
 
     # Delete from the elastic search cluster as well

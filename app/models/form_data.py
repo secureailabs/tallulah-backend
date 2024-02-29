@@ -53,6 +53,10 @@ class GetFormData_Out(FormData_Base):
     creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 
+class UpdateFormData_In(SailBaseModel):
+    values: Dict[StrictStr, Any] = Field()
+
+
 class GetMultipleFormData_Out(SailBaseModel):
     form_data: List[GetFormData_Out] = Field()
     count: int = Field()
@@ -136,14 +140,21 @@ class FormDatas:
         return await FormDatas.data_service.sail_db[FormDatas.DB_COLLECTION_FORM_DATA].count_documents(query)
 
     @staticmethod
-    async def update(query_form_data_id: PyObjectId, form_data_state: Optional[FormDataState] = None):
+    async def update(
+        query_form_data_id: PyObjectId,
+        update_form_data_state: Optional[FormDataState] = None,
+        update_form_data_values: Optional[Dict[StrictStr, Any]] = None,
+        throw_on_no_update: bool = True,
+    ):
         query = {}
         if query_form_data_id:
             query["_id"] = str(query_form_data_id)
 
         update_request = {"$set": {}}
-        if form_data_state:
-            update_request["$set"]["state"] = form_data_state.value
+        if update_form_data_state:
+            update_request["$set"]["state"] = update_form_data_state.value
+        if update_form_data_values:
+            update_request["$set"]["values"] = update_form_data_values
 
         update_response = await FormDatas.data_service.update_one(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,
@@ -151,7 +162,8 @@ class FormDatas:
             data=jsonable_encoder(update_request),
         )
         if update_response.modified_count == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"FormTemplate not found or no changes to update",
-            )
+            if throw_on_no_update:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Form Data not found or no changes to update",
+                )
