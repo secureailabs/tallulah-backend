@@ -7,6 +7,7 @@ import type { GetMultipleFormData_Out } from '../models/GetMultipleFormData_Out'
 import type { GetStorageUrl_Out } from '../models/GetStorageUrl_Out';
 import type { RegisterFormData_In } from '../models/RegisterFormData_In';
 import type { RegisterFormData_Out } from '../models/RegisterFormData_Out';
+import type { UpdateFormData_In } from '../models/UpdateFormData_In';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -91,6 +92,76 @@ export class FormDataService {
     }
 
     /**
+     * Get Form Data
+     * Get the response data for the form
+     * @param formDataId Form data id
+     * @returns GetFormData_Out Successful Response
+     * @throws ApiError
+     */
+    public static getFormData(
+        formDataId: string,
+    ): CancelablePromise<GetFormData_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-data/{form_data_id}',
+            path: {
+                'form_data_id': formDataId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Update Form Data
+     * Update the form data for the current user
+     * @param formDataId Form data id
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static updateFormData(
+        formDataId: string,
+        requestBody: UpdateFormData_In,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/form-data/{form_data_id}',
+            path: {
+                'form_data_id': formDataId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Form Data
+     * Delete the response template for the current user
+     * @param formDataId Form data id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteFormData(
+        formDataId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/form-data/{form_data_id}',
+            path: {
+                'form_data_id': formDataId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Get Upload Url
      * Get the upload url for the form data
      * @param mediaType Media type
@@ -155,50 +226,6 @@ export class FormDataService {
             query: {
                 'form_template_id': formTemplateId,
                 'search_query': searchQuery,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Get Form Data
-     * Get the response data for the form
-     * @param formDataId Form data id
-     * @returns GetFormData_Out Successful Response
-     * @throws ApiError
-     */
-    public static getFormData(
-        formDataId: string,
-    ): CancelablePromise<GetFormData_Out> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/form-data/{form_data_id}',
-            path: {
-                'form_data_id': formDataId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Delete Form Data
-     * Delete the response template for the current user
-     * @param formDataId Form data id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteFormData(
-        formDataId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/form-data/{form_data_id}',
-            path: {
-                'form_data_id': formDataId,
             },
             errors: {
                 422: `Validation Error`,

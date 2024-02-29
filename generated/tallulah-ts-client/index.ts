@@ -59,6 +59,7 @@ export type { RegisterUser_In } from './models/RegisterUser_In';
 export type { RegisterUser_Out } from './models/RegisterUser_Out';
 export type { ResetPassword_In } from './models/ResetPassword_In';
 export type { UpdateContentGenerationTemplate_In } from './models/UpdateContentGenerationTemplate_In';
+export type { UpdateFormData_In } from './models/UpdateFormData_In';
 export type { UpdateFormTemplate_In } from './models/UpdateFormTemplate_In';
 export type { UpdateResponseTemplate_In } from './models/UpdateResponseTemplate_In';
 export type { UpdateUser_In } from './models/UpdateUser_In';
