@@ -16,14 +16,13 @@ from fastapi import APIRouter, Body, Depends, Query, status
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
-from app.models.common import PyObjectId
-from app.models.patient_stories import (
-    GetMultiplePatientStories_Out,
-    GetPatientStory_Out,
-    PatientStories,
-    PatientStory_Db,
-    RegisterPatientStory_In,
-    RegisterPatientStory_Out,
+from app.models.patient_profile import (
+    GetMultiplePatientProfiles_Out,
+    GetPatientProfile_Out,
+    PatientProfile_Db,
+    PatientProfiles,
+    RegisterPatientProfile_In,
+    RegisterPatientProfile_Out,
 )
 
 router = APIRouter(prefix="/api/patient-stories", tags=["patient-stories"])
@@ -31,22 +30,22 @@ router = APIRouter(prefix="/api/patient-stories", tags=["patient-stories"])
 
 @router.post(
     path="/",
-    description="Add a new patient story",
+    description="Add a new patient profile",
     status_code=status.HTTP_200_OK,
-    operation_id="add_new_patient_story",
+    operation_id="add_patient_profile",
 )
-async def add_new_patient_story(
-    patient_story: RegisterPatientStory_In = Body(description="Patient story information"),
+async def add_new_patient_profile(
+    patient_profile: RegisterPatientProfile_In = Body(description="Patient profile information"),
     current_user: TokenData = Depends(get_current_user),
-) -> RegisterPatientStory_Out:
+) -> RegisterPatientProfile_Out:
     # Create the patient story and add it to the database
-    patient_story_db = PatientStory_Db(
-        patient=patient_story.patient,
-        story=patient_story.story,
+    patient_profile_db = PatientProfile_Db(
+        patient=patient_profile.patient,
+        story=patient_profile.story,
         owner_id=current_user.id,
     )
 
-    return RegisterPatientStory_Out(_id=patient_story_db.id)
+    return RegisterPatientProfile_Out(_id=patient_profile_db.id)
 
 
 @router.get(
@@ -61,8 +60,8 @@ async def get_all_patient_stories(
     sort_key: str = Query(default="creation_time", description="Sort key"),
     sort_direction: int = Query(default=-1, description="Sort direction"),
     current_user: TokenData = Depends(get_current_user),
-) -> GetMultiplePatientStories_Out:
-    patient_stories = await PatientStories.read(
+) -> GetMultiplePatientProfiles_Out:
+    patient_stories = await PatientProfiles.read(
         owner_id=current_user.id,
         skip=skip,
         limit=limit,
@@ -71,10 +70,10 @@ async def get_all_patient_stories(
         throw_on_not_found=False,
     )
 
-    story_count = await PatientStories.count(owner_id=current_user.id)
+    story_count = await PatientProfiles.count(owner_id=current_user.id)
 
-    return GetMultiplePatientStories_Out(
-        patient_stories=[GetPatientStory_Out(**stories.dict()) for stories in patient_stories],
+    return GetMultiplePatientProfiles_Out(
+        patient_stories=[GetPatientProfile_Out(**stories.dict()) for stories in patient_stories],
         count=story_count,
         next=skip + limit,
         limit=limit,

@@ -44,6 +44,7 @@ from app.api import (
     form_templates,
     internal_utils,
     mailbox,
+    patient_profile,
     response_templates,
 )
 from app.data.operations import DatabaseOperations
@@ -58,6 +59,7 @@ server = FastAPI(
     version="0.1.0",
     openapi_url="/api/openapi.json",
     docs_url=None,
+    redoc_url=None,
 )
 server.openapi = custom_openapi(server)
 
@@ -73,6 +75,7 @@ server.include_router(form_templates.router)
 server.include_router(form_data.router)
 server.include_router(content_generation_template.router)
 server.include_router(content_generation.router)
+server.include_router(patient_profile.router)
 
 # Setup CORS to allow all origins
 origins = [

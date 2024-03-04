@@ -12,4 +12,5 @@ export type FormField = {
     type?: FormFieldTypes;
     required?: boolean;
     options?: Array<string>;
+    private?: boolean;
 };

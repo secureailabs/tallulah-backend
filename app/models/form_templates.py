@@ -64,6 +64,7 @@ class FormField(SailBaseModel):
     type: FormFieldTypes = Field(default=FormFieldTypes.TEXT)
     required: bool = Field(default=False)
     options: List[StrictStr] = Field(default=None)
+    private: Optional[bool] = Field(default=False)
 
 
 class FormFieldGroup(SailBaseModel):

@@ -24,53 +24,53 @@ from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
 
 
-class PatientStoryState(Enum):
+class PatientProfileState(Enum):
     ACTIVE = "ACTIVE"
     DELETED = "DELETED"
 
 
-class PatientStory_Base(SailBaseModel):
+class PatientProfile_Base(SailBaseModel):
     patient: Dict = Field()
     story: StrictStr = Field()
     owner_id: PyObjectId = Field()
 
 
-class PatientStory_Db(PatientStory_Base):
+class PatientProfile_Db(PatientProfile_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
-    state: PatientStoryState = Field(default=PatientStoryState.ACTIVE)
+    state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
 
 
-class GetPatientStory_Out(PatientStory_Base):
+class GetPatientProfile_Out(PatientProfile_Base):
     id: PyObjectId = Field(alias="_id")
     creation_time: datetime = Field()
 
 
-class RegisterPatientStory_In(PatientStory_Base):
+class RegisterPatientProfile_In(PatientProfile_Base):
     pass
 
 
-class RegisterPatientStory_Out(SailBaseModel):
+class RegisterPatientProfile_Out(SailBaseModel):
     id: PyObjectId = Field(alias="_id")
 
 
-class GetMultiplePatientStories_Out(SailBaseModel):
+class GetMultiplePatientProfiles_Out(SailBaseModel):
     count: int = Field()
     next: int = Field(default=0)
     limit: int = Field(default=10)
-    patient_stories: List[GetPatientStory_Out] = Field()
+    patient_stories: List[GetPatientProfile_Out] = Field()
 
 
-class PatientStories:
+class PatientProfiles:
     DB_COLLECTION_PATIENT_STORIES = "patient_stories"
     data_service = DatabaseOperations()
 
     @staticmethod
     async def create(
-        mailbox: PatientStory_Db,
+        mailbox: PatientProfile_Db,
     ):
-        return await PatientStories.data_service.insert_one(
-            collection=PatientStories.DB_COLLECTION_PATIENT_STORIES,
+        return await PatientProfiles.data_service.insert_one(
+            collection=PatientProfiles.DB_COLLECTION_PATIENT_STORIES,
             data=jsonable_encoder(mailbox),
         )
 
@@ -84,7 +84,7 @@ class PatientStories:
         sort_key: str = "creation_time",
         sort_direction: int = -1,
         throw_on_not_found: bool = True,
-    ) -> List[PatientStory_Db]:
+    ) -> List[PatientProfile_Db]:
         patient_story_list = []
 
         query = {}
@@ -99,12 +99,12 @@ class PatientStories:
             query["owner_id"] = str(owner_id)
 
         if skip is None and limit is None:
-            response = await PatientStories.data_service.find_by_query(
-                collection=PatientStories.DB_COLLECTION_PATIENT_STORIES, query=jsonable_encoder(query)
+            response = await PatientProfiles.data_service.find_by_query(
+                collection=PatientProfiles.DB_COLLECTION_PATIENT_STORIES, query=jsonable_encoder(query)
             )
         elif skip is not None and limit is not None:
-            response = await PatientStories.data_service.find_sorted_pagination(
-                collection=PatientStories.DB_COLLECTION_PATIENT_STORIES,
+            response = await PatientProfiles.data_service.find_sorted_pagination(
+                collection=PatientProfiles.DB_COLLECTION_PATIENT_STORIES,
                 query=jsonable_encoder(query),
                 skip=skip,
                 limit=limit,
@@ -119,7 +119,7 @@ class PatientStories:
 
         if response:
             for patient_story in response:
-                patient_story_list.append(PatientStory_Db(**patient_story))
+                patient_story_list.append(PatientProfile_Db(**patient_story))
         elif throw_on_not_found:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -134,14 +134,14 @@ class PatientStories:
         if owner_id:
             query["owner_id"] = str(owner_id)
 
-        return await PatientStories.data_service.sail_db[PatientStories.DB_COLLECTION_PATIENT_STORIES].count_documents(
-            query
-        )
+        return await PatientProfiles.data_service.sail_db[
+            PatientProfiles.DB_COLLECTION_PATIENT_STORIES
+        ].count_documents(query)
 
     @staticmethod
     async def update(
         query_patient_story_id: Optional[PyObjectId] = None,
-        update_patient_story_state: Optional[PatientStoryState] = None,
+        update_patient_story_state: Optional[PatientProfileState] = None,
     ):
         query = {}
         if query_patient_story_id:
@@ -151,8 +151,8 @@ class PatientStories:
         if update_patient_story_state:
             update["state"] = update_patient_story_state.value
 
-        update_result = await PatientStories.data_service.update_one(
-            collection=PatientStories.DB_COLLECTION_PATIENT_STORIES,
+        update_result = await PatientProfiles.data_service.update_one(
+            collection=PatientProfiles.DB_COLLECTION_PATIENT_STORIES,
             query=jsonable_encoder(query),
             data=jsonable_encoder({"$set": update}),
         )
@@ -160,5 +160,5 @@ class PatientStories:
         if update_result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"PatientStory not found for query: {query}",
+                detail=f"PatientProfile not found for query: {query}",
             )
