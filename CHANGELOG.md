@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.6.0] - 2024-02-05
+
+### Added
+
+- **Update the form data**
+  - PAO admin can now update the form data in the backend.
+  - The form data also have a tags field, editable comment and can be scaled to others items as well
+
+
 ## [0.5.0] - 2024-02-27
 
 ### Added
