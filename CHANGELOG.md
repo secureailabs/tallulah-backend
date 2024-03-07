@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.6.1] - 2024-02-07
+
+### Added
+
+- **Editable comments and tags on UI**
+  - The form data card for all users will have an editable comment and tags section
+
+
 ## [0.6.0] - 2024-02-05
 
 ### Added
