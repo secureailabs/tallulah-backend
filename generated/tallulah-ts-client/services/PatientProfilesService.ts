@@ -9,19 +9,19 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
-export class PatientStoriesService {
+export class PatientProfilesService {
 
     /**
-     * Get All Patient Stories
-     * Get all the patient stories owned by the current user with pagination
-     * @param skip Number of patient stories to skip
-     * @param limit Number of patient stories to return
+     * Get All Patient Profiles
+     * Get all the patient profiles owned by the current user with pagination
+     * @param skip Number of patient profiles to skip
+     * @param limit Number of patient profiles to return
      * @param sortKey Sort key
      * @param sortDirection Sort direction
      * @returns GetMultiplePatientProfiles_Out Successful Response
      * @throws ApiError
      */
-    public static getAllPatientStories(
+    public static getAllPatientProfiles(
         skip?: number,
         limit: number = 20,
         sortKey: string = 'creation_time',
@@ -29,7 +29,7 @@ export class PatientStoriesService {
     ): CancelablePromise<GetMultiplePatientProfiles_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/patient-stories/',
+            url: '/api/patient-profiles/',
             query: {
                 'skip': skip,
                 'limit': limit,
@@ -54,7 +54,7 @@ export class PatientStoriesService {
     ): CancelablePromise<RegisterPatientProfile_Out> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/patient-stories/',
+            url: '/api/patient-profiles/',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

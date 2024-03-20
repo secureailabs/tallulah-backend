@@ -21,7 +21,6 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
-from app.models import organizations
 from app.models.common import PyObjectId, SailBaseModel
 
 
@@ -73,10 +72,17 @@ class FormFieldGroup(SailBaseModel):
     fields: List[FormField] = Field(default=None)
 
 
+class CardLayout(SailBaseModel):
+    name: StrictStr = Field()
+    fields: List[StrictStr] = Field(default=None)
+
+
 class FormTemplate_Base(SailBaseModel):
     name: StrictStr = Field()
     description: Optional[StrictStr] = Field(default=None)
     field_groups: List[FormFieldGroup] = Field(default=None)
+    card_layout: Optional[CardLayout] = Field(default=None)
+    logo: Optional[StrictStr] = Field(default=None)
 
 
 class GetStorageUrl_Out(SailBaseModel):

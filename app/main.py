@@ -44,7 +44,7 @@ from app.api import (
     form_templates,
     internal_utils,
     mailbox,
-    patient_profile,
+    patient_profiles,
     response_templates,
 )
 from app.data.operations import DatabaseOperations
@@ -75,7 +75,7 @@ server.include_router(form_templates.router)
 server.include_router(form_data.router)
 server.include_router(content_generation_template.router)
 server.include_router(content_generation.router)
-server.include_router(patient_profile.router)
+server.include_router(patient_profiles.router)
 
 # Setup CORS to allow all origins
 origins = [
