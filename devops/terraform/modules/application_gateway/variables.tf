@@ -33,13 +33,13 @@ variable "gateway_public_ip_id" {
   type        = string
 }
 
-variable "ssl_certificate_file_path" {
-  description = "SSL certificate file path"
+variable "ssl_certificate_pfx" {
+  description = "SSL certificate file"
   type        = string
 }
 
-variable "ssl_certificate_file_path_2" {
-  description = "SSL certificate file path"
+variable "ssl_certificate_pfx_2" {
+  description = "SSL certificate file"
   type        = string
 }
 

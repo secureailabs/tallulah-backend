@@ -46,12 +46,12 @@ resource "azurerm_application_gateway" "application_gateway" {
   }
   ssl_certificate {
     name     = "app-gateway-ssl-cert"
-    data     = filebase64(var.ssl_certificate_file_path)
+    data     = var.ssl_certificate_pfx
     password = var.ssl_certificate_password
   }
   ssl_certificate {
     name     = "app-gateway-ssl-cert-2"
-    data     = filebase64(var.ssl_certificate_file_path_2)
+    data     = var.ssl_certificate_pfx_2
     password = var.ssl_certificate_password
   }
   http_listener {

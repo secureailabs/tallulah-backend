@@ -13,16 +13,18 @@ provider "acme" {
 
 resource "tls_private_key" "private_key" {
   algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
-resource "acme_registration" "reg" {
+resource "acme_registration" "registration" {
   account_key_pem = tls_private_key.private_key.private_key_pem
   email_address   = "engineering@arrayinsights.com"
 }
 
-resource "acme_certificate" "certificate" {
-  account_key_pem = acme_registration.reg.account_key_pem
-  common_name     = var.host_name
+resource "acme_certificate" "certificates" {
+  account_key_pem          = acme_registration.registration.account_key_pem
+  common_name              = var.host_name
+  certificate_p12_password = var.ssl_certificate_password
 
   # dns_challenge {
   #   provider = "googledomains"
@@ -48,31 +50,4 @@ resource "acme_certificate" "certificate" {
       GODADDY_TTL                 = 600
     }
   }
-}
-
-resource "local_file" "certificate" {
-  content    = acme_certificate.certificate.certificate_pem
-  filename   = "${var.host_name}_certificate.pem"
-  depends_on = [acme_certificate.certificate]
-}
-
-
-resource "local_file" "private_key" {
-  content    = acme_certificate.certificate.private_key_pem
-  filename   = "${var.host_name}_private_key.pem"
-  depends_on = [acme_certificate.certificate]
-}
-
-resource "local_file" "issuer_pem" {
-  content    = acme_certificate.certificate.issuer_pem
-  filename   = "${var.host_name}_issuer.pem"
-  depends_on = [acme_certificate.certificate]
-}
-
-
-resource "null_resource" "convert_to_pfx" {
-  provisioner "local-exec" {
-    command = "openssl pkcs12 -export -out ${var.host_name}_certificate.pfx -inkey ${var.host_name}_private_key.pem -in ${var.host_name}_certificate.pem -certfile ${var.host_name}_issuer.pem -passout pass:${var.ssl_certificate_password}"
-  }
-  depends_on = [local_file.certificate]
 }

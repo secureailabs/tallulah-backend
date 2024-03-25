@@ -52,19 +52,19 @@ module "public_ip" {
 }
 
 module "application_gateway" {
-  source                      = "./modules/application_gateway"
-  resource_group_name         = module.resource_group.resource_group_name
-  container_app_subnet_id     = module.virtual_network.container_apps_subnet_id
-  gateway_subnet_id           = module.virtual_network.gateway_subnet_id
-  backend_address             = "backend.${module.container_apps_env.container_app_environment_default_domain}"
-  ui_address                  = "frontend.${module.container_apps_env.container_app_environment_default_domain}"
-  gateway_public_ip_id        = module.public_ip.public_ip_id
-  react_app_address           = "ui.${module.container_apps_env.container_app_environment_default_domain}"
-  ssl_certificate_password    = var.ssl_certificate_password
-  ssl_certificate_file_path   = module.tls_certificates.certificate_pfx
-  ssl_certificate_file_path_2 = module.tls_certificates_2.certificate_pfx
-  host_name                   = var.host_name
-  host_name_2                 = var.host_name_2
+  source                   = "./modules/application_gateway"
+  resource_group_name      = module.resource_group.resource_group_name
+  container_app_subnet_id  = module.virtual_network.container_apps_subnet_id
+  gateway_subnet_id        = module.virtual_network.gateway_subnet_id
+  backend_address          = "backend.${module.container_apps_env.container_app_environment_default_domain}"
+  ui_address               = "frontend.${module.container_apps_env.container_app_environment_default_domain}"
+  gateway_public_ip_id     = module.public_ip.public_ip_id
+  react_app_address        = "ui.${module.container_apps_env.container_app_environment_default_domain}"
+  ssl_certificate_password = var.ssl_certificate_password
+  ssl_certificate_pfx      = module.tls_certificates.certificate_pfx
+  ssl_certificate_pfx_2    = module.tls_certificates_2.certificate_pfx
+  host_name                = var.host_name
+  host_name_2              = var.host_name_2
 }
 
 module "private_dns_zone" {
