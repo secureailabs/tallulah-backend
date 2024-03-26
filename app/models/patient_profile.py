@@ -78,6 +78,20 @@ class GetPatientProfile_Out(PatientProfile_Db):
     pass
 
 
+class UpdatePatientProfile_In(SailBaseModel):
+    name: StrictStr = Field()
+    primary_cancer_diagnosis: StrictStr = Field()
+    social_worker_name: StrictStr = Field()
+    social_worker_organization: StrictStr = Field()
+    date_of_diagnosis: str = Field()
+    age: int = Field()
+    guardians: List[Guardian] = Field()
+    household_details: str = Field()
+    family_net_monthly_income: int = Field()
+    address: str = Field()
+    recent_requests: List[PatientRequests] = Field()
+
+
 class GetMultiplePatientProfiles_Out(SailBaseModel):
     count: int = Field()
     next: int = Field(default=0)
@@ -162,15 +176,31 @@ class PatientProfiles:
     @staticmethod
     async def update(
         query_patient_profile_id: Optional[PyObjectId] = None,
+        query_organization: Optional[StrictStr] = None,
         update_patient_profile_state: Optional[PatientProfileState] = None,
+        update_patient_profile: Optional[UpdatePatientProfile_In] = None,
     ):
         query = {}
         if query_patient_profile_id:
             query["_id"] = str(query_patient_profile_id)
+        if query_organization:
+            query["organization"] = query_organization
 
         update = {}
         if update_patient_profile_state:
             update["state"] = update_patient_profile_state.value
+        if update_patient_profile:
+            update["name"] = update_patient_profile.name
+            update["primary_cancer_diagnosis"] = update_patient_profile.primary_cancer_diagnosis
+            update["social_worker_name"] = update_patient_profile.social_worker_name
+            update["social_worker_organization"] = update_patient_profile.social_worker_organization
+            update["date_of_diagnosis"] = update_patient_profile.date_of_diagnosis
+            update["age"] = update_patient_profile.age
+            update["guardians"] = update_patient_profile.guardians
+            update["household_details"] = update_patient_profile.household_details
+            update["family_net_monthly_income"] = update_patient_profile.family_net_monthly_income
+            update["address"] = update_patient_profile.address
+            update["recent_requests"] = update_patient_profile.recent_requests
 
         update_result = await PatientProfiles.data_service.update_one(
             collection=PatientProfiles.DB_COLLECTION_PATIENT_PROFILES,

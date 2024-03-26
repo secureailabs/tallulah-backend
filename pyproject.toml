@@ -29,6 +29,7 @@ elasticsearch = "^8.11.1"
 openai = "0.28.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 sentry-sdk = {extras = ["fastapi"], version = "^1.39.2"}
+aiodns = "^3.1.1"
 
 
 [tool.poetry.group.dev.dependencies]
