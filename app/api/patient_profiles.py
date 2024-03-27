@@ -12,7 +12,8 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from fastapi import APIRouter, Body, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -42,6 +43,17 @@ async def add_new_patient_profile(
     patient_profile: RegisterPatientProfile_In = Body(description="Patient profile information"),
     current_user: TokenData = Depends(get_current_user),
 ) -> RegisterPatientProfile_Out:
+    # Check if the patient profile already exists with the same id
+    patient_profile_exists = await PatientProfiles.read(
+        organization=current_user.organization,
+        patient_profile_id=patient_profile.id,
+        throw_on_not_found=False,
+    )
+    if patient_profile_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Patient profile with the same id already exists",
+        )
 
     # Create the patient story and add it to the database
     patient_profile_db = PatientProfile_Db(
@@ -66,7 +78,9 @@ async def add_new_patient_profile(
     # Add the form data to elasticsearch for search
     elastic_client = ElasticsearchClient()
     await elastic_client.insert_document(
-        index_name=str(current_user.organization), id=str(patient_profile_db.id), document=patient_profile_db.dict()
+        index_name=str(current_user.organization),
+        id=str(patient_profile_db.id),
+        document=jsonable_encoder(patient_profile_db),
     )
 
     return RegisterPatientProfile_Out(_id=patient_profile_db.id)
@@ -172,7 +186,7 @@ async def update_patient_profile(
     await elastic_client.update_document(
         index_name=str(current_user.organization),
         id=str(patient_profile_id),
-        document=updated_patient_profile[0].dict(),
+        document=jsonable_encoder(updated_patient_profile[0]),
     )
 
     return Response(status_code=status.HTTP_200_OK)
