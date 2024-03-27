@@ -80,7 +80,7 @@ async def add_new_patient_profile(
     await elastic_client.insert_document(
         index_name=str(current_user.organization),
         id=str(patient_profile_db.id),
-        document=jsonable_encoder(patient_profile_db),
+        document=jsonable_encoder(patient_profile_db, exclude=set(["_id", "id"])),
     )
 
     return RegisterPatientProfile_Out(_id=patient_profile_db.id)
@@ -186,7 +186,7 @@ async def update_patient_profile(
     await elastic_client.update_document(
         index_name=str(current_user.organization),
         id=str(patient_profile_id),
-        document=jsonable_encoder(updated_patient_profile[0]),
+        document=jsonable_encoder(updated_patient_profile[0], exclude=set(["_id", "id"])),
     )
 
     return Response(status_code=status.HTTP_200_OK)
