@@ -125,6 +125,8 @@ async def update_form_template(
         update_form_template_name=form_template.name,
         update_form_template_description=form_template.description,
         update_form_template_field_groups=form_template.field_groups,
+        udpate_form_template_card_layout=form_template.card_layout,
+        update_form_template_logo=form_template.logo,
         update_form_template_last_edit_time=datetime.utcnow(),
     )
 

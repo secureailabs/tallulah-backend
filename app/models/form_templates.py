@@ -122,6 +122,8 @@ class UpdateFormTemplate_In(SailBaseModel):
     name: Optional[StrictStr] = Field(default=None)
     description: Optional[StrictStr] = Field(default=None)
     field_groups: Optional[List[FormFieldGroup]] = Field(default=None)
+    card_layout: Optional[CardLayout] = Field(default=None)
+    logo: Optional[StrictStr] = Field(default=None)
 
 
 class FormTemplates:
@@ -180,6 +182,8 @@ class FormTemplates:
         update_form_template_state: Optional[FormTemplateState] = None,
         update_form_template_description: Optional[StrictStr] = None,
         update_form_template_field_groups: Optional[List[FormFieldGroup]] = None,
+        update_form_template_logo: Optional[StrictStr] = None,
+        udpate_form_template_card_layout: Optional[CardLayout] = None,
         update_form_template_last_edit_time: Optional[datetime] = None,
     ):
         query = {}
@@ -199,6 +203,10 @@ class FormTemplates:
             update_request["$set"]["last_edit_time"] = update_form_template_last_edit_time
         if update_form_template_state:
             update_request["$set"]["state"] = update_form_template_state.value
+        if update_form_template_logo:
+            update_request["$set"]["logo"] = update_form_template_logo
+        if udpate_form_template_card_layout:
+            update_request["$set"]["card_layout"] = udpate_form_template_card_layout
 
         update_response = await FormTemplates.data_service.update_many(
             collection=FormTemplates.DB_COLLECTION_FORM_TEMPLATES,
