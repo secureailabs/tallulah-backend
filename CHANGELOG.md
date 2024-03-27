@@ -25,6 +25,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.7.0] - 2024-03-27
+
+### Added
+
+- **Templatizing Patient Story Cards**
+  - Implemented the capability for templatizing patient story cards to offer a more personalized and customized display of patient form data.
+
+- **Client Logo on Public Facing Link**
+  - Added functionality to include the client's logo on the public facing link of the patient form.
+
+### Fixed
+
+- **Styling and Bug Fixes**
+  - Addressed various styling issues and bugs to improve the application's aesthetics and functionality. These fixes ensure a smoother and more reliable user experience across different parts of the platform.
+
+- **Safari Revoked Certificate Issue**
+  - Fixed an issue where the Safari browser was not loading the application due to a revoked certificate. The deployemnt was changed to use the latest certificate every time.
+
+### Changed
+
+- **Access Token Expiry Handling**
+  - Improved the handling of access token expiry to enhance security and user experience.
+
+
 ## [0.6.1] - 2024-02-07
 
 ### Added
