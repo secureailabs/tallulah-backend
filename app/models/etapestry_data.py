@@ -54,7 +54,7 @@ class GetMultipleETapestryData_Out(SailBaseModel):
 
 
 class ETapestryDatas:
-    DB_COLLECTION_ETAPESTRY_DATA = "etapestry_data"
+    DB_COLLECTION_ETAPESTRY_DATA = "etapestry-data"
     data_service = DatabaseOperations()
 
     @staticmethod
@@ -70,7 +70,7 @@ class ETapestryDatas:
             collection=ETapestryDatas.DB_COLLECTION_ETAPESTRY_DATA,
             query=jsonable_encoder(query_request),
         )
-        if account is None:
+        if not account:
             await ETapestryDatas.data_service.insert_one(
                 collection=ETapestryDatas.DB_COLLECTION_ETAPESTRY_DATA,
                 data=jsonable_encoder(etapestry_data),
@@ -83,7 +83,7 @@ class ETapestryDatas:
             await ETapestryDatas.data_service.update_one(
                 collection=ETapestryDatas.DB_COLLECTION_ETAPESTRY_DATA,
                 query=jsonable_encoder(query_request),
-                data=jsonable_encoder(etapestry_data),
+                data=jsonable_encoder({"$set": jsonable_encoder(etapestry_data)}),
             )
 
         return etapestry_data.id

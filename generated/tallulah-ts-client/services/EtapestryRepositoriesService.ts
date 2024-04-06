@@ -121,12 +121,12 @@ export class EtapestryRepositoriesService {
      * Refresh Etapestry Repository
      * Refresh the eTapestry respository for the current user
      * @param etapestryRepositoryId eTapestry repository id
-     * @returns void
+     * @returns any Successful Response
      * @throws ApiError
      */
     public static refreshEtapestryRepository(
         etapestryRepositoryId: string,
-    ): CancelablePromise<void> {
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/etapestry-repositories/{etapestry_repository_id}/refresh',

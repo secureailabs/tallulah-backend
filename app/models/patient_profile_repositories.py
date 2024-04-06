@@ -18,7 +18,7 @@ from typing import List, Optional
 
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from pydantic import Field
+from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
@@ -29,9 +29,15 @@ class PatientProfileRepositoryState(Enum):
     DELETED = "DELETED"
 
 
+class CardLayout(SailBaseModel):
+    name: StrictStr = Field()
+    fields: List[StrictStr] = Field(default=None)
+
+
 class PatientProfileRepository_Base(SailBaseModel):
     name: str = Field()
     description: Optional[str] = Field(default=None)
+    card_layout: Optional[CardLayout] = Field(default=None)
 
 
 class PatientProfileRepository_Db(PatientProfileRepository_Base):

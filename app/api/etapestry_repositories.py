@@ -14,7 +14,7 @@
 
 import datetime
 
-from fastapi import APIRouter, Body, Depends, Path, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 
 from app.api.authentication import get_current_user
 from app.api.etapestry_data import add_etapestry_data
@@ -111,7 +111,7 @@ async def get_etapestry_repository(
 @router.post(
     path="/{etapestry_repository_id}/refresh",
     description="Refresh the eTapestry respository for the current user",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_202_ACCEPTED,
     operation_id="refresh_etapestry_repository",
 )
 async def refresh_etapestry_repository(
@@ -123,8 +123,8 @@ async def refresh_etapestry_repository(
         repository_id=etapestry_repository_id, organization=current_user.organization, throw_on_not_found=True
     )
     if (datetime.datetime.utcnow() - etapestry_repository[0].last_refresh_time).seconds < 3600:
-        return Response(
-            status_code=status.HTTP_405_METHOD_NOT_ALLOWED, content="Too soon. Refresh is only allowed after 1 hour"
+        raise HTTPException(
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Too soon. Refresh is only allowed after 1 hour"
         )
 
     # Refresh the eTapestry respository
@@ -137,7 +137,7 @@ async def refresh_etapestry_repository(
     async_task_manager = AsyncTaskManager()
     async_task_manager.create_task(pull_accounts(etapestry_repository_id))
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
 @router.patch(

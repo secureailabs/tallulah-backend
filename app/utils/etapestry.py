@@ -177,5 +177,4 @@ class Etapestry:
             webAddress=account.find('webAddress').text,
             defined_values=defined_values
         )
-        print(account_info.dict())
-        callback(account_info, *args, **kwargs)
+        await callback(account_info, *args, **kwargs)

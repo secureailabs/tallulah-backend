@@ -12,6 +12,7 @@ export { app__models__content_generation__ContentGenerationState } from './model
 export { app__models__content_generation_template__ContentGenerationState } from './models/app__models__content_generation_template__ContentGenerationState';
 export type { app__models__etapestry_repositories__CardLayout } from './models/app__models__etapestry_repositories__CardLayout';
 export type { app__models__form_templates__CardLayout } from './models/app__models__form_templates__CardLayout';
+export type { app__models__patient_profile_repositories__CardLayout } from './models/app__models__patient_profile_repositories__CardLayout';
 export type { Body_login } from './models/Body_login';
 export type { Body_reply_to_emails } from './models/Body_reply_to_emails';
 export type { Context } from './models/Context';
