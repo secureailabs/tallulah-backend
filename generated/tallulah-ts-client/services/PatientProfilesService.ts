@@ -16,6 +16,7 @@ export class PatientProfilesService {
     /**
      * Get All Patient Profiles
      * Get all the patient profiles owned by the current user with pagination
+     * @param repositoryId Patient Profile Repository id
      * @param skip Number of patient profiles to skip
      * @param limit Number of patient profiles to return
      * @param sortKey Sort key
@@ -24,6 +25,7 @@ export class PatientProfilesService {
      * @throws ApiError
      */
     public static getAllPatientProfiles(
+        repositoryId?: string,
         skip?: number,
         limit: number = 20,
         sortKey: string = 'creation_time',
@@ -33,6 +35,7 @@ export class PatientProfilesService {
             method: 'GET',
             url: '/api/patient-profiles/',
             query: {
+                'repository_id': repositoryId,
                 'skip': skip,
                 'limit': limit,
                 'sort_key': sortKey,
@@ -60,6 +63,7 @@ export class PatientProfilesService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                400: `Patient profile with the same id already exists`,
                 422: `Validation Error`,
             },
         });
@@ -68,17 +72,20 @@ export class PatientProfilesService {
     /**
      * Search Patient Profiles
      * Search the text from patient profiles for the current user for the template
+     * @param repositoryId Patient Profile Repository id
      * @param searchQuery Search query
      * @returns any Successful Response
      * @throws ApiError
      */
     public static searchPatientProfiles(
+        repositoryId: string,
         searchQuery: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/patient-profiles/search',
             query: {
+                'repository_id': repositoryId,
                 'search_query': searchQuery,
             },
             errors: {

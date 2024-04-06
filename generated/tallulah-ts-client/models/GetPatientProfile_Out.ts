@@ -8,6 +8,7 @@ import type { PatientRequests } from './PatientRequests';
 
 export type GetPatientProfile_Out = {
     _id: string;
+    repository_id: string;
     name: string;
     primary_cancer_diagnosis: string;
     social_worker_name: string;

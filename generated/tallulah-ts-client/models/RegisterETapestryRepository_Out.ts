@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type CardLayout = {
-    name: string;
-    fields?: Array<string>;
+export type RegisterETapestryRepository_Out = {
+    _id: string;
 };

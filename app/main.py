@@ -22,6 +22,7 @@ from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
+import sentry_sdk
 from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -40,10 +41,13 @@ from app.api import (
     content_generation,
     content_generation_template,
     emails,
+    etapestry_data,
+    etapestry_repositories,
     form_data,
     form_templates,
     internal_utils,
     mailbox,
+    patient_profile_repositories,
     patient_profiles,
     response_templates,
 )
@@ -52,6 +56,17 @@ from app.models.common import PyObjectId
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.log_manager import LogLevel, add_log_message
 from app.utils.secrets import secret_store
+
+# sentry_sdk.init(
+#     dsn="https://adad5fa0b086f5c00ebddc4a5c8d9107@o4506660384997376.ingest.sentry.io/4506660387946496",
+#     # Set traces_sample_rate to 1.0 to capture 100%
+#     # of transactions for performance monitoring.
+#     traces_sample_rate=1.0,
+#     # Set profiles_sample_rate to 1.0 to profile 100%
+#     # of sampled transactions.
+#     # We recommend adjusting this value in production.
+#     profiles_sample_rate=1.0,
+# )
 
 server = FastAPI(
     title="Tallulah",
@@ -75,7 +90,10 @@ server.include_router(form_templates.router)
 server.include_router(form_data.router)
 server.include_router(content_generation_template.router)
 server.include_router(content_generation.router)
+server.include_router(patient_profile_repositories.router)
 server.include_router(patient_profiles.router)
+server.include_router(etapestry_repositories.router)
+server.include_router(etapestry_data.router)
 
 # Setup CORS to allow all origins
 origins = [

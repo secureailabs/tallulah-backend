@@ -46,6 +46,7 @@ class PatientRequests(SailBaseModel):
 
 class PatientProfile_Base(SailBaseModel):
     id: PyObjectId = Field(alias="_id")
+    repository_id: PyObjectId = Field()
     name: StrictStr = Field()
     primary_cancer_diagnosis: StrictStr = Field()
     social_worker_name: StrictStr = Field()
@@ -114,6 +115,7 @@ class PatientProfiles:
 
     @staticmethod
     async def read(
+        repository_id: Optional[PyObjectId] = None,
         patient_profile_id: Optional[PyObjectId] = None,
         owner_id: Optional[PyObjectId] = None,
         organization: Optional[StrictStr] = None,
@@ -126,6 +128,8 @@ class PatientProfiles:
         patient_profile_list = []
 
         query = {}
+        if repository_id:
+            query["repository_id"] = str(repository_id)
         if patient_profile_id:
             query["_id"] = str(patient_profile_id)
         if owner_id:

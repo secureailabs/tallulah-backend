@@ -28,6 +28,7 @@ from app.models.patient_profile import (
     RegisterPatientProfile_Out,
     UpdatePatientProfile_In,
 )
+from app.models.patient_profile_repositories import PatientProfileRepositories
 from app.utils.elastic_search import ElasticsearchClient
 
 router = APIRouter(prefix="/api/patient-profiles", tags=["patient-profiles"])
@@ -58,6 +59,7 @@ async def add_new_patient_profile(
     # Create the patient story and add it to the database
     patient_profile_db = PatientProfile_Db(
         _id=patient_profile.id,
+        repository_id=patient_profile.repository_id,
         name=patient_profile.name,
         primary_cancer_diagnosis=patient_profile.primary_cancer_diagnosis,
         date_of_diagnosis=patient_profile.date_of_diagnosis,
@@ -93,6 +95,7 @@ async def add_new_patient_profile(
     operation_id="get_all_patient_profiles",
 )
 async def get_all_patient_profiles(
+    repository_id: PyObjectId = Query(default=None, description="Patient Profile Repository id"),
     skip: int = Query(default=0, description="Number of patient profiles to skip"),
     limit: int = Query(default=20, description="Number of patient profiles to return"),
     sort_key: str = Query(default="creation_time", description="Sort key"),
@@ -101,6 +104,7 @@ async def get_all_patient_profiles(
 ) -> GetMultiplePatientProfiles_Out:
 
     patient_profiles = await PatientProfiles.read(
+        repository_id=repository_id,
         organization=current_user.organization,
         skip=skip,
         limit=limit,
@@ -109,11 +113,11 @@ async def get_all_patient_profiles(
         throw_on_not_found=False,
     )
 
-    story_count = await PatientProfiles.count(owner_id=current_user.id)
+    profiles_count = await PatientProfiles.count(owner_id=current_user.id)
 
     return GetMultiplePatientProfiles_Out(
         patient_profiles=[GetPatientProfile_Out(**profiles.dict()) for profiles in patient_profiles],
-        count=story_count,
+        count=profiles_count,
         next=skip + limit,
         limit=limit,
     )
@@ -126,9 +130,14 @@ async def get_all_patient_profiles(
     operation_id="search_patient_profiles",
 )
 async def search_patient_profiles(
+    repository_id: PyObjectId = Query(description="Patient Profile Repository id"),
     search_query: str = Query(description="Search query"),
     current_user: TokenData = Depends(get_current_user),
 ):
+    # Check if the user is the owner of the response template
+    _ = await PatientProfileRepositories.read(
+        patient_profile_repository_id=repository_id, organization=current_user.organization, throw_on_not_found=True
+    )
 
     # Search the form data
     elastic_client = ElasticsearchClient()
@@ -151,6 +160,13 @@ async def get_patient_profile(
     patient_profile = await PatientProfiles.read(
         organization=current_user.organization,
         patient_profile_id=patient_profile_id,
+        throw_on_not_found=True,
+    )
+
+    # Check if the user is the owner of the response template
+    _ = await PatientProfileRepositories.read(
+        patient_profile_repository_id=patient_profile[0].repository_id,
+        organization=current_user.organization,
         throw_on_not_found=True,
     )
 
