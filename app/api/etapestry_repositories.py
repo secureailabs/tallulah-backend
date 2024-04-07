@@ -184,6 +184,7 @@ async def delete_etapestry_repository(
 
 
 async def pull_accounts(repository_id: PyObjectId):
+    print("pull_accounts", repository_id)
 
     repository = await ETapestryRepositories.read(repository_id=repository_id)
     repository = repository[0]
