@@ -134,6 +134,7 @@ export class EtapestryRepositoriesService {
                 'etapestry_repository_id': etapestryRepositoryId,
             },
             errors: {
+                405: `Too soon. Refresh is only allowed after 1 hour`,
                 422: `Validation Error`,
             },
         });
