@@ -13,6 +13,7 @@
 # -------------------------------------------------------------------------------
 
 from fastapi import APIRouter, Depends, Path, Query, Response, status
+from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -159,5 +160,7 @@ async def add_etapestry_data(data: AccountInfo, repository_id: PyObjectId):
     # Add the data to the elastic search cluster
     elastic_client = ElasticsearchClient()
     await elastic_client.insert_document(
-        index_name=str(repository_id), id=str(insert_data_id), document=etapestry_data_db.dict()
+        index_name=str(repository_id),
+        id=str(insert_data_id),
+        document=jsonable_encoder(etapestry_data_db, exclude=set(["_id", "id"])),
     )

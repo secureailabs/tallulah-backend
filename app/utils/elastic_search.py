@@ -3,7 +3,6 @@ from elasticsearch import AsyncElasticsearch
 
 class ElasticsearchClient:
     _instance = None
-    _index_cache = []
 
     def __new__(cls, cloud_id=None, password=None):
         if cls._instance is None:
@@ -24,9 +23,6 @@ class ElasticsearchClient:
 
         resp = await self.client.indices.create(index=index_name)
 
-        # Add the index to the cache
-        self._index_cache.append(index_name)
-
         return resp
 
     async def delete_index(self, index_name: str):
@@ -39,10 +35,6 @@ class ElasticsearchClient:
         return resp
 
     async def insert_document(self, index_name: str, id: str, document: dict):
-        # Check if the index exists from the cache
-        if index_name not in self._index_cache:
-            await self.create_index(index_name)
-
         resp = await self.client.index(index=index_name, document=document, id=id)
         return resp
 

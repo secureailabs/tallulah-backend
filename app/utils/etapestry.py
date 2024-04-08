@@ -102,8 +102,8 @@ class Etapestry:
                     result_count_respose = root.find('.//ns0:PagedQueryResultsResponse', namespaces={'ns0': 'etapestryAPI/service'})
                     if not result_count_respose:
                         break
-                    result_count = result_count_respose.find('count')
-                    if result_count and result_count.text and int(result_count.text) == 0:
+                    result_count = result_count_respose.find('count').text
+                    if result_count == '0':
                         break
 
                     for account in root.findall('.//ns0:Account', namespaces={'ns0': 'etapestryAPI/service'}):

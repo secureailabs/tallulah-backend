@@ -16,6 +16,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Respon
 from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
+from app.models import organizations
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.patient_profile import (
@@ -113,7 +114,7 @@ async def get_all_patient_profiles(
         throw_on_not_found=False,
     )
 
-    profiles_count = await PatientProfiles.count(owner_id=current_user.id)
+    profiles_count = await PatientProfiles.count(organization=current_user.organization)
 
     return GetMultiplePatientProfiles_Out(
         patient_profiles=[GetPatientProfile_Out(**profiles.dict()) for profiles in patient_profiles],

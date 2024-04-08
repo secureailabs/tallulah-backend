@@ -31,6 +31,7 @@ from app.models.form_templates import (
     RegisterFormTemplate_Out,
     UpdateFormTemplate_In,
 )
+from app.utils.elastic_search import ElasticsearchClient
 
 router = APIRouter(prefix="/api/form-templates", tags=["form-templates"])
 
@@ -54,6 +55,10 @@ async def add_new_form_template(
         organization=current_user.organization,
     )
     await FormTemplates.create(form_template_db)
+
+    # Create index in elasticsearch
+    elastic_client = ElasticsearchClient()
+    await elastic_client.create_index(index_name=str(form_template_db.id))
 
     return RegisterFormTemplate_Out(_id=form_template_db.id)
 

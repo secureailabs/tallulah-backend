@@ -27,6 +27,7 @@ from app.models.patient_profile_repositories import (
     RegisterPatientProfileRepository_Out,
     UpdatePatientProfileRepository_In,
 )
+from app.utils.elastic_search import ElasticsearchClient
 
 router = APIRouter(prefix="/api/patient-profile-repositories", tags=["patient-profile-repositories"])
 
@@ -53,6 +54,10 @@ async def add_new_patient_profile_repository(
         state=PatientProfileRepositoryState.ACTIVE,
     )
     await PatientProfileRepositories.create(patient_profile_repository_db)
+
+    # Create index in elasticsearch
+    elastic_client = ElasticsearchClient()
+    await elastic_client.create_index(index_name=str(patient_profile_repository_db.id))
 
     return RegisterPatientProfileRepository_Out(id=patient_profile_repository_db.id)
 

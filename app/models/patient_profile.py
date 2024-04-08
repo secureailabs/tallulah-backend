@@ -168,10 +168,10 @@ class PatientProfiles:
         return patient_profile_list
 
     @staticmethod
-    async def count(owner_id: Optional[PyObjectId] = None) -> int:
+    async def count(organization: Optional[StrictStr] = None) -> int:
         query = {}
-        if owner_id:
-            query["owner_id"] = str(owner_id)
+        if organization:
+            query["organization"] = organization
 
         return await PatientProfiles.data_service.sail_db[
             PatientProfiles.DB_COLLECTION_PATIENT_PROFILES

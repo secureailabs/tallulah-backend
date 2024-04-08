@@ -31,6 +31,7 @@ from app.models.etapestry_repositories import (
     UpdateETapestryRepository_In,
 )
 from app.utils.background_couroutines import AsyncTaskManager
+from app.utils.elastic_search import ElasticsearchClient
 from app.utils.etapestry import Etapestry
 from app.utils.secrets import get_keyvault_secret, set_keyvault_secret
 
@@ -67,6 +68,11 @@ async def add_new_etapestry_repository(
     )
     await ETapestryRepositories.create(etapestry_repository_db)
 
+    # Create index in elasticsearch
+    elastic_client = ElasticsearchClient()
+    await elastic_client.create_index(index_name=str(etapestry_repository_db.id))
+
+    # Pull accounts
     async_task_manager = AsyncTaskManager()
     async_task_manager.create_task(pull_accounts(etapestry_repository_db.id))
 
