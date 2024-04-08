@@ -12,11 +12,10 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi import APIRouter, Body, Depends, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
-from app.models import organizations
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.patient_profile import (
@@ -46,18 +45,6 @@ async def add_new_patient_profile(
     patient_profile: RegisterPatientProfile_In = Body(description="Patient profile information"),
     current_user: TokenData = Depends(get_current_user),
 ) -> RegisterPatientProfile_Out:
-    # Check if the patient profile already exists with the same id
-    patient_profile_exists = await PatientProfiles.read(
-        organization=current_user.organization,
-        patient_id=patient_profile.patient_id,
-        repository_id=patient_profile.repository_id,
-        throw_on_not_found=False,
-    )
-    if patient_profile_exists:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Patient profile with the same id already exists",
-        )
 
     # Create the patient story and add it to the database
     patient_profile_db = PatientProfile_Db(
@@ -76,19 +63,20 @@ async def add_new_patient_profile(
         recent_requests=patient_profile.recent_requests,
         organization=current_user.organization,
         owner_id=current_user.id,
+        state=PatientProfileState.ACTIVE,
     )
 
-    await PatientProfiles.create(patient_profile_db)
+    patient_profile_id = await PatientProfiles.create(patient_profile_db)
 
     # Add the form data to elasticsearch for search
     elastic_client = ElasticsearchClient()
     await elastic_client.insert_document(
-        index_name=str(current_user.organization),
-        id=str(patient_profile_db.id),
+        index_name=str(patient_profile.repository_id),
+        id=str(patient_profile_id),
         document=jsonable_encoder(patient_profile_db, exclude=set(["_id", "id"])),
     )
 
-    return RegisterPatientProfile_Out(id=patient_profile_db.id)
+    return RegisterPatientProfile_Out(id=patient_profile_id)
 
 
 @router.get(
@@ -146,7 +134,7 @@ async def search_patient_profiles(
 
     # Search the form data
     elastic_client = ElasticsearchClient()
-    response = await elastic_client.search(index_name=str(current_user.organization), search_query=search_query)
+    response = await elastic_client.search(index_name=str(repository_id), search_query=search_query)
 
     return response
 
@@ -207,7 +195,7 @@ async def update_patient_profile(
     # Update the form data in elasticsearch for search
     elastic_client = ElasticsearchClient()
     await elastic_client.update_document(
-        index_name=str(current_user.organization),
+        index_name=str(updated_patient_profile[0].repository_id),
         id=str(patient_profile_id),
         document=jsonable_encoder(updated_patient_profile[0], exclude=set(["_id", "id"])),
     )
@@ -227,6 +215,13 @@ async def delete_patient_profile(
     current_user: TokenData = Depends(get_current_user),
 ) -> Response:
 
+    # Get the patient profile to check if the user is the owner of the patient profile
+    patient_profile = await PatientProfiles.read(
+        organization=current_user.organization,
+        patient_profile_id=patient_profile_id,
+        throw_on_not_found=True,
+    )
+
     await PatientProfiles.update(
         query_patient_profile_id=patient_profile_id,
         query_organization=current_user.organization,
@@ -235,6 +230,6 @@ async def delete_patient_profile(
 
     # Delete the form data from elasticsearch for search
     elastic_client = ElasticsearchClient()
-    await elastic_client.delete_document(index_name=str(current_user.organization), id=str(patient_profile_id))
+    await elastic_client.delete_document(index_name=str(patient_profile[0].repository_id), id=str(patient_profile_id))
 
     return Response(status_code=status.HTTP_200_OK)

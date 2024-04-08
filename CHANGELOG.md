@@ -25,6 +25,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+
+## [0.8.0] - 2024-04-09
+
+### Added
+
+- **Patient Profile Page**
+  - Implemented a patient profile page to display detailed information about the patient.
+  - The patient profile data can be bulk uploaded by the PAO admin using our APIs.
+  - The data is searchable and is displayed on the frontend in the card format.
+
+- **Etapestry Integration**
+  - Integrated Etapestry with the Tallulah platform to fetch patient information and display it on the frontend.
+  - The patient information is fetched using the Etapestry SOAP API async and displayed in a searchable card format on the patient profile page.
+
+### Fixed
+
+- **Content Generation Response Display**
+  - Fixed a bug where the content generation responses page crashed in case of failure to generate content
+
+
+### Changed
+
+- **Optional Fields in Content Generation Templates**
+  - Made the fields in the content generation templates optional to allow users to generate content without filling all the fields.
+  - This change enhances the flexibility and usability of the content generation feature.
+
+
 ## [0.7.0] - 2024-03-27
 
 ### Added

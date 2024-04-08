@@ -110,11 +110,34 @@ class PatientProfiles:
     @staticmethod
     async def create(
         patient_profile: PatientProfile_Db,
-    ):
-        return await PatientProfiles.data_service.insert_one(
+    ) -> PyObjectId:
+
+        # check if the patient profile exists
+        query_request = {}
+        query_request["repository_id"] = str(patient_profile.repository_id)
+        query_request["patient_id"] = str(patient_profile.patient_id)
+
+        patient_profile_db = await PatientProfiles.data_service.find_one(
             collection=PatientProfiles.DB_COLLECTION_PATIENT_PROFILES,
-            data=jsonable_encoder(patient_profile),
+            query=jsonable_encoder(query_request),
         )
+        if not patient_profile_db:
+            await PatientProfiles.data_service.insert_one(
+                collection=PatientProfiles.DB_COLLECTION_PATIENT_PROFILES,
+                data=jsonable_encoder(patient_profile),
+            )
+        else:
+            # Use the same id
+            patient_profile.id = patient_profile_db["_id"]
+
+            # update the existing patient profile
+            await PatientProfiles.data_service.update_one(
+                collection=PatientProfiles.DB_COLLECTION_PATIENT_PROFILES,
+                query=jsonable_encoder(query_request),
+                data=jsonable_encoder({"$set": jsonable_encoder(patient_profile)}),
+            )
+
+        return patient_profile.id
 
     @staticmethod
     async def read(
