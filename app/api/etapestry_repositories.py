@@ -77,7 +77,7 @@ async def add_new_etapestry_repository(
     async_task_manager = AsyncTaskManager()
     async_task_manager.create_task(pull_accounts(etapestry_repository_db.id))
 
-    return RegisterETapestryRepository_Out(_id=etapestry_repository_db.id)
+    return RegisterETapestryRepository_Out(id=etapestry_repository_db.id)
 
 
 @router.get(

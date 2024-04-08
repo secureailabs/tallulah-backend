@@ -138,7 +138,7 @@ async def login_for_access_token(
 
     # Create the access token and refresh token and return them
     token_data = TokenData(
-        _id=found_user_db.id,
+        id=found_user_db.id,
         roles=found_user_db.roles,
         organization=found_user_db.organization,
         exp=int(time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60),

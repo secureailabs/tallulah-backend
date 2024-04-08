@@ -53,7 +53,7 @@ async def add_new_response_template(
     )
     await ResponseTemplates.create(response_template_db)
 
-    return RegisterResponseTemplate_Out(_id=response_template_db.id)
+    return RegisterResponseTemplate_Out(id=response_template_db.id)
 
 
 @router.get(

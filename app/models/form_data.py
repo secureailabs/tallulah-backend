@@ -40,7 +40,7 @@ class RegisterFormData_In(FormData_Base):
 
 
 class RegisterFormData_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class FormData_Db(FormData_Base):
@@ -49,7 +49,7 @@ class FormData_Db(FormData_Base):
 
 
 class GetFormData_Out(FormData_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 

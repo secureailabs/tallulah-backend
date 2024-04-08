@@ -8,6 +8,6 @@ export type GetFormData_Out = {
     form_template_id: string;
     values?: any;
     state?: FormDataState;
-    _id: string;
+    id: string;
     creation_time?: string;
 };

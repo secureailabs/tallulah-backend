@@ -7,7 +7,7 @@ import type { PatientProfileState } from './PatientProfileState';
 import type { PatientRequests } from './PatientRequests';
 
 export type GetPatientProfile_Out = {
-    _id: string;
+    patient_id: string;
     repository_id: string;
     name: string;
     primary_cancer_diagnosis: string;
@@ -20,6 +20,7 @@ export type GetPatientProfile_Out = {
     family_net_monthly_income: number;
     address: string;
     recent_requests: Array<PatientRequests>;
+    id: string;
     creation_time?: string;
     state?: PatientProfileState;
     organization: string;

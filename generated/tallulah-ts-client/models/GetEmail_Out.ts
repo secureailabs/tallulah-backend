@@ -17,6 +17,6 @@ export type GetEmail_Out = {
     note?: string;
     message_state?: EmailState;
     outlook_id: string;
-    _id: string;
+    id: string;
     creation_time: string;
 };

@@ -90,7 +90,7 @@ async def add_new_mailbox(
     async_task_manager = AsyncTaskManager()
     async_task_manager.create_task(read_emails(client, mailbox_db.id))
 
-    return RegisterMailbox_Out(_id=mailbox_db.id)
+    return RegisterMailbox_Out(id=mailbox_db.id)
 
 
 @router.get(

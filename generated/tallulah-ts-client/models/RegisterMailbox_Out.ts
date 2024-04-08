@@ -3,5 +3,5 @@
 /* eslint-disable */
 
 export type RegisterMailbox_Out = {
-    _id: string;
+    id: string;
 };

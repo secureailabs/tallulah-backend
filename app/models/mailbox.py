@@ -50,7 +50,7 @@ class Mailbox_Db(Mailbox_Base):
 
 
 class GetMailbox_Out(Mailbox_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     creation_time: datetime = Field()
 
 
@@ -60,7 +60,7 @@ class RegisterMailbox_In(SailBaseModel):
 
 
 class RegisterMailbox_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class GetMultipleMailboxes_Out(SailBaseModel):

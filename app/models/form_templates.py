@@ -95,7 +95,7 @@ class RegisterFormTemplate_In(FormTemplate_Base):
 
 
 class RegisterFormTemplate_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class FormTemplate_Db(FormTemplate_Base):
@@ -108,7 +108,7 @@ class FormTemplate_Db(FormTemplate_Base):
 
 
 class GetFormTemplate_Out(FormTemplate_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: FormTemplateState = Field()
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)

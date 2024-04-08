@@ -49,7 +49,8 @@ async def add_new_patient_profile(
     # Check if the patient profile already exists with the same id
     patient_profile_exists = await PatientProfiles.read(
         organization=current_user.organization,
-        patient_profile_id=patient_profile.id,
+        patient_id=patient_profile.patient_id,
+        repository_id=patient_profile.repository_id,
         throw_on_not_found=False,
     )
     if patient_profile_exists:
@@ -60,7 +61,7 @@ async def add_new_patient_profile(
 
     # Create the patient story and add it to the database
     patient_profile_db = PatientProfile_Db(
-        _id=patient_profile.id,
+        patient_id=patient_profile.patient_id,
         repository_id=patient_profile.repository_id,
         name=patient_profile.name,
         primary_cancer_diagnosis=patient_profile.primary_cancer_diagnosis,
@@ -87,7 +88,7 @@ async def add_new_patient_profile(
         document=jsonable_encoder(patient_profile_db, exclude=set(["_id", "id"])),
     )
 
-    return RegisterPatientProfile_Out(_id=patient_profile_db.id)
+    return RegisterPatientProfile_Out(id=patient_profile_db.id)
 
 
 @router.get(

@@ -36,7 +36,7 @@ class RegisterResponseTemplate_In(ResponseTemplate_Base):
 
 
 class RegisterResponseTemplate_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class ResponseTemplate_Db(ResponseTemplate_Base):
@@ -47,7 +47,7 @@ class ResponseTemplate_Db(ResponseTemplate_Base):
 
 
 class GetResponseTemplate_Out(ResponseTemplate_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)
 

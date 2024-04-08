@@ -14,15 +14,13 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import Field, StrictStr
 
-from app.api import patient_profiles
 from app.data.operations import DatabaseOperations
-from app.models import organizations
 from app.models.common import PyObjectId, SailBaseModel
 
 
@@ -40,12 +38,12 @@ class Guardian(SailBaseModel):
 
 
 class PatientRequests(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     purpose: StrictStr = Field()
 
 
 class PatientProfile_Base(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    patient_id: PyObjectId = Field()
     repository_id: PyObjectId = Field()
     name: StrictStr = Field()
     primary_cancer_diagnosis: StrictStr = Field()
@@ -61,6 +59,7 @@ class PatientProfile_Base(SailBaseModel):
 
 
 class PatientProfile_Db(PatientProfile_Base):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
     organization: StrictStr = Field()
@@ -72,11 +71,15 @@ class RegisterPatientProfile_In(PatientProfile_Base):
 
 
 class RegisterPatientProfile_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
-class GetPatientProfile_Out(PatientProfile_Db):
-    pass
+class GetPatientProfile_Out(PatientProfile_Base):
+    id: PyObjectId = Field()
+    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
+    organization: StrictStr = Field()
+    owner_id: PyObjectId = Field()
 
 
 class UpdatePatientProfile_In(SailBaseModel):
@@ -115,8 +118,9 @@ class PatientProfiles:
 
     @staticmethod
     async def read(
-        repository_id: Optional[PyObjectId] = None,
         patient_profile_id: Optional[PyObjectId] = None,
+        patient_id: Optional[PyObjectId] = None,
+        repository_id: Optional[PyObjectId] = None,
         owner_id: Optional[PyObjectId] = None,
         organization: Optional[StrictStr] = None,
         skip: Optional[int] = None,
@@ -130,12 +134,17 @@ class PatientProfiles:
         query = {}
         if repository_id:
             query["repository_id"] = str(repository_id)
-        if patient_profile_id:
-            query["_id"] = str(patient_profile_id)
         if owner_id:
             query["owner_id"] = str(owner_id)
         if organization:
             query["organization"] = organization
+        if patient_profile_id:
+            query["_id"] = str(patient_profile_id)
+        if patient_id:
+            query["patient_id"] = str(patient_id)
+
+        # Only read the ACTIVE patient profiles
+        query["state"] = PatientProfileState.ACTIVE.value
 
         if skip is None and limit is None:
             response = await PatientProfiles.data_service.find_by_query(

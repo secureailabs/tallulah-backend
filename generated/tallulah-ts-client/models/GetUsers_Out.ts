@@ -11,5 +11,5 @@ export type GetUsers_Out = {
     job_title: string;
     roles: Array<UserRole>;
     avatar?: string;
-    _id: string;
+    id: string;
 };

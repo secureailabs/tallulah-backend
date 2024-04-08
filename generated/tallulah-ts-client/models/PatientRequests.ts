@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export type PatientRequests = {
-    _id: string;
+    id: string;
     purpose: string;
 };

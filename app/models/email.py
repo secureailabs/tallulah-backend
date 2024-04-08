@@ -58,7 +58,7 @@ class Email_Db(Email_Base):
 
 
 class GetEmail_Out(Email_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     creation_time: datetime = Field()
 
 

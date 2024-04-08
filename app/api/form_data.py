@@ -60,7 +60,7 @@ async def add_form_data(
         index_name=str(form_data.form_template_id), id=str(form_data_db.id), document=form_data.values
     )
 
-    return RegisterFormData_Out(_id=form_data_db.id)
+    return RegisterFormData_Out(id=form_data_db.id)
 
 
 @router.post(
@@ -93,7 +93,7 @@ async def add_form_data_manual(
         index_name=str(form_data.form_template_id), id=str(form_data_db.id), document=form_data.values
     )
 
-    return RegisterFormData_Out(_id=form_data_db.id)
+    return RegisterFormData_Out(id=form_data_db.id)
 
 
 @router.get(

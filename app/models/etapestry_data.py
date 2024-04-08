@@ -42,7 +42,7 @@ class ETapestryData_Db(ETapestryData_Base):
 
 
 class GetETapestryData_Out(ETapestryData_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 

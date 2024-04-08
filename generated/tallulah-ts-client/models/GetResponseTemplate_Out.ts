@@ -9,7 +9,7 @@ export type GetResponseTemplate_Out = {
     subject?: string;
     body?: EmailBody;
     note?: string;
-    _id: string;
+    id: string;
     creation_time?: string;
     last_edit_time?: string;
 };

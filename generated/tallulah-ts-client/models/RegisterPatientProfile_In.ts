@@ -6,7 +6,7 @@ import type { Guardian } from './Guardian';
 import type { PatientRequests } from './PatientRequests';
 
 export type RegisterPatientProfile_In = {
-    _id: string;
+    patient_id: string;
     repository_id: string;
     name: string;
     primary_cancer_diagnosis: string;

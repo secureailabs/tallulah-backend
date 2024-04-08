@@ -59,7 +59,7 @@ class User_Db(User_Base):
 
 
 class UserInfo_Out(User_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class RegisterUser_In(User_Base):
@@ -67,11 +67,11 @@ class RegisterUser_In(User_Base):
 
 
 class RegisterUser_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class GetUsers_Out(User_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     name: StrictStr = Field()
     email: EmailStr = Field()
     job_title: StrictStr = Field()

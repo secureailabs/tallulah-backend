@@ -12,7 +12,7 @@ export type GetFormTemplate_Out = {
     field_groups?: Array<FormFieldGroup>;
     card_layout?: app__models__form_templates__CardLayout;
     logo?: string;
-    _id: string;
+    id: string;
     creation_time?: string;
     state: FormTemplateState;
     last_edit_time?: string;

@@ -82,7 +82,7 @@ async def register_user(
     )
     await Users.create(user=user_db)
 
-    return RegisterUser_Out(_id=user_db.id)
+    return RegisterUser_Out(id=user_db.id)
 
 
 @router.get(

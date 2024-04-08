@@ -3,5 +3,5 @@
 /* eslint-disable */
 
 export type RegisterFormData_Out = {
-    _id: string;
+    id: string;
 };

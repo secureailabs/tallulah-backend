@@ -61,7 +61,7 @@ async def add_new_form_template(
     elastic_client = ElasticsearchClient()
     await elastic_client.create_index(index_name=str(form_template_db.id))
 
-    return RegisterFormTemplate_Out(_id=form_template_db.id)
+    return RegisterFormTemplate_Out(id=form_template_db.id)
 
 
 @router.get(

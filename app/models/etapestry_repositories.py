@@ -46,7 +46,7 @@ class RegisterETapestryRepository_In(ETapestryRepository_Base):
 
 
 class RegisterETapestryRepository_Out(SailBaseModel):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
 
 
 class ETapestryRepository_Db(ETapestryRepository_Base):
@@ -61,7 +61,7 @@ class ETapestryRepository_Db(ETapestryRepository_Base):
 
 
 class GetETapestryRepository_Out(ETapestryRepository_Base):
-    id: PyObjectId = Field(alias="_id")
+    id: PyObjectId = Field()
     user_id: PyObjectId = Field()
     organization: StrictStr = Field()
     last_refresh_time: datetime = Field()
