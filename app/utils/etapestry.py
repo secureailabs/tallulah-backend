@@ -89,13 +89,13 @@ class Etapestry:
             "Cookie": self.cookies
         }
 
-        tasks = []
-
         while True:
             payload = f"""<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns="etapestryAPI/service">\n    <SOAP-ENV:Body>\n        <tns:getExistingQueryResults xmlns:tns="etapestryAPI/service">\n            <PagedExistingQueryResultsRequest_1 xsi:type="tns:PagedExistingQueryResultsRequest">\n                <count xsi:type="xsd:int">{count}</count>\n                <start xsi:type="xsd:int">{skip}</start>\n                <query xsi:type="xsd:string">Recipients::Recipients</query>\n            </PagedExistingQueryResultsRequest_1>\n        </tns:getExistingQueryResults>\n    </SOAP-ENV:Body>\n</SOAP-ENV:Envelope>"""
 
             async with aiohttp.ClientSession() as session:
                 async with session.post(self.url, headers=headers, data=payload) as response:
+                    tasks = []
+
                     xml_data = await response.text()
                     root = ET.fromstring(xml_data)
 
@@ -121,7 +121,7 @@ class Etapestry:
                     count = 200
                     skip += 200
 
-        await asyncio.gather(*tasks)
+                    await asyncio.gather(*tasks)
 
 
     async def process_accounts(self, account: ET.Element, defined_values: Dict[str, str], callback: Callable, *args, **kwargs):

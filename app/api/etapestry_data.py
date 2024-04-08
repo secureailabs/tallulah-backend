@@ -12,6 +12,8 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import traceback
+
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
 
@@ -149,18 +151,22 @@ async def delete_etapestry_data(
 
 
 async def add_etapestry_data(data: AccountInfo, repository_id: PyObjectId):
-    # Add the eTapestry data
-    etapestry_data_db = ETapestryData_Db(
-        repository_id=repository_id,
-        account=data,
-        state=ETapestryDataState.ACTIVE,
-    )
-    insert_data_id = await ETapestryDatas.create(etapestry_data_db)
+    try:
+        # Add the eTapestry data
+        etapestry_data_db = ETapestryData_Db(
+            repository_id=repository_id,
+            account=data,
+            state=ETapestryDataState.ACTIVE,
+        )
+        insert_data_id = await ETapestryDatas.create(etapestry_data_db)
 
-    # Add the data to the elastic search cluster
-    elastic_client = ElasticsearchClient()
-    await elastic_client.insert_document(
-        index_name=str(repository_id),
-        id=str(insert_data_id),
-        document=jsonable_encoder(etapestry_data_db, exclude=set(["_id", "id"])),
-    )
+        # Add the data to the elastic search cluster
+        elastic_client = ElasticsearchClient()
+        await elastic_client.insert_document(
+            index_name=str(repository_id),
+            id=str(insert_data_id),
+            document=jsonable_encoder(etapestry_data_db, exclude=set(["_id", "id"])),
+        )
+    except Exception as e:
+        print(f"Error adding eTapestry data: {e}")
+        traceback.print_exc()
