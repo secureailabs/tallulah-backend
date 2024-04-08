@@ -52,6 +52,7 @@ async def add_new_patient_profile_repository(
         description=patient_profile_repository.description,
         user_id=current_user.id,
         organization=current_user.organization,
+        card_layout=patient_profile_repository.card_layout,
         state=PatientProfileRepositoryState.ACTIVE,
     )
     await PatientProfileRepositories.create(patient_profile_repository_db)

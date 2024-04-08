@@ -255,7 +255,7 @@ async def add_audit_log(request: Request, call_next: Callable):
         if len(auth_token_list) > 1:
             user_info_base_64 = request.headers["Authorization"].split(".")[1]
             user_info = json.loads(base64.b64decode(user_info_base_64 + "=="))
-            user_id = user_info["_id"]
+            user_id = user_info["id"]
 
     message = {
         "user_id": user_id,
