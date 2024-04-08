@@ -40,6 +40,7 @@ router = APIRouter(prefix="/api/content-generations", tags=["content-generations
     path="/",
     description="Create a new content generation record",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="create_content_generation",
 )
 async def create_content_generation(
@@ -64,6 +65,7 @@ async def create_content_generation(
     path="/",
     description="Get all content generation records for a user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_content_generations",
 )
 async def get_all_content_generations(
@@ -101,6 +103,7 @@ async def get_all_content_generations(
     description="Get a specific content generation record",
     status_code=status.HTTP_200_OK,
     operation_id="get_content_generation",
+    response_model_by_alias=False,
 )
 async def get_content_generation(
     content_generation_id: PyObjectId = Path(description="Content generation record id"),

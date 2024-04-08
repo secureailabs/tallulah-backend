@@ -41,6 +41,7 @@ router = APIRouter(prefix="/api/mailbox", tags=["mailbox"])
     path="/",
     description="Add a new mailbox by code",
     status_code=status.HTTP_202_ACCEPTED,
+    response_model_by_alias=False,
     operation_id="add_new_mailbox",
 )
 async def add_new_mailbox(
@@ -96,6 +97,7 @@ async def add_new_mailbox(
     path="/",
     description="Get all the mailboxes for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_mailboxes",
 )
 async def get_all_mailboxes(
@@ -110,6 +112,7 @@ async def get_all_mailboxes(
     path="/{mailbox_id}",
     description="Get the mailbox for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_mailbox",
 )
 async def get_mailbox(

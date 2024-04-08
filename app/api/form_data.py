@@ -42,6 +42,7 @@ router = APIRouter(prefix="/api/form-data", tags=["form-data"])
     path="/",
     description="Add a new form data",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_form_data",
 )
 async def add_form_data(
@@ -66,6 +67,7 @@ async def add_form_data(
     path="/manual",
     description="Add a new form data manually from an authenticated user",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_form_data_manual",
 )
 async def add_form_data_manual(
@@ -98,6 +100,7 @@ async def add_form_data_manual(
     path="/",
     description="Get all the form data for the current user for the template",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_form_data",
 )
 async def get_all_form_data(
@@ -136,6 +139,7 @@ async def get_all_form_data(
     path="/{form_data_id}",
     description="Update the form data for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="update_form_data",
 )
 async def update_form_data(
@@ -176,6 +180,7 @@ async def update_form_data(
     path="/upload",
     description="Get the upload url for the form data",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_upload_url",
 )
 async def get_upload_url(
@@ -196,6 +201,7 @@ async def get_upload_url(
     path="/download",
     description="Get the download url for the form media",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_download_url",
 )
 async def get_download_url(
@@ -218,6 +224,7 @@ async def get_download_url(
     path="/search",
     description="Search the text form data for the current user for the template",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="search_form_data",
 )
 async def search_form_data(
@@ -241,6 +248,7 @@ async def search_form_data(
     path="/{form_data_id}",
     description="Get the response data for the form",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_form_data",
 )
 async def get_form_data(

@@ -161,6 +161,7 @@ async def login_for_access_token(
     path="/api/refresh-token",
     description="Refresh the JWT token for the user",
     response_model=LoginSuccess_Out,
+    response_model_by_alias=False,
     operation_id="get_refresh_token",
 )
 async def refresh_for_access_token(

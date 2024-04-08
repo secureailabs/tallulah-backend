@@ -39,6 +39,7 @@ router = APIRouter(prefix="/api/patient-profiles", tags=["patient-profiles"])
     path="/",
     description="Add a new patient profile",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="add_patient_profile",
 )
 async def add_new_patient_profile(
@@ -93,6 +94,7 @@ async def add_new_patient_profile(
     path="/",
     description="Get all the patient profiles owned by the current user with pagination",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_patient_profiles",
 )
 async def get_all_patient_profiles(
@@ -128,6 +130,7 @@ async def get_all_patient_profiles(
     path="/search",
     description="Search the text from patient profiles for the current user for the template",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="search_patient_profiles",
 )
 async def search_patient_profiles(
@@ -151,6 +154,7 @@ async def search_patient_profiles(
     path="/{patient_profile_id}",
     description="Get a patient profile by id",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_patient_profile",
 )
 async def get_patient_profile(
@@ -178,6 +182,7 @@ async def get_patient_profile(
     path="/{patient_profile_id}",
     description="Update a patient profile by id",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="update_patient_profile",
 )
 async def update_patient_profile(
@@ -213,6 +218,7 @@ async def update_patient_profile(
     path="/{patient_profile_id}",
     description="Delete a patient profile by id",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="delete_patient_profile",
 )
 async def delete_patient_profile(

@@ -36,6 +36,7 @@ router = APIRouter(prefix="/api/content-generation-templates", tags=["content-ge
     path="/",
     description="Add a new content generation template",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_new_content_generation_template",
 )
 async def add_new_content_generation_template(
@@ -65,6 +66,7 @@ async def add_new_content_generation_template(
     path="/",
     description="Get all content generation templates for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_content_generation_templates",
 )
 async def get_all_content_generation_templates(
@@ -84,6 +86,7 @@ async def get_all_content_generation_templates(
     path="/{content_generation_template_id}",
     description="Get a specific content generation template for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_content_generation_template",
 )
 async def get_content_generation_template(

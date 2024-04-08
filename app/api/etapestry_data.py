@@ -38,6 +38,7 @@ router = APIRouter(prefix="/api/etapestry-data", tags=["etapestry-data"])
     path="/",
     description="Get all the eTapestry data for the current user for the respository",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_etapestry_data",
 )
 async def get_all_etapestry_data(
@@ -77,6 +78,7 @@ async def get_all_etapestry_data(
     path="/search",
     description="Search the text eTapestry data for the current user for the template",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="search_etapestry_data",
 )
 async def search_etapestry_data(
@@ -100,6 +102,7 @@ async def search_etapestry_data(
     path="/{etapestry_data_id}",
     description="Get the response data for the eTapestry",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_etapestry_data",
 )
 async def get_etapestry_data(

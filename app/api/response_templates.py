@@ -37,6 +37,7 @@ router = APIRouter(prefix="/api/response-templates", tags=["response-templates"]
     path="/",
     description="Add a new resposne template",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_new_response_template",
 )
 async def add_new_response_template(
@@ -59,6 +60,7 @@ async def add_new_response_template(
     path="/",
     description="Get all the response templates for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_response_templates",
 )
 async def get_all_response_templates(
@@ -75,6 +77,7 @@ async def get_all_response_templates(
     path="/{response_template_id}",
     description="Get the response template for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_response_template",
 )
 async def get_response_template(

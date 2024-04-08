@@ -207,6 +207,7 @@ async def read_emails_hourly():
     path="/",
     description="Get all the emails from the mailbox",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_emails",
 )
 async def get_all_emails(

@@ -36,6 +36,7 @@ router = APIRouter(prefix="/api/patient-profile-repositories", tags=["patient-pr
     path="/",
     description="Add a new patient profile repository",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_new_patient_profile_repository",
 )
 async def add_new_patient_profile_repository(
@@ -66,6 +67,7 @@ async def add_new_patient_profile_repository(
     path="/",
     description="Get all patient profile repositories for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_patient_profile_repositories",
 )
 async def get_all_patient_profile_repositories(
@@ -87,6 +89,7 @@ async def get_all_patient_profile_repositories(
     path="/{patient_profile_repository_id}",
     description="Get a specific patient profile repository for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_patient_profile_repository",
 )
 async def get_patient_profile_repository(

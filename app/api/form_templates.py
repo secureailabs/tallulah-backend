@@ -40,6 +40,7 @@ router = APIRouter(prefix="/api/form-templates", tags=["form-templates"])
     path="/",
     description="Add a new form template",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_new_form_template",
 )
 async def add_new_form_template(
@@ -67,6 +68,7 @@ async def add_new_form_template(
     path="/",
     description="Get all the response templates for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_form_templates",
 )
 async def get_all_form_templates(
@@ -83,6 +85,7 @@ async def get_all_form_templates(
     path="/{form_template_id}",
     description="Get the response template for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_form_template",
 )
 async def get_form_template(
@@ -100,6 +103,7 @@ async def get_form_template(
     path="/published/{form_template_id}",
     description="Get the response template for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_published_form_template",
 )
 async def get_published_form_template(
@@ -116,6 +120,7 @@ async def get_published_form_template(
     path="/{form_template_id}",
     description="Update the response template for the current user",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model_by_alias=False,
     operation_id="update_form_template",
 )
 async def update_form_template(

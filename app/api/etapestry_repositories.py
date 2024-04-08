@@ -42,6 +42,7 @@ router = APIRouter(prefix="/api/etapestry-repositories", tags=["etapestry-reposi
     path="/",
     description="Add a new eTapestry repository",
     status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
     operation_id="add_new_etapestry_repository",
 )
 async def add_new_etapestry_repository(
@@ -83,6 +84,7 @@ async def add_new_etapestry_repository(
     path="/",
     description="Get all the eTapestry respositories for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_all_etapestry_repositories",
 )
 async def get_all_etapestry_repositories(
@@ -101,6 +103,7 @@ async def get_all_etapestry_repositories(
     path="/{etapestry_repository_id}",
     description="Get the eTapestry respository for the current user",
     status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
     operation_id="get_etapestry_repository",
 )
 async def get_etapestry_repository(
