@@ -114,7 +114,7 @@ async def get_all_patient_profiles(
         throw_on_not_found=False,
     )
 
-    profiles_count = await PatientProfiles.count(organization=current_user.organization)
+    profiles_count = await PatientProfiles.count(repository_id=repository_id)
 
     return GetMultiplePatientProfiles_Out(
         patient_profiles=[GetPatientProfile_Out(**profiles.dict()) for profiles in patient_profiles],
