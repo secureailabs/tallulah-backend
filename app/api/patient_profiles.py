@@ -36,7 +36,7 @@ router = APIRouter(prefix="/api/patient-profiles", tags=["patient-profiles"])
 
 @router.post(
     path="/",
-    description="Add a new patient profile",
+    description="Add a new patient profile if it does not exist else replace the existing one",
     status_code=status.HTTP_200_OK,
     response_model_by_alias=False,
     operation_id="add_patient_profile",
@@ -48,8 +48,8 @@ async def add_new_patient_profile(
 
     # Create the patient story and add it to the database
     patient_profile_db = PatientProfile_Db(
-        patient_id=patient_profile.patient_id,
         repository_id=patient_profile.repository_id,
+        patient_id=patient_profile.patient_id,
         name=patient_profile.name,
         primary_cancer_diagnosis=patient_profile.primary_cancer_diagnosis,
         date_of_diagnosis=patient_profile.date_of_diagnosis,

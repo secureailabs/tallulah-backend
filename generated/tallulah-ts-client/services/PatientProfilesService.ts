@@ -63,7 +63,6 @@ export class PatientProfilesService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                400: `Patient profile with the same id already exists`,
                 422: `Validation Error`,
             },
         });
