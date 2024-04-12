@@ -51,7 +51,7 @@ async def add_new_patient_profile_repository(
         name=patient_profile_repository.name,
         description=patient_profile_repository.description,
         user_id=current_user.id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         card_layout=patient_profile_repository.card_layout,
         state=PatientProfileRepositoryState.ACTIVE,
     )
@@ -76,7 +76,7 @@ async def get_all_patient_profile_repositories(
 ) -> GetMultiplePatientProfileRepository_Out:
 
     patient_profile_repositories = await PatientProfileRepositories.read(
-        organization=current_user.organization, throw_on_not_found=False
+        organization_id=current_user.organization_id, throw_on_not_found=False
     )
 
     return GetMultiplePatientProfileRepository_Out(
@@ -100,7 +100,7 @@ async def get_patient_profile_repository(
 
     patient_profile_repository = await PatientProfileRepositories.read(
         patient_profile_repository_id=patient_profile_repository_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
 
@@ -123,7 +123,7 @@ async def update_patient_profile_repository(
     # Update the patient profile repository
     await PatientProfileRepositories.update(
         query_patient_profile_repository_id=patient_profile_repository_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_patient_profile_repository_name=patient_profile_repository.name,
         update_patient_profile_repository_description=patient_profile_repository.description,
     )
@@ -144,7 +144,7 @@ async def delete_patient_profile_repository(
     # Delete the patient profile repository
     await PatientProfileRepositories.update(
         query_patient_profile_repository_id=patient_profile_repository_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_patient_profile_repository_state=PatientProfileRepositoryState.DELETED,
     )
 

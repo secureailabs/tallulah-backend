@@ -43,7 +43,7 @@ class PatientProfileRepository_Base(SailBaseModel):
 class PatientProfileRepository_Db(PatientProfileRepository_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
-    organization: str = Field()
+    organization_id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: PatientProfileRepositoryState = Field(default=PatientProfileRepositoryState.ACTIVE)
 
@@ -51,7 +51,7 @@ class PatientProfileRepository_Db(PatientProfileRepository_Base):
 class GetPatientProfileRepository_Out(PatientProfileRepository_Base):
     id: PyObjectId = Field()
     user_id: PyObjectId = Field()
-    organization: str = Field()
+    organization_id: PyObjectId = Field()
     creation_time: datetime = Field()
     state: PatientProfileRepositoryState = Field()
 
@@ -90,7 +90,7 @@ class PatientProfileRepositories:
     async def read(
         patient_profile_repository_id: Optional[PyObjectId] = None,
         user_id: Optional[PyObjectId] = None,
-        organization: Optional[str] = None,
+        organization_id: Optional[PyObjectId] = None,
         throw_on_not_found: bool = True,
     ) -> List[PatientProfileRepository_Db]:
         patient_profile_repository_list = []
@@ -100,8 +100,8 @@ class PatientProfileRepositories:
             query["_id"] = str(patient_profile_repository_id)
         if user_id:
             query["user_id"] = str(user_id)
-        if organization:
-            query["organization"] = organization
+        if organization_id:
+            query["organization_id"] = str(organization_id)
 
         # Read only active patient profile repositories
         query["state"] = PatientProfileRepositoryState.ACTIVE.value
@@ -125,7 +125,7 @@ class PatientProfileRepositories:
     @staticmethod
     async def update(
         query_patient_profile_repository_id: Optional[PyObjectId] = None,
-        query_organization: Optional[str] = None,
+        query_organization_id: Optional[PyObjectId] = None,
         update_patient_profile_repository_name: Optional[str] = None,
         update_patient_profile_repository_state: Optional[PatientProfileRepositoryState] = None,
         update_patient_profile_repository_description: Optional[str] = None,
@@ -133,8 +133,8 @@ class PatientProfileRepositories:
         query = {}
         if query_patient_profile_repository_id:
             query["_id"] = str(query_patient_profile_repository_id)
-        if query_organization:
-            query["organization"] = query_organization
+        if query_organization_id:
+            query["organization_id"] = str(query_organization_id)
 
         update_request = {"$set": {}}
         if update_patient_profile_repository_name:

@@ -77,7 +77,7 @@ async def add_form_data_manual(
 
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_data.form_template_id, organization=current_user.organization, throw_on_not_found=True
+        template_id=form_data.form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     form_data_db = FormData_Db(
@@ -113,7 +113,7 @@ async def get_all_form_data(
 ) -> GetMultipleFormData_Out:
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_template_id, organization=current_user.organization, throw_on_not_found=True
+        template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     form_data_list = await FormDatas.read(
@@ -158,7 +158,7 @@ async def update_form_data(
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
         template_id=current_form_data[0].form_template_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
 
@@ -234,7 +234,7 @@ async def search_form_data(
 ):
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_template_id, organization=current_user.organization, throw_on_not_found=True
+        template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     # Search the form data
@@ -259,7 +259,7 @@ async def get_form_data(
 
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_data[0].form_template_id, organization=current_user.organization, throw_on_not_found=True
+        template_id=form_data[0].form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     return GetFormData_Out(**form_data[0].dict())
@@ -280,7 +280,7 @@ async def delete_form_data(
 
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
-        template_id=form_data[0].form_template_id, organization=current_user.organization, throw_on_not_found=True
+        template_id=form_data[0].form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     # Delete the response template

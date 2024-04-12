@@ -101,7 +101,7 @@ class RegisterFormTemplate_Out(SailBaseModel):
 class FormTemplate_Db(FormTemplate_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     state: FormTemplateState = Field(default=FormTemplateState.TEMPLATE)
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)
@@ -141,7 +141,7 @@ class FormTemplates:
 
     @staticmethod
     async def read(
-        organization: Optional[StrictStr] = None,
+        organization_id: Optional[PyObjectId] = None,
         template_id: Optional[PyObjectId] = None,
         state: Optional[FormTemplateState] = None,
         throw_on_not_found: bool = True,
@@ -151,8 +151,8 @@ class FormTemplates:
         query = {}
         if template_id:
             query["_id"] = str(template_id)
-        if organization:
-            query["organization"] = organization
+        if organization_id:
+            query["organization_id"] = str(organization_id)
         if state:
             query["state"] = state.value
         else:
@@ -177,7 +177,7 @@ class FormTemplates:
     @staticmethod
     async def update(
         query_form_template_id: Optional[PyObjectId] = None,
-        query_organization: Optional[StrictStr] = None,
+        query_organization_id: Optional[PyObjectId] = None,
         update_form_template_name: Optional[StrictStr] = None,
         update_form_template_state: Optional[FormTemplateState] = None,
         update_form_template_description: Optional[StrictStr] = None,
@@ -189,8 +189,8 @@ class FormTemplates:
         query = {}
         if query_form_template_id:
             query["_id"] = str(query_form_template_id)
-        if query_organization:
-            query["organization"] = query_organization
+        if query_organization_id:
+            query["organization_id"] = str(query_organization_id)
 
         update_request = {"$set": {}}
         if update_form_template_name:

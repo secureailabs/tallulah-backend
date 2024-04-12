@@ -11,7 +11,7 @@ export type GetETapestryRepository_Out = {
     card_layout?: app__models__etapestry_repositories__CardLayout;
     id: string;
     user_id: string;
-    organization: string;
+    organization_id: string;
     last_refresh_time: string;
     state: ETapestryRepositoryState;
     creation_time?: string;

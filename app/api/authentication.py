@@ -25,6 +25,7 @@ from passlib.context import CryptContext
 from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users
 from app.models.authentication import LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData
 from app.models.common import PyObjectId
+from app.models.organizations import Organizations
 from app.utils.secrets import secret_store
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -140,7 +141,7 @@ async def login_for_access_token(
     token_data = TokenData(
         id=found_user_db.id,
         roles=found_user_db.roles,
-        organization=found_user_db.organization,
+        organization_id=found_user_db.organization_id,
         exp=int(time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60),
     )
     access_token = jwt.encode(
@@ -217,7 +218,10 @@ async def get_current_user_info(
 ) -> UserInfo_Out:
     found_user = await Users.read(user_id=current_user.id)
 
-    return UserInfo_Out(**found_user[0].dict())
+    # Get the user organization name
+    organization = await Organizations.read(organization_id=found_user[0].organization_id)
+
+    return UserInfo_Out(**found_user[0].dict(), organization_name=organization[0].name)
 
 
 @router.post(

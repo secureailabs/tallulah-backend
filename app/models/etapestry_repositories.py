@@ -52,7 +52,7 @@ class RegisterETapestryRepository_Out(SailBaseModel):
 class ETapestryRepository_Db(ETapestryRepository_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     state: ETapestryRepositoryState = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     last_refresh_time: datetime = Field()
@@ -63,7 +63,7 @@ class ETapestryRepository_Db(ETapestryRepository_Base):
 class GetETapestryRepository_Out(ETapestryRepository_Base):
     id: PyObjectId = Field()
     user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     last_refresh_time: datetime = Field()
     state: ETapestryRepositoryState = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
@@ -94,7 +94,7 @@ class ETapestryRepositories:
 
     @staticmethod
     async def read(
-        organization: Optional[StrictStr] = None,
+        organization_id: Optional[PyObjectId] = None,
         repository_id: Optional[PyObjectId] = None,
         state: Optional[ETapestryRepositoryState] = None,
         throw_on_not_found: bool = True,
@@ -104,8 +104,8 @@ class ETapestryRepositories:
         query = {}
         if repository_id:
             query["_id"] = str(repository_id)
-        if organization:
-            query["organization"] = organization
+        if organization_id:
+            query["organization_id"] = str(organization_id)
         if state:
             query["state"] = state.value
         else:
@@ -130,7 +130,7 @@ class ETapestryRepositories:
     @staticmethod
     async def update(
         query_etapestry_repository_id: Optional[PyObjectId] = None,
-        query_organization: Optional[StrictStr] = None,
+        query_organization_id: Optional[PyObjectId] = None,
         update_etapestry_repository_name: Optional[StrictStr] = None,
         update_etapestry_repository_state: Optional[ETapestryRepositoryState] = None,
         update_etapestry_repository_description: Optional[StrictStr] = None,
@@ -140,8 +140,8 @@ class ETapestryRepositories:
         query = {}
         if query_etapestry_repository_id:
             query["_id"] = str(query_etapestry_repository_id)
-        if query_organization:
-            query["organization"] = query_organization
+        if query_organization_id:
+            query["organization_id"] = str(query_organization_id)
 
         update_request = {"$set": {}}
         if update_etapestry_repository_name:

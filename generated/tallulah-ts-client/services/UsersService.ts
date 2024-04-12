@@ -28,8 +28,9 @@ export class UsersService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                400: `Organization not provided`,
                 403: `Unauthorized`,
-                409: `User already exists`,
+                409: `Organization already exists`,
                 422: `Validation Error`,
             },
         });

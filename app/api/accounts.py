@@ -52,14 +52,22 @@ async def register_user(
     user.email = EmailStr(user.email.lower())
 
     # Check if the organization exists
-    if user.organization:
-        organization = await Organizations.read(name=user.organization)
-        if not organization:
-            organization = Organization_Db(
-                name=user.organization,
-                admin=user.email,
-            )
-            await Organizations.create(organization=organization)
+    if user.organization_id:
+        organization = await Organizations.read(organization_id=user.organization_id, throw_on_not_found=True)
+        organization = organization[0]
+    elif user.organization_name:
+        # organization with same same should not exist
+        organizations = await Organizations.read(name=user.organization_name, throw_on_not_found=False)
+        if organizations:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Organization already exists")
+
+        organization = Organization_Db(
+            name=user.organization_name,
+            admin=user.email,
+        )
+        await Organizations.create(organization=organization)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Organization not provided")
 
     # Check if the user already exists
     user_db = await Users.read(email=user.email, throw_on_not_found=False)
@@ -73,7 +81,7 @@ async def register_user(
     # Create the user and add it to the database
     user_db = User_Db(
         name=user.name,
-        organization=user.organization,
+        organization_id=organization.id,
         email=user.email,
         roles=user.roles,
         job_title=user.job_title,
@@ -160,6 +168,17 @@ async def soft_delete_user(
 # Add the sail admin user at the time of deployment
 @router.on_event("startup")
 async def add_tallulah_admin():
+    # Check if the organization exists
+    organizations = await Organizations.read(name="Array Insights", throw_on_not_found=False)
+    if organizations:
+        organization = organizations[0]
+    else:
+        organization = Organization_Db(
+            name="Array Insights",
+            admin=EmailStr("admin@tallulah.net"),
+        )
+        await Organizations.create(organization=organization)
+
     # Check if the user already exists
     user_db = await Users.read(user_role=UserRole.TALLULAH_ADMIN, throw_on_not_found=False)
     if user_db:
@@ -168,7 +187,7 @@ async def add_tallulah_admin():
     # Create the user and add it to the database
     user_db = User_Db(
         name="Tallulah Admin",
-        organization="Array Insights",
+        organization_id=organization.id,
         email=EmailStr("admin@tallulah.net"),
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",

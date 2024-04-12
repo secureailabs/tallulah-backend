@@ -61,7 +61,7 @@ async def add_new_etapestry_repository(
         name=etapestry_repository.name,
         description=etapestry_repository.description,
         user_id=current_user.id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         database_name_id=database_name_id,
         last_refresh_time=datetime.datetime.utcnow(),
         state=ETapestryRepositoryState.ACTIVE,
@@ -91,7 +91,7 @@ async def get_all_etapestry_repositories(
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleETapestryRepository_Out:
     etapestry_repositories = await ETapestryRepositories.read(
-        organization=current_user.organization, throw_on_not_found=False
+        organization_id=current_user.organization_id, throw_on_not_found=False
     )
 
     return GetMultipleETapestryRepository_Out(
@@ -111,7 +111,7 @@ async def get_etapestry_repository(
     current_user: TokenData = Depends(get_current_user),
 ) -> GetETapestryRepository_Out:
     etapestry_repository = await ETapestryRepositories.read(
-        repository_id=etapestry_repository_id, organization=current_user.organization, throw_on_not_found=True
+        repository_id=etapestry_repository_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     return GetETapestryRepository_Out(**etapestry_repository[0].dict())
@@ -129,7 +129,7 @@ async def refresh_etapestry_repository(
 ) -> Response:
     # Pull accounts only after one hour from the last refresh
     etapestry_repository = await ETapestryRepositories.read(
-        repository_id=etapestry_repository_id, organization=current_user.organization, throw_on_not_found=True
+        repository_id=etapestry_repository_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
     if (datetime.datetime.utcnow() - etapestry_repository[0].last_refresh_time).seconds < 3600:
         raise HTTPException(
@@ -139,7 +139,7 @@ async def refresh_etapestry_repository(
     # Refresh the eTapestry respository
     await ETapestryRepositories.update(
         query_etapestry_repository_id=etapestry_repository_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_last_refresh_time=datetime.datetime.utcnow(),
     )
 
@@ -163,7 +163,7 @@ async def update_etapestry_repository(
     # Update the eTapestry respository
     await ETapestryRepositories.update(
         query_etapestry_repository_id=etapestry_repository_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_etapestry_repository_name=etapestry_repository.name,
         update_etapestry_repository_description=etapestry_repository.description,
         update_etapestry_repository_card_layout=etapestry_repository.card_layout,
@@ -185,7 +185,7 @@ async def delete_etapestry_repository(
     # Delete the eTapestry respository
     await ETapestryRepositories.update(
         query_etapestry_repository_id=etapestry_repository_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_etapestry_repository_state=ETapestryRepositoryState.DELETED,
     )
 

@@ -40,7 +40,7 @@ class ContentGeneration_Base(SailBaseModel):
 class ContentGeneration_Db(ContentGeneration_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     generated: Optional[StrictStr] = Field(default=None)
     state: ContentGenerationState = Field(default=ContentGenerationState.RECEIVED)
     error_message: Optional[StrictStr] = Field(default=None)
@@ -86,7 +86,7 @@ class ContentGenerations:
     @staticmethod
     async def read(
         user_id: Optional[PyObjectId] = None,
-        organization: Optional[StrictStr] = None,
+        organization_id: Optional[PyObjectId] = None,
         content_generation_id: Optional[PyObjectId] = None,
         content_generation_state: Optional[ContentGenerationState] = None,
         content_generation_template_id: Optional[PyObjectId] = None,
@@ -104,8 +104,8 @@ class ContentGenerations:
             query["template_id"] = str(content_generation_template_id)
         if user_id:
             query["user_id"] = str(user_id)
-        if organization:
-            query["organization"] = organization
+        if organization_id:
+            query["organization_id"] = str(organization_id)
         if content_generation_state:
             query["state"] = content_generation_state
 

@@ -23,6 +23,6 @@ export type GetPatientProfile_Out = {
     id: string;
     creation_time?: string;
     state?: PatientProfileState;
-    organization: string;
+    organization_id: string;
     owner_id: string;
 };

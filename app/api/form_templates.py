@@ -53,7 +53,7 @@ async def add_new_form_template(
         description=form_template.description,
         field_groups=form_template.field_groups,
         user_id=current_user.id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
     )
     await FormTemplates.create(form_template_db)
 
@@ -74,7 +74,7 @@ async def add_new_form_template(
 async def get_all_form_templates(
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleFormTemplate_Out:
-    form_templates = await FormTemplates.read(organization=current_user.organization, throw_on_not_found=False)
+    form_templates = await FormTemplates.read(organization_id=current_user.organization_id, throw_on_not_found=False)
 
     return GetMultipleFormTemplate_Out(
         templates=[GetFormTemplate_Out(**template.dict()) for template in form_templates]
@@ -93,7 +93,7 @@ async def get_form_template(
     current_user: TokenData = Depends(get_current_user),
 ) -> GetFormTemplate_Out:
     form_template = await FormTemplates.read(
-        template_id=form_template_id, organization=current_user.organization, throw_on_not_found=True
+        template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     return GetFormTemplate_Out(**form_template[0].dict())
@@ -131,7 +131,7 @@ async def update_form_template(
     # Update the response template
     await FormTemplates.update(
         query_form_template_id=form_template_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_form_template_name=form_template.name,
         update_form_template_description=form_template.description,
         update_form_template_field_groups=form_template.field_groups,
@@ -156,7 +156,7 @@ async def publish_form_template(
     # Update the response template
     await FormTemplates.update(
         query_form_template_id=form_template_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_form_template_state=FormTemplateState.PUBLISHED,
     )
 
@@ -176,7 +176,7 @@ async def delete_form_template(
     # Delete the response template
     await FormTemplates.update(
         query_form_template_id=form_template_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_form_template_state=FormTemplateState.DELETED,
     )
 

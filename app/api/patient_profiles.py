@@ -61,7 +61,7 @@ async def add_new_patient_profile(
         family_net_monthly_income=patient_profile.family_net_monthly_income,
         address=patient_profile.address,
         recent_requests=patient_profile.recent_requests,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         owner_id=current_user.id,
         state=PatientProfileState.ACTIVE,
     )
@@ -97,7 +97,7 @@ async def get_all_patient_profiles(
 
     patient_profiles = await PatientProfiles.read(
         repository_id=repository_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         skip=skip,
         limit=limit,
         sort_key=sort_key,
@@ -129,7 +129,9 @@ async def search_patient_profiles(
 ):
     # Check if the user is the owner of the response template
     _ = await PatientProfileRepositories.read(
-        patient_profile_repository_id=repository_id, organization=current_user.organization, throw_on_not_found=True
+        patient_profile_repository_id=repository_id,
+        organization_id=current_user.organization_id,
+        throw_on_not_found=True,
     )
 
     # Search the form data
@@ -152,7 +154,7 @@ async def get_patient_profile(
 ) -> GetPatientProfile_Out:
 
     patient_profile = await PatientProfiles.read(
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         patient_profile_id=patient_profile_id,
         throw_on_not_found=True,
     )
@@ -160,7 +162,7 @@ async def get_patient_profile(
     # Check if the user is the owner of the response template
     _ = await PatientProfileRepositories.read(
         patient_profile_repository_id=patient_profile[0].repository_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
 
@@ -182,12 +184,12 @@ async def update_patient_profile(
 
     await PatientProfiles.update(
         query_patient_profile_id=patient_profile_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_patient_profile=patient_profile,
     )
 
     updated_patient_profile = await PatientProfiles.read(
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         patient_profile_id=patient_profile_id,
         throw_on_not_found=True,
     )
@@ -217,14 +219,14 @@ async def delete_patient_profile(
 
     # Get the patient profile to check if the user is the owner of the patient profile
     patient_profile = await PatientProfiles.read(
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         patient_profile_id=patient_profile_id,
         throw_on_not_found=True,
     )
 
     await PatientProfiles.update(
         query_patient_profile_id=patient_profile_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_patient_profile_state=PatientProfileState.DELETED,
     )
 

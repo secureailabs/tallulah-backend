@@ -11,7 +11,7 @@ export type GetPatientProfileRepository_Out = {
     card_layout?: app__models__patient_profile_repositories__CardLayout;
     id: string;
     user_id: string;
-    organization: string;
+    organization_id: string;
     creation_time: string;
     state: PatientProfileRepositoryState;
 };

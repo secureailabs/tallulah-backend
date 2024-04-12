@@ -62,7 +62,7 @@ class PatientProfile_Db(PatientProfile_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     owner_id: PyObjectId = Field()
 
 
@@ -78,7 +78,7 @@ class GetPatientProfile_Out(PatientProfile_Base):
     id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     owner_id: PyObjectId = Field()
 
 
@@ -145,7 +145,7 @@ class PatientProfiles:
         patient_id: Optional[PyObjectId] = None,
         repository_id: Optional[PyObjectId] = None,
         owner_id: Optional[PyObjectId] = None,
-        organization: Optional[StrictStr] = None,
+        organization_id: Optional[PyObjectId] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
         sort_key: str = "creation_time",
@@ -159,8 +159,8 @@ class PatientProfiles:
             query["repository_id"] = str(repository_id)
         if owner_id:
             query["owner_id"] = str(owner_id)
-        if organization:
-            query["organization"] = organization
+        if organization_id:
+            query["organization_id"] = str(organization_id)
         if patient_profile_id:
             query["_id"] = str(patient_profile_id)
         if patient_id:
@@ -214,15 +214,15 @@ class PatientProfiles:
     @staticmethod
     async def update(
         query_patient_profile_id: Optional[PyObjectId] = None,
-        query_organization: Optional[StrictStr] = None,
+        query_organization_id: Optional[PyObjectId] = None,
         update_patient_profile_state: Optional[PatientProfileState] = None,
         update_patient_profile: Optional[UpdatePatientProfile_In] = None,
     ):
         query = {}
         if query_patient_profile_id:
             query["_id"] = str(query_patient_profile_id)
-        if query_organization:
-            query["organization"] = query_organization
+        if query_organization_id:
+            query["organization_id"] = str(query_organization_id)
 
         update = {}
         if update_patient_profile_state:

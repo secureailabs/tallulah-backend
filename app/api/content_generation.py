@@ -52,7 +52,7 @@ async def create_content_generation(
         template_id=content_generation.template_id,
         values=content_generation.values,
         user_id=current_user.id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         creation_time=datetime.utcnow(),
     )
 
@@ -78,7 +78,7 @@ async def get_all_content_generations(
 ) -> GetMultipleContentGeneration_Out:
 
     content_generations = await ContentGenerations.read(
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         content_generation_template_id=content_generation_template_id,
         sort_key=sort_key,
         sort_direction=sort_direction,
@@ -112,7 +112,7 @@ async def get_content_generation(
 
     content_generation = await ContentGenerations.read(
         content_generation_id=content_generation_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
     if not content_generation:
@@ -136,7 +136,7 @@ async def retry_content_generation(
     content_generation = await ContentGenerations.read(
         content_generation_id=content_generation_id,
         content_generation_state=ContentGenerationState.ERROR,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
     if not content_generation:

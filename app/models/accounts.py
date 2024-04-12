@@ -42,7 +42,6 @@ class UserAccountState(Enum):
 
 class User_Base(SailBaseModel):
     name: StrictStr = Field()
-    organization: StrictStr = Field()
     email: EmailStr = Field()
     job_title: StrictStr = Field()
     roles: List[UserRole] = Field()
@@ -51,6 +50,7 @@ class User_Base(SailBaseModel):
 
 class User_Db(User_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    organization_id: PyObjectId = Field()
     account_creation_time: datetime = Field(default_factory=datetime.utcnow)
     hashed_password: StrictStr = Field()
     state: UserAccountState = Field()
@@ -60,10 +60,14 @@ class User_Db(User_Base):
 
 class UserInfo_Out(User_Base):
     id: PyObjectId = Field()
+    organization_id: PyObjectId = Field()
+    organization_name: StrictStr = Field()
 
 
 class RegisterUser_In(User_Base):
     password: str = Field()
+    organization_id: Optional[PyObjectId] = Field()
+    organization_name: Optional[StrictStr] = Field()
 
 
 class RegisterUser_Out(SailBaseModel):
@@ -73,6 +77,7 @@ class RegisterUser_Out(SailBaseModel):
 class GetUsers_Out(User_Base):
     id: PyObjectId = Field()
     name: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     email: EmailStr = Field()
     job_title: StrictStr = Field()
     roles: List[UserRole] = Field()

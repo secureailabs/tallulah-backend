@@ -49,7 +49,7 @@ export class PatientProfilesService {
 
     /**
      * Add New Patient Profile
-     * Add a new patient profile
+     * Add a new patient profile if it does not exist else replace the existing one
      * @param requestBody
      * @returns RegisterPatientProfile_Out Successful Response
      * @throws ApiError

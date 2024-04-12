@@ -54,7 +54,7 @@ async def add_new_content_generation_template(
         context=content_generation_template.context,
         prompt=content_generation_template.prompt,
         user_id=current_user.id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         state=ContentGenerationState.ACTIVE,
     )
     await ContentGenerationTemplates.create(content_generation_template_db)
@@ -74,7 +74,7 @@ async def get_all_content_generation_templates(
 ) -> GetMultipleContentGenerationTemplate_Out:
 
     content_generation_templates = await ContentGenerationTemplates.read(
-        organization=current_user.organization, throw_on_not_found=False
+        organization_id=current_user.organization_id, throw_on_not_found=False
     )
 
     return GetMultipleContentGenerationTemplate_Out(
@@ -96,7 +96,7 @@ async def get_content_generation_template(
 
     content_generation_template = await ContentGenerationTemplates.read(
         content_generation_template_id=content_generation_template_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
 
@@ -119,7 +119,7 @@ async def update_content_generation_template(
     # Update the content generation template
     await ContentGenerationTemplates.update(
         query_content_generation_template_id=content_generation_template_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_content_generation_template_name=content_generation_template.name,
         update_content_generation_template_description=content_generation_template.description,
         update_content_generation_template_parameters=content_generation_template.parameters,
@@ -143,7 +143,7 @@ async def delete_content_generation_template(
     # Delete the content generation template
     await ContentGenerationTemplates.update(
         query_content_generation_template_id=content_generation_template_id,
-        query_organization=current_user.organization,
+        query_organization_id=current_user.organization_id,
         update_content_generation_template_state=ContentGenerationState.DELETED,
     )
 

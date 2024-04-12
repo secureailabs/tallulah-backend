@@ -52,7 +52,7 @@ async def get_all_etapestry_data(
 
     # Check if the user is the owner of the response template
     _ = await ETapestryRepositories.read(
-        repository_id=repository_id, organization=current_user.organization, throw_on_not_found=True
+        repository_id=repository_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     etapestry_data_list = await ETapestryDatas.read(
@@ -88,7 +88,7 @@ async def search_etapestry_data(
 ):
     # Check if the user is the owner of the response template
     _ = await ETapestryRepositories.read(
-        repository_id=repository_id, organization=current_user.organization, throw_on_not_found=True
+        repository_id=repository_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
     # Search the eTapestry data
@@ -114,7 +114,9 @@ async def get_etapestry_data(
 
     # Check if the user is the owner of the response template
     _ = await ETapestryRepositories.read(
-        repository_id=etapestry_data[0].repository_id, organization=current_user.organization, throw_on_not_found=True
+        repository_id=etapestry_data[0].repository_id,
+        organization_id=current_user.organization_id,
+        throw_on_not_found=True,
     )
 
     return GetETapestryData_Out(**etapestry_data[0].dict())
@@ -136,7 +138,7 @@ async def delete_etapestry_data(
     # Check if the user is the owner of the response template
     _ = await ETapestryRepositories.read(
         repository_id=etapestry_data[0].repository_id,
-        organization=current_user.organization,
+        organization_id=current_user.organization_id,
         throw_on_not_found=True,
     )
 

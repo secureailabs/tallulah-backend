@@ -14,7 +14,7 @@ export type GetContentGenerationTemplate_Out = {
     prompt: string;
     id: string;
     user_id: string;
-    organization: string;
+    organization_id: string;
     creation_time: string;
     state: app__models__content_generation_template__ContentGenerationState;
 };

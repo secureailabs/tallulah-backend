@@ -13,8 +13,9 @@
 # -------------------------------------------------------------------------------
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr, Field, StrictStr
 
@@ -49,14 +50,25 @@ class Organizations:
     async def read(
         organization_id: Optional[PyObjectId] = None,
         name: Optional[StrictStr] = None,
-    ):
+        throw_on_not_found: bool = True,
+    ) -> List[Organization_Db]:
+        organization_list = []
+
         query = {}
         if name:
             query["name"] = name
         if organization_id:
             query["_id"] = str(organization_id)
 
-        return await Organizations.data_service.find_one(
+        response = await Organizations.data_service.find_by_query(
             collection=Organizations.DB_COLLECTION_ORGANIZATION,
             query=query,
         )
+
+        if response:
+            for organization in response:
+                organization_list.append(Organization_Db(**organization))
+        elif throw_on_not_found:
+            raise HTTPException(status_code=404, detail="Organization not found")
+
+        return organization_list

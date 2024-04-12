@@ -57,6 +57,7 @@ from app.models.common import PyObjectId
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.log_manager import LogLevel, add_log_message
 from app.utils.secrets import secret_store
+from migrations.org_name_to_id import org_name_to_id
 
 # sentry_sdk.init(
 #     dsn="https://adad5fa0b086f5c00ebddc4a5c8d9107@o4506660384997376.ingest.sentry.io/4506660387946496",
@@ -272,3 +273,12 @@ async def add_audit_log(request: Request, call_next: Callable):
     add_log_message(LogLevel.INFO, message)
 
     return response
+
+
+from migrations import org_name_to_id
+
+
+# at a startup script
+@server.on_event("startup")
+async def startup_event():
+    await org_name_to_id.org_name_to_id()

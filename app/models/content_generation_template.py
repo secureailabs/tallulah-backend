@@ -71,7 +71,7 @@ class ContentGenerationTemplate_Base(SailBaseModel):
 class ContentGenerationTemplate_Db(ContentGenerationTemplate_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: ContentGenerationState = Field(default=ContentGenerationState.ACTIVE)
 
@@ -79,7 +79,7 @@ class ContentGenerationTemplate_Db(ContentGenerationTemplate_Base):
 class GetContentGenerationTemplate_Out(ContentGenerationTemplate_Base):
     id: PyObjectId = Field()
     user_id: PyObjectId = Field()
-    organization: StrictStr = Field()
+    organization_id: PyObjectId = Field()
     creation_time: datetime = Field()
     state: ContentGenerationState = Field()
 
@@ -121,7 +121,7 @@ class ContentGenerationTemplates:
     async def read(
         content_generation_template_id: Optional[PyObjectId] = None,
         user_id: Optional[PyObjectId] = None,
-        organization: Optional[StrictStr] = None,
+        organization_id: Optional[PyObjectId] = None,
         throw_on_not_found: bool = True,
     ) -> List[ContentGenerationTemplate_Db]:
         content_generation_template_list = []
@@ -131,8 +131,8 @@ class ContentGenerationTemplates:
             query["_id"] = str(content_generation_template_id)
         if user_id:
             query["user_id"] = str(user_id)
-        if organization:
-            query["organization"] = organization
+        if organization_id:
+            query["organization_id"] = str(organization_id)
 
         # read only active content generation templates
         query["state"] = ContentGenerationState.ACTIVE.value
@@ -156,7 +156,7 @@ class ContentGenerationTemplates:
     @staticmethod
     async def update(
         query_content_generation_template_id: Optional[PyObjectId] = None,
-        query_organization: Optional[StrictStr] = None,
+        query_organization_id: Optional[PyObjectId] = None,
         update_content_generation_template_name: Optional[StrictStr] = None,
         update_content_generation_template_state: Optional[ContentGenerationState] = None,
         update_content_generation_template_description: Optional[StrictStr] = None,
@@ -167,8 +167,8 @@ class ContentGenerationTemplates:
         query = {}
         if query_content_generation_template_id:
             query["_id"] = str(query_content_generation_template_id)
-        if query_organization:
-            query["organization"] = query_organization
+        if query_organization_id:
+            query["organization_id"] = str(query_organization_id)
 
         update_request = {"$set": {}}
         if update_content_generation_template_name:
