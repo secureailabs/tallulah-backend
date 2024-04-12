@@ -34,7 +34,6 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
-from migrations.org_name_to_id import org_name_to_id
 from pydantic import BaseModel, Field, StrictStr
 
 from app.api import (
@@ -54,6 +53,7 @@ from app.api import (
     response_templates,
 )
 from app.data.operations import DatabaseOperations
+from app.migrations.org_name_to_id import org_name_to_id
 from app.models.common import PyObjectId
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.log_manager import LogLevel, add_log_message
@@ -275,10 +275,7 @@ async def add_audit_log(request: Request, call_next: Callable):
     return response
 
 
-from app.migrations import org_name_to_id
-
-
 # at a startup script
 @server.on_event("startup")
 async def startup_event():
-    await org_name_to_id.org_name_to_id()
+    await org_name_to_id()
