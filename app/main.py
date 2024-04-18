@@ -41,6 +41,7 @@ from app.api import (
     authentication,
     content_generation,
     content_generation_template,
+    dashboard_templates,
     emails,
     etapestry_data,
     etapestry_repositories,
@@ -96,6 +97,7 @@ server.include_router(patient_profile_repositories.router)
 server.include_router(patient_profiles.router)
 server.include_router(etapestry_repositories.router)
 server.include_router(etapestry_data.router)
+server.include_router(dashboard_templates.router)
 
 # Setup CORS to allow all origins
 origins = [
