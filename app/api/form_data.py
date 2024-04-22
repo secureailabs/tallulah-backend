@@ -16,6 +16,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -57,7 +58,9 @@ async def add_form_data(
     # Add the form data to elasticsearch for search
     elastic_client = ElasticsearchClient()
     await elastic_client.insert_document(
-        index_name=str(form_data.form_template_id), id=str(form_data_db.id), document=form_data.values
+        index_name=str(form_data.form_template_id),
+        id=str(form_data_db.id),
+        document=jsonable_encoder(form_data_db, exclude=set(["_id", "id"])),
     )
 
     return RegisterFormData_Out(id=form_data_db.id)
@@ -90,7 +93,9 @@ async def add_form_data_manual(
     # Add the form data to elasticsearch for search
     elastic_client = ElasticsearchClient()
     await elastic_client.insert_document(
-        index_name=str(form_data.form_template_id), id=str(form_data_db.id), document=form_data.values
+        index_name=str(form_data.form_template_id),
+        id=str(form_data_db.id),
+        document=jsonable_encoder(form_data_db, exclude=set(["_id", "id"])),
     )
 
     return RegisterFormData_Out(id=form_data_db.id)
@@ -167,10 +172,16 @@ async def update_form_data(
         query_form_data_id=form_data_id, update_form_data_values=form_data.values, throw_on_no_update=False
     )
 
+    # Read the form data again to get the updated values
+    updated_form_data = await FormDatas.read(form_data_id=form_data_id, throw_on_not_found=True)
+    updated_form_data = updated_form_data[0]
+
     # Update the form data in elasticsearch for search
     elastic_client = ElasticsearchClient()
     await elastic_client.update_document(
-        index_name=str(current_form_data[0].form_template_id), id=str(form_data_id), document=form_data.values
+        index_name=str(current_form_data[0].form_template_id),
+        id=str(form_data_id),
+        document=jsonable_encoder(updated_form_data, exclude=set(["_id", "id"])),
     )
 
     return Response(status_code=status.HTTP_200_OK)

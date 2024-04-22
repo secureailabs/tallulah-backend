@@ -54,6 +54,7 @@ from app.api import (
     response_templates,
 )
 from app.data.operations import DatabaseOperations
+from app.migrations.es_from_mongodb import move_data_from_mongo_to_es
 from app.migrations.org_name_to_id import org_name_to_id
 from app.models.common import PyObjectId
 from app.utils.elastic_search import ElasticsearchClient
@@ -281,3 +282,4 @@ async def add_audit_log(request: Request, call_next: Callable):
 @server.on_event("startup")
 async def startup_event():
     await org_name_to_id()
+    await move_data_from_mongo_to_es()

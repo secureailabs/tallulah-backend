@@ -25,6 +25,10 @@ class ElasticsearchClient:
 
         return resp
 
+    async def index_exists(self, index_name: str):
+        resp = await self.client.indices.exists(index=index_name)
+        return resp
+
     async def delete_index(self, index_name: str):
         resp = await self.client.indices.exists(index=index_name)
         if not resp:
