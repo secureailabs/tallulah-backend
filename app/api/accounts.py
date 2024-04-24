@@ -166,7 +166,7 @@ async def soft_delete_user(
 
 
 # Add the sail admin user at the time of deployment
-@router.on_event("startup")
+# @router.on_event("startup")
 async def add_tallulah_admin():
     # Check if the organization exists
     organizations = await Organizations.read(name="Array Insights", throw_on_not_found=False)
