@@ -26,6 +26,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -
 
 
+## [0.9.0] - 2024-04-24
+
+### Added
+
+- **Dashboard Analytics**
+  - Implemented a dashboard analytics feature to display key metrics and insights about the patient data.
+  - The analytics include patient demographics, survey responses count, and other relevant data.
+  - The analytics are displayed in the form of charts and graphs for easy visualization and interpretation.
+
+### Fixed
+
+- **Delete Patient Story**
+  - Fixed a bug where the delete patient story feature was not working correctly in the frontend.
+
+### Changed
+
+- **Organization Id instead of name**
+  - Changed the organization name to organization id in the database to improve data consistency and accuracy.
+
+- **Elasticsearch Patient Data**
+  - Changed the patient story schema on the Elasticsearch database to include more information relevant for analytics and search.
+
+
 ## [0.8.0] - 2024-04-09
 
 ### Added
