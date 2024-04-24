@@ -708,6 +708,20 @@ dnspython = ">=2.0.0"
 idna = ">=2.0.0"
 
 [[package]]
+name = "faker"
+version = "24.11.0"
+description = "Faker is a Python package that generates fake data for you."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "Faker-24.11.0-py3-none-any.whl", hash = "sha256:adb98e771073a06bdc5d2d6710d8af07ac5da64c8dc2ae3b17bb32319e66fd82"},
+    {file = "Faker-24.11.0.tar.gz", hash = "sha256:34b947581c2bced340c39b35f89dbfac4f356932cfff8fe893bde854903f0e6e"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.4"
+
+[[package]]
 name = "fastapi"
 version = "0.103.2"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -2553,4 +2567,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "fe351c742587b0341fe67d54a5afa06a795803217e762832d974558550055208"
+content-hash = "a79f6ed2e2f2570d944257d0f53ff1a26059e9895fbfc6b0eff7a574c6598cb9"

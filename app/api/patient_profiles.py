@@ -46,6 +46,13 @@ async def add_new_patient_profile(
     current_user: TokenData = Depends(get_current_user),
 ) -> RegisterPatientProfile_Out:
 
+    # Check if repository exists
+    _ = await PatientProfileRepositories.read(
+        patient_profile_repository_id=patient_profile.repository_id,
+        organization_id=current_user.organization_id,
+        throw_on_not_found=True,
+    )
+
     # Create the patient story and add it to the database
     patient_profile_db = PatientProfile_Db(
         repository_id=patient_profile.repository_id,

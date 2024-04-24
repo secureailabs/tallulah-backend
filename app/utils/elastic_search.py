@@ -54,59 +54,6 @@ class ElasticsearchClient:
         resp = await self.client.index(index=index_name, document=document, id=id)
         return resp
 
-    async def get_date_histogram(self, index_name: str, field: str):
-        resp = await self.client.search(index=index_name, size="0", body={"aggs": {"responses_over_time": {"date_histogram": {"field": field, "calendar_interval": "year"}}}})  # type: ignore
-        return resp
-
     async def run_aggregation_query(self, index_name: str, query: dict):
-        resp = await self.client.search(index=index_name, size="0", body={"aggs": query})  # type: ignore
+        resp = await self.client.search(index=index_name, size="0", body=query)  # type: ignore
         return resp
-
-    async def get_sum_aggregation(self, index_name: str, field: str, field2: str):
-        resp = await self.client.search(
-            index=index_name,
-            size="0",
-            body={  # type: ignore
-                "aggs": {
-                    "responses_over_time": {
-                        "date_histogram": {"field": field, "calendar_interval": "year"},
-                        "aggs": {"sum_responses": {"sum": {"field": field2}}},
-                    }
-                }
-            },
-        )
-        return resp
-
-    async def get_word_cloud(self, index_name: str, field: str):
-        resp = await self.client.search(
-            index=index_name,
-            size="0",
-            body={  # type: ignore
-                "aggs": {
-                    "word_frequency": {
-                        "terms": {"field": field, "size": 1},
-                    }
-                }
-            },
-        )
-        return resp
-
-
-async def test():
-    import json
-    import os
-
-    es_client = ElasticsearchClient(cloud_id=os.getenv("ELASTIC_CLOUD_ID"), password=os.getenv("ELASTIC_PASSWORD"))
-    print(es_client.client)
-    index_id = "654fd269-d841-401a-b045-c48d86bfb459"
-    resp = await es_client.get_date_histogram(index_id, "account.accountCreatedDate")
-    print(json.dumps(resp.body, indent=2))
-    index_id = "03e17b34-d9ec-4208-bdc8-d14827ad4e85"
-    resp = await es_client.get_word_cloud(index_id, "patientStory.value")
-    print(json.dumps(resp.body, indent=2))
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(test())
