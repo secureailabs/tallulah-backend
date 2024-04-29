@@ -14,9 +14,11 @@
 
 
 from datetime import datetime
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
+from pydantic import StrictStr
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -114,8 +116,10 @@ async def get_all_form_data(
     limit: int = Query(default=200, description="Number of emails to return"),
     sort_key: str = Query(default="creation_time", description="Sort key"),
     sort_direction: int = Query(default=-1, description="Sort direction"),
+    filters: Optional[Dict[StrictStr, List[StrictStr]]] = Body(default=None, description="Filter key"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleFormData_Out:
+
     # Check if the user is the owner of the response template
     _ = await FormTemplates.read(
         template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
@@ -127,10 +131,11 @@ async def get_all_form_data(
         limit=limit,
         sort_key=sort_key,
         sort_direction=sort_direction,
+        data_filter=filters,
         throw_on_not_found=False,
     )
 
-    form_data_count = await FormDatas.count(form_template_id=form_template_id)
+    form_data_count = await FormDatas.count(form_template_id=form_template_id, data_filter=filters)
 
     return GetMultipleFormData_Out(
         form_data=[GetFormData_Out(**form_data.dict()) for form_data in form_data_list],

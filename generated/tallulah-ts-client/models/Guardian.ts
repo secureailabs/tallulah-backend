@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 export type Guardian = {
-    relationship: string;
+    relationship?: string;
     name: string;
     employer: string;
     email: string;

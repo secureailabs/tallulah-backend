@@ -81,6 +81,7 @@ class FormDatas:
     async def read(
         form_data_id: Optional[PyObjectId] = None,
         form_template_id: Optional[PyObjectId] = None,
+        data_filter: Optional[Dict[StrictStr, List[StrictStr]]] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
         sort_key: str = "creation_time",
@@ -94,6 +95,9 @@ class FormDatas:
             query["_id"] = str(form_data_id)
         if form_template_id:
             query["form_template_id"] = str(form_template_id)
+        if data_filter:
+            for key, value in data_filter.items():
+                query[f"values.{key}.value"] = {"$in": value}
 
         # only read the non deleted ones
         query["state"] = FormDataState.ACTIVE.value
@@ -132,10 +136,14 @@ class FormDatas:
     @staticmethod
     async def count(
         form_template_id: Optional[PyObjectId] = None,
+        data_filter: Optional[Dict[StrictStr, List[StrictStr]]] = None,
     ) -> int:
         query = {}
         if form_template_id:
             query["form_template_id"] = str(form_template_id)
+        if data_filter:
+            for key, value in data_filter.items():
+                query[f"values.{key}.value"] = {"$in": value}
 
         return await FormDatas.data_service.sail_db[FormDatas.DB_COLLECTION_FORM_DATA].count_documents(query)
 

@@ -30,7 +30,7 @@ class PatientProfileState(Enum):
 
 
 class Guardian(SailBaseModel):
-    relationship: StrictStr = Field()
+    relationship: Optional[StrictStr] = Field()
     name: StrictStr = Field()
     employer: StrictStr = Field()
     email: StrictStr = Field()

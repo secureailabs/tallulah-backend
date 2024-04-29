@@ -281,5 +281,6 @@ async def add_audit_log(request: Request, call_next: Callable):
 # at a startup script
 @server.on_event("startup")
 async def startup_event():
-    await org_name_to_id()
-    await move_data_from_mongo_to_es()
+    pass
+    # await org_name_to_id()
+    # await move_data_from_mongo_to_es()
