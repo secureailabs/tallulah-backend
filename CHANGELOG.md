@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.9.1] - 2024-04-29
+
+### Changed
+
+- Made the relationship field with the guardian relationship optional in the patient profile data.
+
 
 ## [0.9.0] - 2024-04-24
 
