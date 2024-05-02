@@ -125,6 +125,22 @@ class Etapestry:
 
 
     async def process_accounts(self, account: ET.Element, defined_values: Dict[str, str], callback: Callable, *args, **kwargs):
+        remove_from_defined_values = [
+            "2019 Annual Appeal letters",
+            "2020 Annual Appeal letters",
+            "2021 Annual Appeal letters",
+            "2022 Annual Appeal letters",
+            "2023 Annual Appeal letters",
+            "2024 Annual Appeal letters",
+            "Target Analytics Discretionary Spending",
+            "Target Analytics Wealth Segmentation",
+            "Target Analytics Investments",
+            "Target Analytics Net Worth",
+            "Target Analytics Income"
+        ]
+        for key in remove_from_defined_values:
+            defined_values.pop(key, None)
+
         account_info = AccountInfo(
             accountCreatedDate=account.find('accountCreatedDate').text,
             accountDefinedValues=account.find('accountDefinedValues').text,
