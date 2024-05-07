@@ -177,3 +177,21 @@ class ETapestryDatas:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"ETapestry Data not found or no changes to update",
                 )
+
+    @staticmethod
+    async def delete(
+        data_id: Optional[PyObjectId] = None,
+        repository_id: Optional[PyObjectId] = None,
+    ):
+        query = {}
+        if data_id:
+            query["_id"] = str(data_id)
+        if repository_id:
+            query["repository_id"] = str(repository_id)
+
+        update_request = {"$set": {"state": ETapestryDataState.DELETED.value}}
+        await ETapestryDatas.data_service.update_many(
+            collection=ETapestryDatas.DB_COLLECTION_ETAPESTRY_DATA,
+            query=query,
+            data=jsonable_encoder(update_request),
+        )

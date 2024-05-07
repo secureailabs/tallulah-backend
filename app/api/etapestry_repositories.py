@@ -20,6 +20,7 @@ from app.api.authentication import get_current_user
 from app.api.etapestry_data import add_etapestry_data
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
+from app.models.etapestry_data import ETapestryDatas
 from app.models.etapestry_repositories import (
     ETapestryRepositories,
     ETapestryRepository_Db,
@@ -188,6 +189,13 @@ async def delete_etapestry_repository(
         query_organization_id=current_user.organization_id,
         update_etapestry_repository_state=ETapestryRepositoryState.DELETED,
     )
+
+    # Delete the index in elasticsearch
+    elastic_client = ElasticsearchClient()
+    await elastic_client.delete_index(index_name=str(etapestry_repository_id))
+
+    # Delete all the data in the repository
+    await ETapestryDatas.delete(repository_id=etapestry_repository_id)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

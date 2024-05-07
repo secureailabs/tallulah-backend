@@ -129,6 +129,7 @@ class ValidationError(BaseModel):
 
 @server.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
+    print(exc)
     error = ValidationError(error="Invalid Schema")
     return JSONResponse(status_code=422, content=jsonable_encoder(error))
 

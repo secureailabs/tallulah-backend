@@ -103,7 +103,7 @@ async def add_form_data_manual(
     return RegisterFormData_Out(id=form_data_db.id)
 
 
-@router.get(
+@router.put(
     path="/",
     description="Get all the form data for the current user for the template",
     status_code=status.HTTP_200_OK,
