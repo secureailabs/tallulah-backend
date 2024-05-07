@@ -131,5 +131,77 @@ generate_client() {
     popd
 }
 
+deploy() {
+    make build_image
+    make push_all
+
+    version=$(cat VERSION)
+    gitCommitHash=$(git rev-parse --short HEAD)
+    backend_tag=v"$version"_"$gitCommitHash"
+    echo "Tag: $backend_tag"
+
+    rm -rf researcher-ui || true
+    git clone git@github.com:secureailabs/researcher-ui.git
+    pushd researcher-ui
+    yarn
+    yarn build:beta
+    make build_image
+    make push_image
+
+    version=$(cat VERSION)
+    gitCommitHash=$(git rev-parse --short HEAD)
+    ui_tag=v"$version"_"$gitCommitHash"
+    echo "Tag: $ui_tag"
+    popd
+
+    pushd devops/terraform
+    az login
+    az account set --subscription $AZURE_SUBSCRIPTION_ID
+    terraform workspace select development
+    sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
+    sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
+    sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
+    sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+    terraform apply -var-file="development.tfvars" -auto-approve
+    popd
+}
+
+
+release() {
+    make build_image
+    make push_all
+
+    version=$(cat VERSION)
+    gitCommitHash=$(git rev-parse --short HEAD)
+    backend_tag=v"$version"_"$gitCommitHash"
+    echo "Tag: $backend_tag"
+
+    rm -rf researcher-ui || true
+    git clone git@github.com:secureailabs/researcher-ui.git
+    pushd researcher-ui
+    yarn
+    yarn build
+    make build_image
+    make push_image
+
+    version=$(cat VERSION)
+    gitCommitHash=$(git rev-parse --short HEAD)
+    ui_tag=v"$version"_"$gitCommitHash"
+    echo "Tag: $ui_tag"
+    popd
+
+    pushd devops/terraform
+    az login
+    az account set --subscription $AZURE_SUBSCRIPTION_ID
+    terraform workspace select default
+    sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" production.tfvars
+    sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
+    sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
+    sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
+    terraform apply -var-file="production.tfvars"
+    popd
+}
+
+
 # run whatever command is passed in as arguments
 $@
