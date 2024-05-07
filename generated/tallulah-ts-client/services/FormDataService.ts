@@ -36,7 +36,7 @@ export class FormDataService {
         requestBody?: Record<string, Array<string>>,
     ): CancelablePromise<GetMultipleFormData_Out> {
         return __request(OpenAPI, {
-            method: 'GET',
+            method: 'PUT',
             url: '/api/form-data/',
             query: {
                 'form_template_id': formTemplateId,
