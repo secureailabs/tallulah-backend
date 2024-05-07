@@ -246,6 +246,8 @@ async def get_download_url(
 async def search_form_data(
     form_template_id: PyObjectId = Query(description="Form template id"),
     search_query: str = Query(description="Search query"),
+    skip: int = Query(default=0, description="Number of form data to skip"),
+    limit: int = Query(default=10, description="Number of form data to return"),
     current_user: TokenData = Depends(get_current_user),
 ):
     # Check if the user is the owner of the response template
@@ -255,7 +257,9 @@ async def search_form_data(
 
     # Search the form data
     elastic_client = ElasticsearchClient()
-    response = await elastic_client.search(index_name=str(form_template_id), search_query=search_query)
+    response = await elastic_client.search(
+        index_name=str(form_template_id), search_query=search_query, skip=skip, size=limit
+    )
 
     return response
 

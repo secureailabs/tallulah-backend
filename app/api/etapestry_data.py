@@ -84,6 +84,8 @@ async def get_all_etapestry_data(
 async def search_etapestry_data(
     repository_id: PyObjectId = Query(description="Form template id"),
     search_query: str = Query(description="Search query"),
+    skip: int = Query(default=0, description="Number of etapestry data to skip"),
+    limit: int = Query(default=10, description="Number of etapestry data to return"),
     current_user: TokenData = Depends(get_current_user),
 ):
     # Check if the user is the owner of the response template
@@ -93,7 +95,9 @@ async def search_etapestry_data(
 
     # Search the eTapestry data
     elastic_client = ElasticsearchClient()
-    response = await elastic_client.search(index_name=str(repository_id), search_query=search_query)
+    response = await elastic_client.search(
+        index_name=str(repository_id), search_query=search_query, size=limit, skip=skip
+    )
 
     return response
 

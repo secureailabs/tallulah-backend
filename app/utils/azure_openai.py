@@ -15,7 +15,7 @@ class OpenAiGenerator:
 
         response = await self.client.chat.completions.create(
             model=self.model,
-            messages=messages,
+            messages=messages,  # type: ignore
             temperature=0.7,
             max_tokens=800,
             top_p=0.95,

@@ -217,12 +217,16 @@ export class FormDataService {
      * Search the text form data for the current user for the template
      * @param formTemplateId Form template id
      * @param searchQuery Search query
+     * @param skip Number of form data to skip
+     * @param limit Number of form data to return
      * @returns any Successful Response
      * @throws ApiError
      */
     public static searchFormData(
         formTemplateId: string,
         searchQuery: string,
+        skip?: number,
+        limit: number = 10,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -230,6 +234,8 @@ export class FormDataService {
             query: {
                 'form_template_id': formTemplateId,
                 'search_query': searchQuery,
+                'skip': skip,
+                'limit': limit,
             },
             errors: {
                 422: `Validation Error`,

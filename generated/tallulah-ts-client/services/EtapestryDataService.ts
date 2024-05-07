@@ -49,12 +49,16 @@ export class EtapestryDataService {
      * Search the text eTapestry data for the current user for the template
      * @param repositoryId Form template id
      * @param searchQuery Search query
+     * @param skip Number of etapestry data to skip
+     * @param limit Number of etapestry data to return
      * @returns any Successful Response
      * @throws ApiError
      */
     public static searchEtapestryData(
         repositoryId: string,
         searchQuery: string,
+        skip?: number,
+        limit: number = 10,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -62,6 +66,8 @@ export class EtapestryDataService {
             query: {
                 'repository_id': repositoryId,
                 'search_query': searchQuery,
+                'skip': skip,
+                'limit': limit,
             },
             errors: {
                 422: `Validation Error`,

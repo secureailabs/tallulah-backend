@@ -73,12 +73,16 @@ export class PatientProfilesService {
      * Search the text from patient profiles for the current user for the template
      * @param repositoryId Patient Profile Repository id
      * @param searchQuery Search query
+     * @param skip Number of patient profiles to skip
+     * @param limit Number of patient profiles to return
      * @returns any Successful Response
      * @throws ApiError
      */
     public static searchPatientProfiles(
         repositoryId: string,
         searchQuery: string,
+        skip?: number,
+        limit: number = 10,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -86,6 +90,8 @@ export class PatientProfilesService {
             query: {
                 'repository_id': repositoryId,
                 'search_query': searchQuery,
+                'skip': skip,
+                'limit': limit,
             },
             errors: {
                 422: `Validation Error`,
