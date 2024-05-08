@@ -25,6 +25,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.10.0] - 2024-05-08
+
+### Added
+
+- **Sort and Filter Patient Stories**
+  - Implemented sorting and filtering functionality for patient stories based on various criteria.
+  - Users can now sort patient stories by date, name, or other attributes.
+
+- **Support for multiple forms**
+  - Added support for multiple forms in the patient stories section.
+  - Users can now create and manage multiple forms for different purposes.
+
+### Changed
+
+- Upgraded the openai sdk to the latest version(1.25.2) for stability.
+- Pagination in search results for patient stories.
+
+
 ## [0.9.1] - 2024-04-29
 
 ### Changed
