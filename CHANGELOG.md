@@ -25,6 +25,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.11.0] - 2024-05-14
+
+### Added
+
+- **Email notifications for users**
+  - Implemented email notifications for users to receive updates on their patient stories and other activities.
+  - Users can now subscribe to email notifications and customize their preferences.
+  - This is only implemented in the backend and will be available in the frontend soon.
+
+- **Sort Patient profiles by first name, last name and creation date**
+  - Implemented sorting functionality for patient profiles based on first name, last name and creation date.
+  - Users can now sort patient profiles by different criteria for easy access and management.
+
+### Changed
+
+- Added the ethnicity, race and gender field to the patient profile data.
+
+
 ## [0.10.0] - 2024-05-08
 
 ### Added
