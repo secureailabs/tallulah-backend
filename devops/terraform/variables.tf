@@ -198,3 +198,7 @@ variable "classifier_container_image_tag" {
   type        = string
 }
 
+variable "email_no_reply_refresh_token" {
+  description = "The refresh token for the no-reply email account"
+  type        = string
+}

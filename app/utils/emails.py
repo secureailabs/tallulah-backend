@@ -138,6 +138,22 @@ class OutlookClient:
                     raise Exception(f"{response.status} " + (await response.text()))
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    async def send_email(self, message: MessageResponse):
+        if not self.token:
+            raise Exception("Not connected")
+
+        endpoint_url = f"{self.resource_url}/{self.api_version}/me/sendMail"
+        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        email_body = message.dict(exclude_none=True)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(endpoint_url, headers=headers, json=email_body) as response:
+                if response.status >= 200 and response.status < 300:
+                    pass
+                else:
+                    raise Exception(f"{response.status} " + (await response.text()))
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     async def receive_email(
         self,
         top: int = 10,

@@ -29,6 +29,7 @@ class SecretStore(BaseModel):
     OUTLOOK_CLIENT_ID: str
     OUTLOOK_CLIENT_SECRET: str
     OUTLOOK_REDIRECT_URI: str
+    EMAIL_NO_REPLY_REFRESH_TOKEN: str
     PASSWORD_PEPPER: str
     RABBIT_MQ_HOST: str
     RABBIT_MQ_QUEUE_NAME: str
@@ -60,6 +61,7 @@ secret_store = SecretStore(
     OUTLOOK_CLIENT_ID=get_secret_env("OUTLOOK_CLIENT_ID"),
     OUTLOOK_CLIENT_SECRET=get_secret_env("OUTLOOK_CLIENT_SECRET"),
     OUTLOOK_REDIRECT_URI=get_secret_env("OUTLOOK_REDIRECT_URI"),
+    EMAIL_NO_REPLY_REFRESH_TOKEN=get_secret_env("EMAIL_NO_REPLY_REFRESH_TOKEN"),
     PASSWORD_PEPPER=get_secret_env("PASSWORD_PEPPER"),
     RABBIT_MQ_HOST=get_secret_env("RABBIT_MQ_HOST"),
     RABBIT_MQ_QUEUE_NAME=get_secret_env("RABBIT_MQ_QUEUE_NAME"),

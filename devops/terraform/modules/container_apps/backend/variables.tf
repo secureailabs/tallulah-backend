@@ -127,3 +127,8 @@ variable "openai_api_key" {
   description = "value of openai api key"
   type        = string
 }
+
+variable "email_no_reply_refresh_token" {
+  description = "value of email no reply refresh token"
+  type        = string
+}

@@ -140,6 +140,50 @@ export class FormTemplatesService {
     }
 
     /**
+     * Subscribe Form Template
+     * Subscribe the form email notifications for the current user
+     * @param formTemplateId Form template id
+     * @returns void
+     * @throws ApiError
+     */
+    public static subscribeFormTemplate(
+        formTemplateId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/form-templates/{form_template_id}/subscribe',
+            path: {
+                'form_template_id': formTemplateId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Unsubscribe Form Template
+     * Unsubscribe the form email notifications for the current user
+     * @param formTemplateId Form template id
+     * @returns void
+     * @throws ApiError
+     */
+    public static unsubscribeFormTemplate(
+        formTemplateId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/form-templates/{form_template_id}/unsubscribe',
+            path: {
+                'form_template_id': formTemplateId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Publish Form Template
      * Update the response template state for the current user
      * @param formTemplateId Form template id

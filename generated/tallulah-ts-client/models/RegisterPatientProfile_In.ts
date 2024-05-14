@@ -9,6 +9,9 @@ export type RegisterPatientProfile_In = {
     patient_id: string;
     repository_id: string;
     name: string;
+    race?: string;
+    ethnicity?: string;
+    gender?: string;
     primary_cancer_diagnosis: string;
     social_worker_name: string;
     social_worker_organization: string;

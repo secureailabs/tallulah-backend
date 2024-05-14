@@ -103,6 +103,7 @@ module "container_app_backend" {
   elastic_password                  = var.elastic_password
   openai_api_base                   = var.openai_api_base
   openai_api_key                    = var.openai_api_key
+  email_no_reply_refresh_token      = var.email_no_reply_refresh_token
 }
 
 module "container_app_rabbit_mq" {

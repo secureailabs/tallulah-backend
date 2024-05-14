@@ -16,4 +16,5 @@ export type GetFormTemplate_Out = {
     creation_time?: string;
     state: FormTemplateState;
     last_edit_time?: string;
+    email_subscription?: Array<string>;
 };

@@ -105,6 +105,7 @@ class FormTemplate_Db(FormTemplate_Base):
     state: FormTemplateState = Field(default=FormTemplateState.TEMPLATE)
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)
+    email_subscription: Optional[List[PyObjectId]] = Field(default=[])
 
 
 class GetFormTemplate_Out(FormTemplate_Base):
@@ -112,6 +113,7 @@ class GetFormTemplate_Out(FormTemplate_Base):
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: FormTemplateState = Field()
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)
+    email_subscription: Optional[List[PyObjectId]] = Field(default=[])
 
 
 class GetMultipleFormTemplate_Out(SailBaseModel):
@@ -185,6 +187,8 @@ class FormTemplates:
         update_form_template_logo: Optional[StrictStr] = None,
         udpate_form_template_card_layout: Optional[CardLayout] = None,
         update_form_template_last_edit_time: Optional[datetime] = None,
+        subscribing_user_id: Optional[PyObjectId] = None,
+        unsubscribing_user_id: Optional[PyObjectId] = None,
     ):
         query = {}
         if query_form_template_id:
@@ -207,6 +211,10 @@ class FormTemplates:
             update_request["$set"]["logo"] = update_form_template_logo
         if udpate_form_template_card_layout:
             update_request["$set"]["card_layout"] = udpate_form_template_card_layout
+        if subscribing_user_id:
+            update_request["$addToSet"] = {"email_subscription": subscribing_user_id}
+        if unsubscribing_user_id:
+            update_request["$pull"] = {"email_subscription": unsubscribing_user_id}
 
         update_response = await FormTemplates.data_service.update_many(
             collection=FormTemplates.DB_COLLECTION_FORM_TEMPLATES,

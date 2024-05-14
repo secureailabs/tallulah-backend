@@ -21,6 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import StrictStr
 
 from app.api.authentication import get_current_user
+from app.models.accounts import Users
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.form_data import (
@@ -35,10 +36,46 @@ from app.models.form_data import (
 )
 from app.models.form_templates import FormMediaTypes, FormTemplates, GetStorageUrl_Out
 from app.utils.azure_blob_manager import AzureBlobManager
+from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
+from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
+
+
+async def notify_users(form_template_id: PyObjectId):
+    # Get the form template
+    form_template = await FormTemplates.read(template_id=form_template_id, throw_on_not_found=True)
+    form_template = form_template[0]
+
+    if not form_template.email_subscription:
+        return
+
+    # Connect to the outlook client
+    client = OutlookClient(
+        client_id=secret_store.OUTLOOK_CLIENT_ID,
+        client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+        redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
+    )
+    await client.connect_with_refresh_token(secret_store.EMAIL_NO_REPLY_REFRESH_TOKEN)
+
+    # Send email notifications to the subscribed users
+    for user_id in form_template.email_subscription:
+        # Get the user email
+        user = await Users.read(user_id=user_id, throw_on_not_found=True)
+        user = user[0]
+
+        email_message = MessageResponse(
+            message=Message(
+                subject="New Form Response!!",
+                body=EmailBody(
+                    contentType="Text", content="There is a new form response. Check it out on Tallulah portal."
+                ),
+                toRecipients=[ToRecipient(emailAddress=EmailAddress(address=user.email, name=user.name))],
+            )
+        )
+        await client.send_email(email_message)
 
 
 @router.post(
@@ -51,6 +88,10 @@ router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 async def add_form_data(
     form_data: RegisterFormData_In = Body(description="Form data information"),
 ) -> RegisterFormData_Out:
+
+    # Check if the form template exists
+    _ = await FormTemplates.read(template_id=form_data.form_template_id, throw_on_not_found=True)
+
     form_data_db = FormData_Db(
         form_template_id=form_data.form_template_id,
         values=form_data.values,
@@ -64,6 +105,10 @@ async def add_form_data(
         id=str(form_data_db.id),
         document=jsonable_encoder(form_data_db, exclude=set(["_id", "id"])),
     )
+
+    # Send email notifications
+    async_task_manager = AsyncTaskManager()
+    async_task_manager.create_task(notify_users(form_data.form_template_id))
 
     return RegisterFormData_Out(id=form_data_db.id)
 

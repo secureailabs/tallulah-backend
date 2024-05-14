@@ -94,6 +94,10 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "openai-api-key"
     value = var.openai_api_key
   }
+  secret {
+    name  = "email-no-reply-refresh-token"
+    value = var.email_no_reply_refresh_token
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -192,6 +196,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "OPENAI_API_KEY"
         secret_name = "openai-api-key"
+      }
+      env {
+        name        = "EMAIL_NO_REPLY_REFRESH_TOKEN"
+        secret_name = "email-no-reply-refresh-token"
       }
     }
   }

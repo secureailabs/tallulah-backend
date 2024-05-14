@@ -144,6 +144,47 @@ async def update_form_template(
 
 
 @router.patch(
+    path="/{form_template_id}/subscribe",
+    description="Subscribe the form email notifications for the current user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="subscribe_form_template",
+)
+async def subscribe_form_template(
+    form_template_id: PyObjectId = Path(description="Form template id"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+    # Update the response template
+    await FormTemplates.update(
+        query_form_template_id=form_template_id,
+        query_organization_id=current_user.organization_id,
+        subscribing_user_id=current_user.id,
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch(
+    path="/{form_template_id}/unsubscribe",
+    description="Unsubscribe the form email notifications for the current user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="unsubscribe_form_template",
+)
+async def unsubscribe_form_template(
+    form_template_id: PyObjectId = Path(description="Form template id"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+
+    # Update the response template
+    await FormTemplates.update(
+        query_form_template_id=form_template_id,
+        query_organization_id=current_user.organization_id,
+        unsubscribing_user_id=current_user.id,
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch(
     path="/{form_template_id}/publish",
     description="Update the response template state for the current user",
     status_code=status.HTTP_204_NO_CONTENT,
