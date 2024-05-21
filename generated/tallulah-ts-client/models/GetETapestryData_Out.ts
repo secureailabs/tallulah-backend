@@ -9,6 +9,8 @@ export type GetETapestryData_Out = {
     repository_id: string;
     account: AccountInfo;
     state?: ETapestryDataState;
+    notes?: string;
+    tags?: Array<string>;
     id: string;
     creation_time?: string;
 };

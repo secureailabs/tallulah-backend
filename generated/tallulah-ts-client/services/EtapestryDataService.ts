@@ -119,4 +119,34 @@ export class EtapestryDataService {
         });
     }
 
+    /**
+     * Update Etapestry Data
+     * Update the tags and notes for the eTapestry data
+     * @param etapestryDataId eTapestry data id
+     * @param tags Tags for the eTapestry data
+     * @param notes Notes for the eTapestry data
+     * @returns void
+     * @throws ApiError
+     */
+    public static updateEtapestryData(
+        etapestryDataId: string,
+        tags?: string,
+        notes?: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/etapestry-data/{etapestry_data_id}',
+            path: {
+                'etapestry_data_id': etapestryDataId,
+            },
+            query: {
+                'tags': tags,
+                'notes': notes,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }
