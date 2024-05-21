@@ -14,11 +14,11 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from pydantic import Field, StrictStr
+from pydantic import Field
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
@@ -34,6 +34,8 @@ class ETapestryData_Base(SailBaseModel):
     repository_id: PyObjectId = Field()
     account: AccountInfo = Field()
     state: ETapestryDataState = Field(default=ETapestryDataState.ACTIVE)
+    notes: Optional[str] = Field(default=None)
+    tags: Optional[List[str]] = Field(default=None)
 
 
 class ETapestryData_Db(ETapestryData_Base):
@@ -78,6 +80,10 @@ class ETapestryDatas:
         else:
             # Use the same id
             etapestry_data.id = account["_id"]
+            if "notes" in account:
+                etapestry_data.notes = account["notes"]
+            if "tags" in account:
+                etapestry_data.tags = account["tags"]
 
             # update the existing account
             await ETapestryDatas.data_service.update_one(
@@ -154,17 +160,23 @@ class ETapestryDatas:
 
     @staticmethod
     async def update(
-        query_etapestry_data_id: PyObjectId,
-        update_etapestry_data_state: Optional[ETapestryDataState] = None,
+        query_id: PyObjectId,
+        update_state: Optional[ETapestryDataState] = None,
+        update_notes: Optional[str] = None,
+        update_tags: Optional[List[str]] = None,
         throw_on_no_update: bool = True,
     ):
         query = {}
-        if query_etapestry_data_id:
-            query["_id"] = str(query_etapestry_data_id)
+        if query_id:
+            query["_id"] = str(query_id)
 
         update_request = {"$set": {}}
-        if update_etapestry_data_state:
-            update_request["$set"]["state"] = update_etapestry_data_state.value
+        if update_state:
+            update_request["$set"]["state"] = update_state.value
+        if update_notes:
+            update_request["$set"]["notes"] = update_notes
+        if update_tags:
+            update_request["$set"]["tags"] = update_tags
 
         update_response = await ETapestryDatas.data_service.update_one(
             collection=ETapestryDatas.DB_COLLECTION_ETAPESTRY_DATA,

@@ -126,6 +126,46 @@ async def get_etapestry_data(
     return GetETapestryData_Out(**etapestry_data[0].dict())
 
 
+@router.patch(
+    path="/{etapestry_data_id}",
+    description="Update the tags and notes for the eTapestry data",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model_by_alias=False,
+    operation_id="update_etapestry_data",
+)
+async def update_etapestry_data(
+    etapestry_data_id: PyObjectId = Path(description="eTapestry data id"),
+    tags: str = Query(default=None, description="Tags for the eTapestry data"),
+    notes: str = Query(default=None, description="Notes for the eTapestry data"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+    etapestry_data = await ETapestryDatas.read(data_id=etapestry_data_id, throw_on_not_found=True)
+
+    # Check if the user is the owner of the response template
+    _ = await ETapestryRepositories.read(
+        repository_id=etapestry_data[0].repository_id,
+        organization_id=current_user.organization_id,
+        throw_on_not_found=True,
+    )
+
+    # Update the tags and notes
+    await ETapestryDatas.update(
+        query_id=etapestry_data_id,
+        update_tags=tags.split(",") if tags else None,
+        update_notes=notes,
+    )
+
+    # Update the data in the elastic search cluster as well
+    elastic_client = ElasticsearchClient()
+    await elastic_client.update_document(
+        index_name=str(etapestry_data[0].repository_id),
+        id=str(etapestry_data_id),
+        document=jsonable_encoder(etapestry_data[0], exclude=set(["_id", "id"])),
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.delete(
     path="/{etapestry_data_id}",
     description="Delete the response template for the current user",
@@ -148,8 +188,8 @@ async def delete_etapestry_data(
 
     # Delete the response template
     await ETapestryDatas.update(
-        query_etapestry_data_id=etapestry_data_id,
-        update_etapestry_data_state=ETapestryDataState.DELETED,
+        query_id=etapestry_data_id,
+        update_state=ETapestryDataState.DELETED,
     )
 
     # Delete from the elastic search cluster as well

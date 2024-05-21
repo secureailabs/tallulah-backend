@@ -198,8 +198,8 @@ release() {
     sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
-    terraform workspace select default
-    terraform apply -var-file="production.tfvars"
+    # terraform workspace select default
+    # terraform apply -var-file="production.tfvars"
     popd
 }
 
