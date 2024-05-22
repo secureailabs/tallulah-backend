@@ -207,14 +207,14 @@ async def add_etapestry_data(data: AccountInfo, repository_id: PyObjectId):
             account=data,
             state=ETapestryDataState.ACTIVE,
         )
-        insert_data_id = await ETapestryDatas.create(etapestry_data_db)
+        inserted_data = await ETapestryDatas.create(etapestry_data_db)
 
         # Add the data to the elastic search cluster
         elastic_client = ElasticsearchClient()
         await elastic_client.insert_document(
             index_name=str(repository_id),
-            id=str(insert_data_id),
-            document=jsonable_encoder(etapestry_data_db, exclude=set(["_id", "id"])),
+            id=str(inserted_data.id),
+            document=jsonable_encoder(inserted_data, exclude=set(["_id", "id"])),
         )
     except Exception as e:
         print(f"Error adding eTapestry data: {e}")

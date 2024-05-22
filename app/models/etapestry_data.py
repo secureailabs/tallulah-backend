@@ -62,7 +62,7 @@ class ETapestryDatas:
     @staticmethod
     async def create(
         etapestry_data: ETapestryData_Db,
-    ) -> PyObjectId:
+    ) -> ETapestryData_Db:
         # check if the account exists
         query_request = {}
         query_request["repository_id"] = str(etapestry_data.repository_id)
@@ -92,7 +92,7 @@ class ETapestryDatas:
                 data=jsonable_encoder({"$set": jsonable_encoder(etapestry_data)}),
             )
 
-        return etapestry_data.id
+        return etapestry_data
 
     @staticmethod
     async def read(
