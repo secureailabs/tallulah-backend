@@ -25,6 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.12.0] - 2024-05-23
+
+### Added
+
+- **Form Self Provisioning**
+  - Implemented a feature that allows users to create and manage their own forms without the need for Tallulah admin intervention.
+  - Users can now create, edit, and delete forms based on their requirements.
+
+
+### Changed
+
+- **Editable Notes and Tags in Etapestry Data**
+  - Added the functionality to edit notes and tags in the Etapestry data displayed on the patient profile page.
+  - The tags and notes will remain attached with data even after the etapestry data is refreshed.
+  - The notes and tags are searchable and can be updated by the user as needed.
+
+
 ## [0.11.0] - 2024-05-14
 
 ### Added
