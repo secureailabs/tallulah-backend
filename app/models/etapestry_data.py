@@ -42,7 +42,7 @@ class ETapestryData_Base(SailBaseModel):
 
 class ETapestryData_Db(ETapestryData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    creation_time: datetime = Field(default_factory=datetime.now)
 
 
 class UpdateETapestryData_In(SailBaseModel):
@@ -55,7 +55,7 @@ class UpdateETapestryData_In(SailBaseModel):
 
 class GetETapestryData_Out(ETapestryData_Base):
     id: PyObjectId = Field()
-    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    creation_time: datetime = Field(default_factory=datetime.now)
 
 
 class GetMultipleETapestryData_Out(SailBaseModel):

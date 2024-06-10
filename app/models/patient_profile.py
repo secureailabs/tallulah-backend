@@ -32,9 +32,9 @@ class PatientProfileState(Enum):
 class Guardian(SailBaseModel):
     relationship: Optional[StrictStr] = Field()
     name: StrictStr = Field()
-    employer: StrictStr = Field()
-    email: StrictStr = Field()
-    phone: StrictStr = Field()
+    employer: Optional[StrictStr] = Field()
+    email: Optional[StrictStr] = Field()
+    phone: Optional[StrictStr] = Field()
 
 
 class PatientRequests(SailBaseModel):
@@ -54,15 +54,15 @@ class PatientProfile_Base(SailBaseModel):
     social_worker_organization: Optional[StrictStr] = Field()
     date_of_diagnosis: Optional[StrictStr] = Field()
     age: Optional[int] = Field()
-    guardians: List[Guardian] = Field()
+    guardians: Optional[List[Guardian]] = Field()
     household_details: Optional[str] = Field()
     family_net_monthly_income: Optional[int] = Field()
     address: Optional[StrictStr] = Field()
-    recent_requests: List[PatientRequests] = Field()
-    photos: List[PyObjectId] = Field()
-    videos: List[PyObjectId] = Field()
+    recent_requests: Optional[List[PatientRequests]] = Field()
+    photos: Optional[List[PyObjectId]] = Field()
+    videos: Optional[List[PyObjectId]] = Field()
     notes: Optional[StrictStr] = Field()
-    tags: List[StrictStr] = Field()
+    tags: Optional[List[StrictStr]] = Field()
 
 
 class PatientProfile_Db(PatientProfile_Base):
