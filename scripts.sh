@@ -75,7 +75,7 @@ run_image() {
 
     # Run the backend image
     # docker run -it --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env --entrypoint "uvicorn app.main:server --host 0.0.0.0 --port 8000 --reload"  tallulah/backend
-    docker run -d --rm --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend
+    docker run -d --rm --name backend -p 8000:8000 -v $(pwd)/app:/app --network tallulah --env-file .env tallulah/backend --platform linux/amd64
 }
 
 

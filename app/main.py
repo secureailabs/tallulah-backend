@@ -22,8 +22,7 @@ from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
 import aiohttp
-
-# import fastapi.openapi.utils as utils
+import fastapi.openapi.utils as utils
 import sentry_sdk
 from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
@@ -137,7 +136,7 @@ async def validation_exception_handler(request, exc):
     return JSONResponse(status_code=422, content=jsonable_encoder(error))
 
 
-# utils.validation_error_response_definition = ValidationError.schema()
+utils.validation_error_response_definition = ValidationError.schema()
 
 
 # Record all the exceptions that are not handled by the API and send them to slack and the database
