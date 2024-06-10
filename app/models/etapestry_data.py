@@ -36,11 +36,21 @@ class ETapestryData_Base(SailBaseModel):
     state: ETapestryDataState = Field(default=ETapestryDataState.ACTIVE)
     notes: Optional[str] = Field(default=None)
     tags: Optional[List[str]] = Field(default=None)
+    photos: Optional[List[PyObjectId]] = Field(default=None)
+    videos: Optional[List[PyObjectId]] = Field(default=None)
 
 
 class ETapestryData_Db(ETapestryData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
+
+
+class UpdateETapestryData_In(SailBaseModel):
+    state: Optional[ETapestryDataState] = Field()
+    notes: Optional[str] = Field()
+    tags: Optional[List[str]] = Field()
+    photos: Optional[List[PyObjectId]] = Field()
+    videos: Optional[List[PyObjectId]] = Field()
 
 
 class GetETapestryData_Out(ETapestryData_Base):
@@ -84,6 +94,10 @@ class ETapestryDatas:
                 etapestry_data.notes = account["notes"]
             if "tags" in account:
                 etapestry_data.tags = account["tags"]
+            if "photos" in account:
+                etapestry_data.photos = account["photos"]
+            if "videos" in account:
+                etapestry_data.videos = account["videos"]
 
             # update the existing account
             await ETapestryDatas.data_service.update_one(
@@ -164,6 +178,8 @@ class ETapestryDatas:
         update_state: Optional[ETapestryDataState] = None,
         update_notes: Optional[str] = None,
         update_tags: Optional[List[str]] = None,
+        update_photos: Optional[List[PyObjectId]] = None,
+        update_videos: Optional[List[PyObjectId]] = None,
         throw_on_no_update: bool = True,
     ):
         query = {}
@@ -177,6 +193,10 @@ class ETapestryDatas:
             update_request["$set"]["notes"] = update_notes
         if update_tags:
             update_request["$set"]["tags"] = update_tags
+        if update_photos:
+            update_request["$set"]["photos"] = update_photos
+        if update_videos:
+            update_request["$set"]["videos"] = update_videos
 
         update_response = await ETapestryDatas.data_service.update_one(
             collection=ETapestryDatas.DB_COLLECTION_ETAPESTRY_DATA,

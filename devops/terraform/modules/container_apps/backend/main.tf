@@ -83,8 +83,8 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.elastic_password
   }
   secret {
-    name  = "elastic-cloud-id"
-    value = var.elastic_cloud_id
+    name  = "elastic-cloud-host"
+    value = var.elastic_cloud_host
   }
   secret {
     name  = "openai-api-base"
@@ -188,6 +188,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "ELASTIC_CLOUD_ID"
         secret_name = "elastic-cloud-id"
+      }
+      env {
+        name        = "ELASTIC_HOST"
+        secret_name = "elastic-cloud-host"
       }
       env {
         name        = "OPENAI_API_BASE"

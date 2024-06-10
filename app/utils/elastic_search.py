@@ -4,12 +4,12 @@ from elasticsearch import AsyncElasticsearch
 class ElasticsearchClient:
     _instance = None
 
-    def __new__(cls, cloud_id=None, password=None):
+    def __new__(cls, cloud_endpoint=None, password=None):
         if cls._instance is None:
-            if cloud_id is None or password is None:
+            if cloud_endpoint is None or password is None:
                 raise Exception("cloud_id and password must be provided")
             cls._instance = super(ElasticsearchClient, cls).__new__(cls)
-            cls.client = AsyncElasticsearch(cloud_id=cloud_id, basic_auth=("elastic", password))
+            cls.client = AsyncElasticsearch(hosts=cloud_endpoint, basic_auth=("elastic", password))
         return cls._instance
 
     async def create_index(self, index_name: str, raise_on_already_exist: bool = False):

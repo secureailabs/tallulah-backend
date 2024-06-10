@@ -58,6 +58,9 @@ async def add_new_patient_profile(
         repository_id=patient_profile.repository_id,
         patient_id=patient_profile.patient_id,
         name=patient_profile.name,
+        race=patient_profile.race,
+        ethnicity=patient_profile.ethnicity,
+        gender=patient_profile.gender,
         primary_cancer_diagnosis=patient_profile.primary_cancer_diagnosis,
         date_of_diagnosis=patient_profile.date_of_diagnosis,
         age=patient_profile.age,
@@ -70,6 +73,10 @@ async def add_new_patient_profile(
         recent_requests=patient_profile.recent_requests,
         organization_id=current_user.organization_id,
         owner_id=current_user.id,
+        photos=patient_profile.photos,
+        videos=patient_profile.videos,
+        tags=patient_profile.tags,
+        notes=patient_profile.notes,
         state=PatientProfileState.ACTIVE,
     )
 

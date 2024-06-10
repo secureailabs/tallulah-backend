@@ -14,7 +14,7 @@
 
 import traceback
 
-from fastapi import APIRouter, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Body, Depends, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
@@ -26,6 +26,7 @@ from app.models.etapestry_data import (
     ETapestryDataState,
     GetETapestryData_Out,
     GetMultipleETapestryData_Out,
+    UpdateETapestryData_In,
 )
 from app.models.etapestry_repositories import ETapestryRepositories
 from app.utils.elastic_search import ElasticsearchClient
@@ -128,15 +129,14 @@ async def get_etapestry_data(
 
 @router.patch(
     path="/{etapestry_data_id}",
-    description="Update the tags and notes for the eTapestry data",
+    description="Update the metadata for the eTapestry data",
     status_code=status.HTTP_204_NO_CONTENT,
     response_model_by_alias=False,
     operation_id="update_etapestry_data",
 )
 async def update_etapestry_data(
     etapestry_data_id: PyObjectId = Path(description="eTapestry data id"),
-    tags: str = Query(default=None, description="Tags for the eTapestry data"),
-    notes: str = Query(default=None, description="Notes for the eTapestry data"),
+    update_data: UpdateETapestryData_In = Body(description="Update eTapestry data"),
     current_user: TokenData = Depends(get_current_user),
 ) -> Response:
     etapestry_data = await ETapestryDatas.read(data_id=etapestry_data_id, throw_on_not_found=True)
@@ -151,8 +151,10 @@ async def update_etapestry_data(
     # Update the tags and notes
     await ETapestryDatas.update(
         query_id=etapestry_data_id,
-        update_tags=tags.split(",") if tags else None,
-        update_notes=notes,
+        update_tags=update_data.tags,
+        update_notes=update_data.notes,
+        update_photos=update_data.photos,
+        update_videos=update_data.videos,
     )
 
     # Update the data in the elastic search cluster as well

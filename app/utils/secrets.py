@@ -37,8 +37,8 @@ class SecretStore(BaseModel):
     SLACK_WEBHOOK: str
     TALLULAH_ADMIN_PASSWORD: str
     STORAGE_ACCOUNT_CONNECTION_STRING: str
+    ELASTIC_HOST: str
     ELASTIC_PASSWORD: str
-    ELASTIC_CLOUD_ID: str
     OPENAI_API_BASE: str
     OPENAI_API_KEY: str
 
@@ -69,8 +69,8 @@ secret_store = SecretStore(
     SLACK_WEBHOOK=get_secret_env("SLACK_WEBHOOK"),
     TALLULAH_ADMIN_PASSWORD=get_secret_env("TALLULAH_ADMIN_PASSWORD"),
     STORAGE_ACCOUNT_CONNECTION_STRING=get_secret_env("STORAGE_ACCOUNT_CONNECTION_STRING"),
+    ELASTIC_HOST=get_secret_env("ELASTIC_HOST"),
     ELASTIC_PASSWORD=get_secret_env("ELASTIC_PASSWORD"),
-    ELASTIC_CLOUD_ID=get_secret_env("ELASTIC_CLOUD_ID"),
     OPENAI_API_BASE=get_secret_env("OPENAI_API_BASE"),
     OPENAI_API_KEY=get_secret_env("OPENAI_API_KEY"),
 )

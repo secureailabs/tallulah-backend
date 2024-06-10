@@ -49,21 +49,25 @@ class PatientProfile_Base(SailBaseModel):
     race: Optional[StrictStr] = Field()
     ethnicity: Optional[StrictStr] = Field()
     gender: Optional[StrictStr] = Field()
-    primary_cancer_diagnosis: StrictStr = Field()
-    social_worker_name: StrictStr = Field()
-    social_worker_organization: StrictStr = Field()
-    date_of_diagnosis: str = Field()
-    age: int = Field()
+    primary_cancer_diagnosis: Optional[StrictStr] = Field()
+    social_worker_name: Optional[StrictStr] = Field()
+    social_worker_organization: Optional[StrictStr] = Field()
+    date_of_diagnosis: Optional[StrictStr] = Field()
+    age: Optional[int] = Field()
     guardians: List[Guardian] = Field()
-    household_details: str = Field()
-    family_net_monthly_income: int = Field()
-    address: str = Field()
+    household_details: Optional[str] = Field()
+    family_net_monthly_income: Optional[int] = Field()
+    address: Optional[StrictStr] = Field()
     recent_requests: List[PatientRequests] = Field()
+    photos: List[PyObjectId] = Field()
+    videos: List[PyObjectId] = Field()
+    notes: Optional[StrictStr] = Field()
+    tags: List[StrictStr] = Field()
 
 
 class PatientProfile_Db(PatientProfile_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    creation_time: datetime = Field(default_factory=datetime.now)
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
     organization_id: PyObjectId = Field()
     owner_id: PyObjectId = Field()
@@ -79,24 +83,31 @@ class RegisterPatientProfile_Out(SailBaseModel):
 
 class GetPatientProfile_Out(PatientProfile_Base):
     id: PyObjectId = Field()
-    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    creation_time: datetime = Field(default_factory=datetime.now)
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
     organization_id: PyObjectId = Field()
     owner_id: PyObjectId = Field()
 
 
 class UpdatePatientProfile_In(SailBaseModel):
-    name: StrictStr = Field()
-    primary_cancer_diagnosis: StrictStr = Field()
-    social_worker_name: StrictStr = Field()
-    social_worker_organization: StrictStr = Field()
-    date_of_diagnosis: str = Field()
-    age: int = Field()
-    guardians: List[Guardian] = Field()
-    household_details: str = Field()
-    family_net_monthly_income: int = Field()
-    address: str = Field()
+    name: Optional[StrictStr] = Field()
+    race: Optional[StrictStr] = Field()
+    ethnicity: Optional[StrictStr] = Field()
+    gender: Optional[StrictStr] = Field()
+    primary_cancer_diagnosis: Optional[StrictStr] = Field()
+    social_worker_name: Optional[StrictStr] = Field()
+    social_worker_organization: Optional[StrictStr] = Field()
+    date_of_diagnosis: Optional[StrictStr] = Field()
+    age: Optional[int] = Field()
+    guardians: Optional[List[Guardian]] = Field()
+    household_details: Optional[str] = Field()
+    family_net_monthly_income: Optional[int] = Field()
+    address: Optional[StrictStr] = Field()
     recent_requests: List[PatientRequests] = Field()
+    photos: List[PyObjectId] = Field()
+    videos: List[PyObjectId] = Field()
+    notes: Optional[StrictStr] = Field()
+    tags: Optional[List[StrictStr]] = Field()
 
 
 class GetMultiplePatientProfiles_Out(SailBaseModel):
@@ -232,6 +243,9 @@ class PatientProfiles:
             update["state"] = update_patient_profile_state.value
         if update_patient_profile:
             update["name"] = update_patient_profile.name
+            update["race"] = update_patient_profile.race
+            update["ethnicity"] = update_patient_profile.ethnicity
+            update["gender"] = update_patient_profile.gender
             update["primary_cancer_diagnosis"] = update_patient_profile.primary_cancer_diagnosis
             update["social_worker_name"] = update_patient_profile.social_worker_name
             update["social_worker_organization"] = update_patient_profile.social_worker_organization
@@ -242,6 +256,10 @@ class PatientProfiles:
             update["family_net_monthly_income"] = update_patient_profile.family_net_monthly_income
             update["address"] = update_patient_profile.address
             update["recent_requests"] = update_patient_profile.recent_requests
+            update["photos"] = update_patient_profile.photos
+            update["videos"] = update_patient_profile.videos
+            update["notes"] = update_patient_profile.notes
+            update["tags"] = update_patient_profile.tags
 
         update_result = await PatientProfiles.data_service.update_one(
             collection=PatientProfiles.DB_COLLECTION_PATIENT_PROFILES,

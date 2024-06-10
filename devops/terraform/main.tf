@@ -99,8 +99,8 @@ module "container_app_backend" {
   storage_container_sas_url         = var.storage_container_sas_url
   tallulah_admin_password           = var.tallulah_admin_password
   storage_account_connection_string = module.storage_account.storage_account_connection_string
-  elastic_cloud_id                  = var.elastic_cloud_id
   elastic_password                  = var.elastic_password
+  elastic_cloud_host                = var.elastic_cloud_host
   openai_api_base                   = var.openai_api_base
   openai_api_key                    = var.openai_api_key
   email_no_reply_refresh_token      = var.email_no_reply_refresh_token

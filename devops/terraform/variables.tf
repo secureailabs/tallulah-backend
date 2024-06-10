@@ -31,6 +31,7 @@ variable "resource_group_name" {
 variable "container_registry_password" {
   description = "Container registry password"
   type        = string
+  sensitive   = true
 }
 
 variable "container_registry_server" {
@@ -46,11 +47,13 @@ variable "container_registry_username" {
 variable "jwt_secret" {
   description = "JWT secret"
   type        = string
+  sensitive   = true
 }
 
 variable "mongo_connection_url" {
   description = "Mongodb connection url"
   type        = string
+  sensitive   = true
 }
 
 variable "outlook_client_id" {
@@ -61,6 +64,7 @@ variable "outlook_client_id" {
 variable "outlook_client_secret" {
   description = "Outlook client secret for mail integration"
   type        = string
+  sensitive   = true
 }
 
 variable "outlook_redirect_uri" {
@@ -76,6 +80,7 @@ variable "outlook_tenant_id" {
 variable "password_pepper" {
   description = "Password pepper"
   type        = string
+  sensitive   = true
 }
 
 variable "rabbit_mq_host" {
@@ -86,6 +91,7 @@ variable "rabbit_mq_host" {
 variable "rabbit_mq_password" {
   description = "RabbitMQ password"
   type        = string
+  sensitive   = true
 }
 
 variable "rabbit_mq_user" {
@@ -96,6 +102,7 @@ variable "rabbit_mq_user" {
 variable "refresh_secret" {
   description = "Refresh secret"
   type        = string
+  sensitive   = true
 }
 
 variable "storage_container_sas_url" {
@@ -106,26 +113,31 @@ variable "storage_container_sas_url" {
 variable "tallulah_admin_password" {
   description = "Tallulah admin password"
   type        = string
+  sensitive   = true
 }
 
 variable "godaddy_secret" {
   description = "value of godaddy secret"
   type        = string
+  sensitive   = true
 }
 
 variable "godaddy_key" {
   description = "value of godaddy key"
   type        = string
+  sensitive   = true
 }
 
 variable "google_domains_token" {
   description = "value of google domains token"
   type        = string
+  sensitive   = true
 }
 
 variable "ssl_certificate_password" {
   description = "SSL certificate password"
   type        = string
+  sensitive   = true
 }
 
 variable "host_name" {
@@ -146,6 +158,7 @@ variable "elastic_cloud_username" {
 variable "elastic_cloud_password" {
   description = "The password of the Elastic Cloud"
   type        = string
+  sensitive   = true
 }
 
 variable "elastic_cloud_host" {
@@ -155,11 +168,7 @@ variable "elastic_cloud_host" {
 variable "elastic_password" {
   description = "The password of the Elastic instance"
   type        = string
-}
-
-variable "elastic_cloud_id" {
-  description = "The ID of the Elastic instance"
-  type        = string
+  sensitive   = true
 }
 
 variable "openai_api_base" {
@@ -170,6 +179,7 @@ variable "openai_api_base" {
 variable "openai_api_key" {
   description = "value of openai api key"
   type        = string
+  sensitive   = true
 }
 
 variable "backend_container_image_tag" {
@@ -201,4 +211,5 @@ variable "classifier_container_image_tag" {
 variable "email_no_reply_refresh_token" {
   description = "The refresh token for the no-reply email account"
   type        = string
+  sensitive   = true
 }

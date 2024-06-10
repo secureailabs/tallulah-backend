@@ -113,8 +113,8 @@ variable "elastic_password" {
   type        = string
 }
 
-variable "elastic_cloud_id" {
-  description = "The ID of the Elastic instance"
+variable "elastic_cloud_host" {
+  description = "The URL of the Elastic Cloud"
   type        = string
 }
 

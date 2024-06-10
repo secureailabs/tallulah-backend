@@ -49,6 +49,7 @@ from app.api import (
     form_templates,
     internal_utils,
     mailbox,
+    media,
     patient_profile_repositories,
     patient_profiles,
     response_templates,
@@ -99,6 +100,7 @@ server.include_router(patient_profiles.router)
 server.include_router(etapestry_repositories.router)
 server.include_router(etapestry_data.router)
 server.include_router(dashboard_templates.router)
+server.include_router(media.router)
 
 # Setup CORS to allow all origins
 origins = [
@@ -116,7 +118,7 @@ server.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Initialize the elasticsearch client
 elasticsearch_client = ElasticsearchClient(
-    cloud_id=secret_store.ELASTIC_CLOUD_ID,
+    cloud_endpoint=secret_store.ELASTIC_HOST,
     password=secret_store.ELASTIC_PASSWORD,
 )
 

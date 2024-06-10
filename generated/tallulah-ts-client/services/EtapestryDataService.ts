@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type { GetETapestryData_Out } from '../models/GetETapestryData_Out';
 import type { GetMultipleETapestryData_Out } from '../models/GetMultipleETapestryData_Out';
+import type { UpdateETapestryData_In } from '../models/UpdateETapestryData_In';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -121,17 +122,15 @@ export class EtapestryDataService {
 
     /**
      * Update Etapestry Data
-     * Update the tags and notes for the eTapestry data
+     * Update the metadata for the eTapestry data
      * @param etapestryDataId eTapestry data id
-     * @param tags Tags for the eTapestry data
-     * @param notes Notes for the eTapestry data
+     * @param requestBody
      * @returns void
      * @throws ApiError
      */
     public static updateEtapestryData(
         etapestryDataId: string,
-        tags?: string,
-        notes?: string,
+        requestBody: UpdateETapestryData_In,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -139,10 +138,8 @@ export class EtapestryDataService {
             path: {
                 'etapestry_data_id': etapestryDataId,
             },
-            query: {
-                'tags': tags,
-                'notes': notes,
-            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

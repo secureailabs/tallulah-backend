@@ -99,7 +99,7 @@ async def login_for_access_token(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    found_user = await Users.read(email=form_data.username, throw_on_not_found=False)
+    found_user = await Users.read(email=form_data.username.lower(), throw_on_not_found=False)
     if not found_user:
         raise exception_authentication_failed
     found_user_db = found_user[0]
