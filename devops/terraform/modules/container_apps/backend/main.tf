@@ -186,10 +186,6 @@ resource "azurerm_container_app" "container_app_backend" {
         secret_name = "elastic-password"
       }
       env {
-        name        = "ELASTIC_CLOUD_ID"
-        secret_name = "elastic-cloud-id"
-      }
-      env {
         name        = "ELASTIC_HOST"
         secret_name = "elastic-cloud-host"
       }
