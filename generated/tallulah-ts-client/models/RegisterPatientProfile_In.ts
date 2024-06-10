@@ -17,13 +17,13 @@ export type RegisterPatientProfile_In = {
     social_worker_organization?: string;
     date_of_diagnosis?: string;
     age?: number;
-    guardians: Array<Guardian>;
+    guardians?: Array<Guardian>;
     household_details?: string;
     family_net_monthly_income?: number;
     address?: string;
-    recent_requests: Array<PatientRequests>;
-    photos: Array<string>;
-    videos: Array<string>;
+    recent_requests?: Array<PatientRequests>;
+    photos?: Array<string>;
+    videos?: Array<string>;
     notes?: string;
-    tags: Array<string>;
+    tags?: Array<string>;
 };

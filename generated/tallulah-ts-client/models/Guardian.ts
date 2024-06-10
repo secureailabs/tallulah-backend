@@ -5,7 +5,7 @@
 export type Guardian = {
     relationship?: string;
     name: string;
-    employer: string;
-    email: string;
-    phone: string;
+    employer?: string;
+    email?: string;
+    phone?: string;
 };
