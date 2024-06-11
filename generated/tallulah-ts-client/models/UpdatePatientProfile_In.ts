@@ -19,9 +19,9 @@ export type UpdatePatientProfile_In = {
     household_details?: string;
     family_net_monthly_income?: number;
     address?: string;
-    recent_requests: Array<PatientRequests>;
-    photos: Array<string>;
-    videos: Array<string>;
+    recent_requests?: Array<PatientRequests>;
+    photos?: Array<string>;
+    videos?: Array<string>;
     notes?: string;
     tags?: Array<string>;
 };

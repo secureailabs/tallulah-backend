@@ -103,9 +103,9 @@ class UpdatePatientProfile_In(SailBaseModel):
     household_details: Optional[str] = Field()
     family_net_monthly_income: Optional[int] = Field()
     address: Optional[StrictStr] = Field()
-    recent_requests: List[PatientRequests] = Field()
-    photos: List[PyObjectId] = Field()
-    videos: List[PyObjectId] = Field()
+    recent_requests: Optional[List[PatientRequests]] = Field()
+    photos: Optional[List[PyObjectId]] = Field()
+    videos: Optional[List[PyObjectId]] = Field()
     notes: Optional[StrictStr] = Field()
     tags: Optional[List[StrictStr]] = Field()
 

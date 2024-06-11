@@ -81,7 +81,6 @@ class GetUsers_Out(User_Base):
     email: EmailStr = Field()
     job_title: StrictStr = Field()
     roles: List[UserRole] = Field()
-    avatar: Optional[StrictStr] = Field()
 
 
 class GetMultipleUsers_Out(SailBaseModel):
