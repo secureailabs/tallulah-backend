@@ -70,7 +70,8 @@ async def notify_users(form_template_id: PyObjectId):
             message=Message(
                 subject="New Form Response!!",
                 body=EmailBody(
-                    contentType="Text", content="There is a new form response. Check it out on Tallulah portal."
+                    contentType="Text",
+                    content=f'There is a new form response for "{form_template.name}". Check it out on the Tallulah portal.',
                 ),
                 toRecipients=[ToRecipient(emailAddress=EmailAddress(address=user.email, name=user.name))],
             )
