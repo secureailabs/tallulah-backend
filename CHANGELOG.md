@@ -25,6 +25,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.13.0] - 2023-06-12
+
+### Added
+
+- **Photos, Videos and Tags for Patient Profiles and Etapestry data**
+  - Implemented a feature that allows users to upload photos and videos to the patient profile page.
+  - Users can now add tags to the patient profiles and Etapestry data for easy search and categorization.
+
+- **Patient Profile Data Edit**
+  - Added the functionality to edit patient profile data directly from the frontend.
+  - Users can now update patient information, add notes, and tags to the patient profiles.
+
+- **Self-provisioning Form**
+  - Auto-fill for the form data in the patient stories form creations.
+
+- **Content Creation directly from Patient profile**
+  - Users can now create content directly from the patient profile page.
+  - The content is generated based on the patient's information and can be customized by the user.
+  - The generated content is displayed on the content generation response page.
+
+### Fixed
+
+- **Dashboard Display Issues**
+  - Fixed display issues on the dashboard where dashboard was not visible for all users.
+
+- **Email case sensitivity**
+  - Fixed a bug where the email was case sensitive for login and registration.
+
+
 ## [0.12.0] - 2024-05-23
 
 ### Added
