@@ -46,7 +46,7 @@ class ETapestryData_Db(ETapestryData_Base):
 
 
 class UpdateETapestryData_In(SailBaseModel):
-    state: Optional[ETapestryDataState] = Field()
+    state: Optional[ETapestryDataState] = Field()  # TODO: Prawal dont allow this
     notes: Optional[str] = Field()
     tags: Optional[List[str]] = Field()
     photos: Optional[List[PyObjectId]] = Field()

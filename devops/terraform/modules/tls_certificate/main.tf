@@ -26,18 +26,6 @@ resource "acme_certificate" "certificates" {
   common_name              = var.host_name
   certificate_p12_password = var.ssl_certificate_password
 
-  # dns_challenge {
-  #   provider = "googledomains"
-
-  #   config = {
-  #     GOOGLE_DOMAINS_ACCESS_TOKEN        = var.google_domains_token
-  #     GOOGLE_DOMAINS_HTTP_TIMEOUT        = 600
-  #     GOOGLE_DOMAINS_POLLING_INTERVAL    = 300
-  #     GOOGLE_DOMAINS_PROPAGATION_TIMEOUT = 300
-  #   }
-  # }
-
-
   dns_challenge {
     provider = "godaddy"
 

@@ -13,11 +13,6 @@ variable "godaddy_api_secret" {
   type        = string
 }
 
-variable "google_domains_token" {
-  description = "google domains token"
-  type        = string
-}
-
 variable "host_name" {
   description = "domain name"
   type        = string
