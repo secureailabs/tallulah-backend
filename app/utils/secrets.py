@@ -41,6 +41,7 @@ class SecretStore(BaseModel):
     ELASTIC_PASSWORD: str
     OPENAI_API_BASE: str
     OPENAI_API_KEY: str
+    DEFAULT_CHAT_TEMPLATE: str
 
     class Config:
         frozen = True
@@ -73,6 +74,7 @@ secret_store = SecretStore(
     ELASTIC_PASSWORD=get_secret_env("ELASTIC_PASSWORD"),
     OPENAI_API_BASE=get_secret_env("OPENAI_API_BASE"),
     OPENAI_API_KEY=get_secret_env("OPENAI_API_KEY"),
+    DEFAULT_CHAT_TEMPLATE=get_secret_env("DEFAULT_CHAT_TEMPLATE"),
 )
 
 
