@@ -138,51 +138,6 @@ async def patient_chat(
     return PatientChat_Out(id=chat.id, chat=conversation[1:])
 
 
-@router.post(
-    path="/template/{chat_id}",
-    description="Ask a query using patient_chat_template",
-    status_code=status.HTTP_200_OK,
-    response_model_by_alias=False,
-    operation_id="patient_chat_template",
-)
-async def patient_chat_template(
-    chat_id: PyObjectId = Path(description="Chat Id"),
-    query: str = Body(description="Query"),
-    current_user: TokenData = Depends(get_current_user),
-) -> PatientChat_Out:
-    # TODO: Avoid parallel chat on the same chat_id
-    chat = await PatientChat.get_chat_by_id(chat_id)
-
-    if not chat or chat.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Chat not found")
-
-    template = await PatientChatTemplates.get_template(chat.template_id)
-    if not template:
-        raise HTTPException(status_code=404, detail="Template not found")
-
-    patient = await PatientProfiles.read(patient_id=chat.patient_id)
-    if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found")
-    patient = patient[0]
-
-    if not chat.chat:
-        chat.chat = [Context(role="user", content=template.template.format(**patient.dict()))]
-
-    conversation=template.context
-    conversation.extend(chat.chat)
-    conversation.append(Context(role="user", content=query))
-    messages = [message.dict() for message in conversation]
-
-    openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
-    generated_content = await openai.get_response(messages=messages)
-    conversation.append(Context(role="assistant", content=generated_content))
-
-    chat.chat = conversation[1:]
-    await PatientChat.update(chat_id, chat)
-
-    return PatientChat_Out(id=chat.id, chat=conversation[1:])
-
-
 @router.get(
     path="/test/init",
     description="Initialize test data",
