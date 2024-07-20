@@ -28,8 +28,7 @@ from app.models.content_generation_template import Context
 
 
 class PatientChat_Base(SailBaseModel):
-    template_id: PyObjectId = Field(default=secret_store.DEFAULT_CHAT_TEMPLATE)
-    patient_id: PyObjectId = Field()
+    form_data_id: PyObjectId = Field()
 
 
 class PatientChat_Out(SailBaseModel):
@@ -122,12 +121,12 @@ class PatientChat:
             context=[Context(role="system", content=content)],
             template="Patient Name: {name}, Age: {age}, Guardians: {guardians}, Diagnosis: {primary_cancer_diagnosis}, Household Details: {household_details}",
         )
-        await PatientChatTemplates.create(template)
+        #await PatientChatTemplates.create(template)
 
         # Add Indexes
         await PatientChat.data_service.create_index(
             collection=PatientChat.DB_PATIENT_CHAT,
-            index=[("user_id", 1), ("patient_id", 1), ("template_id", 1)],
+            index=[("user_id", 1), ("form_data_id", 1)],
             unique=True
         )
 
@@ -135,16 +134,14 @@ class PatientChat:
     async def get_chat(
         user_id: PyObjectId,
         organization_id: PyObjectId,
-        template_id: PyObjectId,
-        patient_id: PyObjectId,
+        form_data_id: PyObjectId,
     ) -> Optional[PatientChat_Db]:
         chat = await PatientChat.data_service.find_one(
             collection=PatientChat.DB_PATIENT_CHAT,
             query={
                 "user_id": str(user_id),
                 "organization_id": str(organization_id),
-                "template_id": str(template_id),
-                "patient_id": str(patient_id),
+                "form_data_id": str(form_data_id),
             },
         )
         if chat:
