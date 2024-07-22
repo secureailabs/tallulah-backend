@@ -16,8 +16,9 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi import BackgroundTasks, APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
+from fastapi_utils.tasks import repeat_every
 from pydantic import StrictStr
 
 from app.api.authentication import get_current_user
@@ -40,6 +41,7 @@ from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.secrets import secret_store
+from app.utils.azure_openai import OpenAiGenerator
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
@@ -88,6 +90,7 @@ async def notify_users(form_template_id: PyObjectId):
 )
 async def add_form_data(
     form_data: RegisterFormData_In = Body(description="Form data information"),
+    background_tasks: BackgroundTasks = None,
 ) -> RegisterFormData_Out:
 
     # Check if the form template exists
@@ -110,6 +113,9 @@ async def add_form_data(
     # Send email notifications
     async_task_manager = AsyncTaskManager()
     async_task_manager.create_task(notify_users(form_data.form_template_id))
+
+    # Generate Tags
+    background_tasks.add_task(generate_tags, form_data_db.id)
 
     return RegisterFormData_Out(id=form_data_db.id)
 
@@ -360,3 +366,57 @@ async def delete_form_data(
     await elastic_client.delete_document(index_name=str(form_data[0].form_template_id), id=str(form_data_id))
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    path="/test/backfill_tags",
+    description="Backfill the tags",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    operation_id="backfill_tags",
+)
+async def backfill_tags(background_tasks: BackgroundTasks):
+    # Generate Tags
+    background_tasks.add_task(generate_all_tags)
+
+    return Response(status_code=status.HTTP_200_OK)
+
+
+async def generate_tags(
+    form_data_id: PyObjectId = Path(description="Form data id")
+):
+    form_data = await FormDatas.read(form_data_id=form_data_id, throw_on_not_found=False)
+    if not form_data:
+        return
+    await generate_tag_for_form(form_data=form_data[0])
+
+
+async def generate_tag_for_form(form_data: FormData_Db):
+    #preferred_tags = ""
+    patient = FormDatas.convert_form_data_to_string(form_data)
+    # Get the tags
+    messages=[{"role": "system", "content": """
+        You are an assistant who helps with reading patient data and providing tags for the data.
+        Don't forget to separate the tags with commas and no special characters. Do not include personal information.
+    """}]
+    #messages.append({"role": "user", "content": "Pick from the following tags, if possible, and don't hesitate to add new ones: " + preferred_tags})
+    messages.append({"role": "user", "content": patient})
+    openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
+    generated_content = await openai.get_response(messages=messages)
+    if generated_content is None:
+        return
+    tags = generated_content.split(",")
+    tags = [tag.strip() for tag in tags]
+    tags = list(set(tags))
+    await FormDatas.update(query_form_data_id=form_data.id, update_form_data_tags=tags, throw_on_no_update=False)
+
+
+async def generate_all_tags():
+    # Get all the form data
+    form_data = await FormDatas.read_forms_without_tags()
+    if not form_data:
+        return
+
+    # Process one at a time
+    for data in form_data:
+        await generate_tag_for_form(data)

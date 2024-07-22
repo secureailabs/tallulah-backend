@@ -77,6 +77,40 @@ class FormDatas:
             data=jsonable_encoder(form_data),
         )
 
+
+    @staticmethod
+    def convert_form_data_to_string(form_data: FormData_Db):
+        remove_form_fields = ["consentToTag", "image", "consent", "tags"]
+        data = form_data.values
+
+        # Remove unwanted fields
+        for field in remove_form_fields:
+            data.pop(field, None)
+
+        patient = ""
+        for key, value in data.items():
+            if 'value' in value and isinstance(value['value'], str) and value['value'].strip() and value['value'].strip() != 'n/a':
+                patient += f"{value['label'] if 'label' in value else key}: {value['value'].strip()}, "
+
+        return patient
+
+
+    @staticmethod
+    async def read_forms_without_tags() -> List[FormData_Db]:
+        form_data_list = []
+        query = {
+            "values.tags": {"$exists": False}
+        }
+        response = await FormDatas.data_service.find_by_query(
+            collection=FormDatas.DB_COLLECTION_FORM_DATA,
+            query=jsonable_encoder(query),
+        )
+        if response:
+            for form_data in response:
+                form_data_list.append(FormData_Db(**form_data))
+
+        return form_data_list
+
     @staticmethod
     async def read(
         form_data_id: Optional[PyObjectId] = None,
@@ -152,6 +186,7 @@ class FormDatas:
         query_form_data_id: PyObjectId,
         update_form_data_state: Optional[FormDataState] = None,
         update_form_data_values: Optional[Dict[StrictStr, Any]] = None,
+        update_form_data_tags: Optional[List[StrictStr]] = None,
         throw_on_no_update: bool = True,
     ):
         query = {}
@@ -163,6 +198,12 @@ class FormDatas:
             update_request["$set"]["state"] = update_form_data_state.value
         if update_form_data_values:
             update_request["$set"]["values"] = update_form_data_values
+        if update_form_data_tags:
+            update_request["$set"]["values.tags"] = {
+                "value": ', '.join(update_form_data_tags),
+                "label": "Tags",
+                "type": "STRING",
+            }
 
         update_response = await FormDatas.data_service.update_one(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,

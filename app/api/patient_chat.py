@@ -89,7 +89,7 @@ async def patient_chat(
     query: str = Body(description="Query"),
     current_user: TokenData = Depends(get_current_user),
 ) -> PatientChat_Out:
-    remove_form_fields = ["consentToTag", "image", "consent"]
+
     system_prompt = """
         You are an AI assistant that works with a patient advocacy organization.
         You are skilled at creating patient stories, fundraising emails, and personal emails or letters from data provided to you.
@@ -109,16 +109,8 @@ async def patient_chat(
     form_data = await FormDatas.read(form_data_id=chat.form_data_id)
     if not form_data:
         raise HTTPException(status_code=404, detail="Patient not found")
-    form_data = form_data[0].values
 
-    # Remove unwanted fields
-    for field in remove_form_fields:
-        form_data.pop(field, None)
-
-    patient = ""
-    for key, value in form_data.items():
-        if 'value' in value and value['value'].strip() and value['value'].strip() != 'n/a':
-            patient += f"{value['label'] if 'label' in value else key}: {value['value'].strip()}, "
+    patient = FormDatas.convert_form_data_to_string(form_data[0])
 
     if not chat.chat:
         chat.chat = [Context(role="user", content=patient)]
