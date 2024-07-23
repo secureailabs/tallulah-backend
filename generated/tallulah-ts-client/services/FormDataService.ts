@@ -243,4 +243,17 @@ export class FormDataService {
         });
     }
 
+    /**
+     * Backfill Tags
+     * Backfill the tags
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static backfillTags(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-data/test/backfill_tags',
+        });
+    }
+
 }

@@ -3,6 +3,5 @@
 /* eslint-disable */
 
 export type PatientChat_Base = {
-    template_id?: string;
-    patient_id: string;
+    form_data_id: string;
 };
