@@ -115,7 +115,7 @@ async def add_form_data(
     async_task_manager.create_task(notify_users(form_data.form_template_id))
 
     # Generate Tags
-    background_tasks.add_task(generate_tags, form_data_db.id)
+    background_tasks.add_task(generate_tags, form_data_db)
 
     return RegisterFormData_Out(id=form_data_db.id)
 
@@ -383,12 +383,10 @@ async def backfill_tags(background_tasks: BackgroundTasks):
 
 
 async def generate_tags(
-    form_data_id: PyObjectId = Path(description="Form data id")
+    form_data: FormData_Db
 ):
-    form_data = await FormDatas.read(form_data_id=form_data_id, throw_on_not_found=False)
-    if not form_data:
-        return
-    await generate_tag_for_form(form_data=form_data[0])
+    await generate_tag_for_form(form_data=form_data)
+    await generate_theme_for_story(form_data=form_data)
 
 
 async def generate_tag_for_form(form_data: FormData_Db):
@@ -411,6 +409,28 @@ async def generate_tag_for_form(form_data: FormData_Db):
     await FormDatas.update(query_form_data_id=form_data.id, update_form_data_tags=tags, throw_on_no_update=False)
 
 
+async def generate_theme_for_story(form_data: FormData_Db):
+    if 'patientStory' not in form_data.values:
+        return
+    patient_story = form_data.values['patientStory']['value']
+    if not patient_story:
+        return
+
+    messages=[{"role": "system", "content": """
+        You are an assistant who helps with reading patient stories and providing themes for those stories. Provide at most 10 themes.
+        Don't forget to separate the themes with commas and no special characters. Do not include personal information.
+    """}]
+    messages.append({"role": "user", "content": patient_story})
+    openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
+    generated_content = await openai.get_response(messages=messages)
+    if generated_content is None:
+        return
+    themes = generated_content.split(",")
+    themes = [theme.strip() for theme in themes]
+    themes = list(set(themes))
+    await FormDatas.update(query_form_data_id=form_data.id, update_form_data_themes=themes, throw_on_no_update=False)
+
+
 async def generate_all_tags():
     # Get all the form data
     form_data = await FormDatas.read_forms_without_tags()
@@ -420,3 +440,4 @@ async def generate_all_tags():
     # Process one at a time
     for data in form_data:
         await generate_tag_for_form(data)
+        await generate_theme_for_story(data)

@@ -100,6 +100,7 @@ class FormDatas:
         form_data_list = []
         query = {
             "values.tags": {"$exists": False}
+            # "themes": {"$exists": False} # For missing themes only
         }
         response = await FormDatas.data_service.find_by_query(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,
@@ -187,6 +188,7 @@ class FormDatas:
         update_form_data_state: Optional[FormDataState] = None,
         update_form_data_values: Optional[Dict[StrictStr, Any]] = None,
         update_form_data_tags: Optional[List[StrictStr]] = None,
+        update_form_data_themes: Optional[List[StrictStr]] = None,
         throw_on_no_update: bool = True,
     ):
         query = {}
@@ -204,6 +206,8 @@ class FormDatas:
                 "label": "Tags",
                 "type": "STRING",
             }
+        if update_form_data_themes:
+            update_request["$set"]["themes"] = update_form_data_themes
 
         update_response = await FormDatas.data_service.update_one(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,
