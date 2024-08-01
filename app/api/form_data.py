@@ -417,7 +417,7 @@ async def generate_theme_for_story(form_data: FormData_Db):
         return
 
     messages=[{"role": "system", "content": """
-        You are an assistant who helps with reading patient stories and providing themes for those stories. Provide at most 10 themes.
+        You are an assistant who helps with reading patient stories and providing themes for those stories. Provide at most 5 themes.
         Don't forget to separate the themes with commas and no special characters. Do not include personal information.
     """}]
     messages.append({"role": "user", "content": patient_story})
@@ -425,6 +425,7 @@ async def generate_theme_for_story(form_data: FormData_Db):
     generated_content = await openai.get_response(messages=messages)
     if generated_content is None:
         return
+    # TODO: Check if generated_content is not 'Sorry', 'Apologies', etc.
     themes = generated_content.split(",")
     themes = [theme.strip() for theme in themes]
     themes = list(set(themes))
