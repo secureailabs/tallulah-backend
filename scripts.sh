@@ -155,13 +155,14 @@ deploy() {
     popd
 
     pushd devops/terraform
-    az account set --subscription $AZURE_SUBSCRIPTION_ID
-    az login
-    terraform workspace select development
     sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
     sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+
+    az login
+    az account set --subscription $AZURE_SUBSCRIPTION_ID
+    terraform init -backend-config="backend.tfvars" -reconfigure
     terraform apply -var-file="development.tfvars" -auto-approve
     popd
 }
@@ -191,14 +192,16 @@ release() {
     popd
 
     pushd devops/terraform
-    az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-    az account set --subscription $AZURE_SUBSCRIPTION_ID
-    az login
     sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
-    # terraform workspace select default
+
+    az login
+    az account set --subscription $AZURE_SUBSCRIPTION_ID
+    terraform init -backend-config="backend_prod.tfvars" -reconfigure
+    # export AZURE_SUBSCRIPTION_ID="b7a46052-b7b1-433e-9147-56efbfe28ac5"
+    # az account set --subscription $AZURE_SUBSCRIPTION_ID
     # terraform apply -var-file="production.tfvars"
     popd
 }

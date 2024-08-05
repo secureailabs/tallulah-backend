@@ -48,3 +48,13 @@ variable "classifier_container_image_tag" {
   description = "The tag of the classifier container image"
   type        = string
 }
+
+variable "devops_keyvault_name" {
+  description = "The name of the keyvault"
+  type        = string
+}
+
+variable "devops_resource_group_name" {
+  description = "The name of the resource group"
+  type        = string
+}

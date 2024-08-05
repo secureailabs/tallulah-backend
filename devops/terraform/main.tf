@@ -1,6 +1,6 @@
 data "azurerm_key_vault" "keyvault_devops" {
-  name                = "arin-test-kv"
-  resource_group_name = "tallulah-rg-a6bb5f02"
+  name                = var.devops_keyvault_name
+  resource_group_name = var.devops_resource_group_name
 }
 
 data "azurerm_key_vault_secrets" "keyvault_secrets" {
