@@ -52,6 +52,7 @@ from app.api import (
     media,
     patient_profile_repositories,
     patient_profiles,
+    patient_chat,
     response_templates,
 )
 from app.data.operations import DatabaseOperations
@@ -97,6 +98,7 @@ server.include_router(content_generation_template.router)
 server.include_router(content_generation.router)
 server.include_router(patient_profile_repositories.router)
 server.include_router(patient_profiles.router)
+server.include_router(patient_chat.router)
 server.include_router(etapestry_repositories.router)
 server.include_router(etapestry_data.router)
 server.include_router(dashboard_templates.router)

@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import motor.motor_asyncio
 import pymongo.results as results
@@ -81,3 +81,6 @@ class DatabaseOperations:
 
     async def drop(self):
         return await self.client.drop_database(self.sail_db)
+
+    async def create_index(self, collection: str, index: List[Tuple[str, int]], unique: bool = False):
+        return await self.sail_db[collection].create_index(index, unique=unique)
