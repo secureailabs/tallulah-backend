@@ -205,6 +205,7 @@ async def regenerate_themes(
 async def export_organization_data(
     export_type: str = Path(description="Export Type - csv or json"),
     current_user: TokenData = Depends(get_current_user),
+    background_tasks: BackgroundTasks = None,
 ) -> ExportData_Db:
     if export_type not in ["csv", "json"]:
         raise HTTPException(
@@ -216,7 +217,8 @@ async def export_organization_data(
     export_data = ExportData_Db(user_id=current_user.id, organization_id=current_user.organization_id, export_type="json")
     await DataExports.create(export_data)
 
-    await export_all_data(request=export_data)
+    # await export_all_data(request=export_data)
+    background_tasks.add_task(export_all_data, export_data)
 
     return export_data
 
