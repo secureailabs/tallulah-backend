@@ -14,6 +14,7 @@
 
 from datetime import datetime
 
+from app.models.form_templates import FormTemplates
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi_utils.tasks import repeat_every
 
@@ -50,7 +51,20 @@ async def start_patient_chat(
     current_user: TokenData = Depends(get_current_user),
 ) -> PatientChat_Out:
 
-    # TODO: Check patient access for current_user.id
+    # Check patient access for organization / form
+    forms = await FormDatas.read(form_data_id=patient.form_data_id)
+    if not forms:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Patient form not found",
+        )
+
+    form_template = await FormTemplates.read(template_id=forms[0].form_template_id)
+    if not form_template or form_template[0].organization_id != current_user.organization_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Patient form not found",
+        )
 
     # Check if chat exists
     chat = await PatientChat.get_chat(
@@ -63,8 +77,6 @@ async def start_patient_chat(
         return PatientChat_Out(id=chat.id, chat=chat.chat)
 
     # If not, create a new chat
-    # TODO: Check if patient exists
-    # TODO: Check if template exists in the organization
     patient_chat = PatientChat_Db(
         user_id=current_user.id,
         organization_id=current_user.organization_id,
@@ -105,7 +117,6 @@ async def patient_chat(
     if not chat or chat.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    #patient = await PatientProfiles.read(patient_id=chat.patient_id)
     form_data = await FormDatas.read(form_data_id=chat.form_data_id)
     if not form_data:
         raise HTTPException(status_code=404, detail="Patient not found")
