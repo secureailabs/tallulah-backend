@@ -92,13 +92,13 @@ async def export_all_data(request: ExportData_Db):
 
     collections = {
         "form_templates": [("form_data", "form_template_id"), ("form_templates_data", "_id")],
-        "patient_profiles": [],
-        "patient-chat": [],
-        "users": [],
-        "dashboard-templates": [],
-        "content-generation-template": [],
-        "content-generation": [],
-        "media-metadata": [],
+        # "patient_profiles": [],
+        # "patient-chat": [],
+        # "users": [],
+        # "dashboard-templates": [],
+        # "content-generation-template": [],
+        # "content-generation": [],
+        # "media-metadata": [],
     }
     ds = DatabaseOperations()
     basedir = f"/tmp/{str(request.id)}"
