@@ -53,14 +53,9 @@ async def start_patient_chat(
 
     # Check patient access for organization / form
     forms = await FormDatas.read(form_data_id=patient.form_data_id)
-    if not forms:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Patient form not found",
-        )
 
     form_template = await FormTemplates.read(template_id=forms[0].form_template_id)
-    if not form_template or form_template[0].organization_id != current_user.organization_id:
+    if form_template[0].organization_id != current_user.organization_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Patient form not found",
