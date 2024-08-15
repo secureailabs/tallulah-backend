@@ -112,7 +112,7 @@ async def export_all_data(request: ExportData_Db):
     request.filename = f"{str(request.id)}.zip"
     request.status = ExportState.COMPLETED
 
-    shutil.make_archive(basedir, 'zip', basedir)
+    await run_in_threadpool(lambda: shutil.make_archive(basedir, 'zip', basedir))
     shutil.rmtree(basedir)
 
     storage_manager = AzureBlobManager(
