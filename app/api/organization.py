@@ -20,6 +20,7 @@ from app.models.form_templates import FormTemplate_Db, FormTemplates
 from fastapi import BackgroundTasks, APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi_utils.tasks import repeat_every
 from fastapi.encoders import jsonable_encoder
+from fastapi.concurrency import run_in_threadpool
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
@@ -83,9 +84,9 @@ async def aggregate_themes(template: FormTemplate_Db):
         await FormTemplatesData.create(FormTemplateData_Db(id=template.id, top_themes=db_themes))
 
 
-def write_export_data(basedir: str, filename: str, export_data: list):
+async def write_export_data(basedir: str, filename: str, export_data: list):
     with open(basedir+"/"+filename, 'w') as file:
-        json.dump(export_data, file)
+        await run_in_threadpool(lambda: json.dump(export_data, file))
 
 
 async def export_all_data(request: ExportData_Db):
@@ -236,7 +237,7 @@ async def export_as_json(basedir: str, ds: DatabaseOperations, request: ExportDa
             page += 1
 
             # Write response
-            write_export_data(basedir, f"{collection}_{page}.json", response)
+            await write_export_data(basedir, f"{collection}_{page}.json", response)
 
             # Process child collections
             for child_collection, key in child_collections:
@@ -260,7 +261,7 @@ async def export_as_json(basedir: str, ds: DatabaseOperations, request: ExportDa
                     cpage += 1
 
                     # Write child_response
-                    write_export_data(basedir, f"{child_collection}_{page}_{cpage}.json", child_response)
+                    await write_export_data(basedir, f"{child_collection}_{page}_{cpage}.json", child_response)
 
 
 @router.post(
