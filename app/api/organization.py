@@ -14,6 +14,7 @@
 
 from datetime import datetime
 from typing import List, Optional
+from collections.abc import Iterable
 
 from app.models.form_templates import FormTemplate_Db, FormTemplates
 from fastapi import BackgroundTasks, APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
@@ -29,6 +30,7 @@ from app.models.organizations import (
     ExportData_Out,
     DataExports,
     ExportState,
+    ExportType,
 )
 from app.models.form_templates import (
     FormTemplatesData,
@@ -46,6 +48,7 @@ from app.utils.azure_blob_manager import AzureBlobManager
 import json
 import os
 import shutil
+import csv
 
 router = APIRouter(prefix="/api/organization", tags=["organization"])
 
@@ -72,7 +75,6 @@ async def aggregate_themes(template: FormTemplate_Db):
     for theme, c in themes:
         db_themes.append(FormTheme(theme=theme, count=c))
 
-    print(db_themes)
     old_data = await FormTemplatesData.get_template_data(template.id)
     if old_data:
         old_data.top_themes = db_themes
@@ -90,6 +92,116 @@ async def export_all_data(request: ExportData_Db):
     request.status = ExportState.IN_PROGRESS
     await DataExports.update(request)
 
+    ds = DatabaseOperations()
+    basedir = f"/tmp/{str(request.id)}"
+    os.makedirs(basedir, exist_ok=True)
+
+    try:
+        if request.export_type == ExportType.JSON:
+            await export_as_json(basedir, ds, request)
+        elif request.export_type == ExportType.CSV:
+            await export_as_csv(basedir, ds, request)
+    except Exception as e:
+        # TODO: Log error
+        # print(e)
+        request.status = ExportState.FAILED
+        await DataExports.update(request)
+        return
+
+    request.filename = f"{str(request.id)}.zip"
+    request.status = ExportState.COMPLETED
+
+    shutil.make_archive(basedir, 'zip', basedir)
+    shutil.rmtree(basedir)
+
+    storage_manager = AzureBlobManager(
+        secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "exports"
+    )
+    with open(basedir+".zip", "rb") as file:
+        await storage_manager.upload_blob(request.filename, file.read())
+
+    os.remove(basedir+".zip")
+    await DataExports.update(request)
+
+
+async def export_forms_csv(filename: str, ds: DatabaseOperations, request: ExportData_Db):
+    templates = await ds.find_sorted_pagination(
+        collection="form_templates",
+        query=jsonable_encoder({
+            "organization_id": request.organization_id,
+        }),
+        sort_key="_id",
+        sort_direction=-1,
+        skip=0,
+        limit=1000, # Expecting only a max 1000 templates in an organization
+    )
+    if not templates or len(templates) == 0:
+        return
+    # TODO: Currently not exporting form templates
+
+    # Export form_data
+    page = 0
+    for template in templates:
+        skip = 0
+        limit = 1000
+        while True:
+            data = await ds.find_sorted_pagination(
+                collection="form_data",
+                query=jsonable_encoder({
+                    "form_template_id": {"$in": [template["_id"]]},
+                }),
+                sort_key="_id",
+                sort_direction=-1,
+                skip=skip,
+                limit=limit,
+            )
+            if not data or len(data) == 0:
+                break
+            skip += limit
+            page += 1
+
+            # Write data to csv
+            fullname = f"{filename}_{page}.csv"
+            rows = []
+            headers = ["id", "time", "state"]
+            for form in data:
+                row = {"id": form["_id"], "time": form["creation_time"], "state": form["state"] if "state" in form else ""}
+                for k, v in form["values"].items():
+                    if "value" in v:
+                        v = v["value"]
+
+                    if isinstance(v, str):
+                        row[k] = v
+                    elif isinstance(v, Iterable):
+                        if len(v) <= 0:
+                            row[k] = ""
+                        elif isinstance(v[0], dict):
+                            row[k] = v[0]["name"] if "name" in v[0] else "Unknown"
+                        else:
+                            row[k] = ";".join(v)
+                    else:
+                        row[k] = v
+                    if k not in headers:
+                        headers.append(k)
+                rows.append(row)
+
+            with open(fullname, 'w') as file:
+                csvwriter = csv.DictWriter(file, fieldnames=headers)
+                csvwriter.writeheader()
+                csvwriter.writerows(rows)
+
+
+async def export_as_csv(basedir: str, ds: DatabaseOperations, request: ExportData_Db):
+    data_sets = {
+        "forms": export_forms_csv,
+    }
+
+    for data, func in data_sets.items():
+        filename = f"{basedir}/{data}"
+        await func(filename, ds, request)
+
+
+async def export_as_json(basedir: str, ds: DatabaseOperations, request: ExportData_Db):
     collections = {
         "form_templates": [("form_data", "form_template_id"), ("form_templates_data", "_id")],
         # "patient_profiles": [],
@@ -100,9 +212,6 @@ async def export_all_data(request: ExportData_Db):
         # "content-generation": [],
         # "media-metadata": [],
     }
-    ds = DatabaseOperations()
-    basedir = f"/tmp/{str(request.id)}"
-    os.makedirs(basedir, exist_ok=True)
 
     for collection in collections:
         child_collections = collections[collection]
@@ -153,21 +262,6 @@ async def export_all_data(request: ExportData_Db):
                     # Write child_response
                     write_export_data(basedir, f"{child_collection}_{page}_{cpage}.json", child_response)
 
-    request.filename = f"{str(request.id)}.zip"
-    request.status = ExportState.COMPLETED
-
-    shutil.make_archive(basedir, 'zip', basedir)
-    shutil.rmtree(basedir)
-
-    storage_manager = AzureBlobManager(
-        secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "exports"
-    )
-    with open(basedir+".zip", "rb") as file:
-        await storage_manager.upload_blob(request.filename, file.read())
-
-    os.remove(basedir+".zip")
-    await DataExports.update(request)
-
 
 @router.post(
     path="/themes/regenerate",
@@ -207,14 +301,14 @@ async def export_organization_data(
     current_user: TokenData = Depends(get_current_user),
     background_tasks: BackgroundTasks = None,
 ) -> ExportData_Db:
-    if export_type not in ["csv", "json"]:
+    if export_type not in [item.value for item in ExportType]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid export type. Supported types are csv and json",
         )
 
     # TODO: Implement export_type = csv as well
-    export_data = ExportData_Db(user_id=current_user.id, organization_id=current_user.organization_id, export_type="json")
+    export_data = ExportData_Db(user_id=current_user.id, organization_id=current_user.organization_id, export_type=export_type)
     await DataExports.create(export_data)
 
     # await export_all_data(request=export_data)
