@@ -128,6 +128,22 @@ class UpdateFormTemplate_In(SailBaseModel):
     logo: Optional[StrictStr] = Field(default=None)
 
 
+class FormTheme(SailBaseModel):
+    theme: StrictStr = Field()
+    count: int = Field()
+
+
+class FormTemplateData_Base(SailBaseModel):
+    top_themes: Optional[List[FormTheme]] = Field(default=None)
+
+
+class FormTemplateData_Db(FormTemplateData_Base):
+    # Override with form_template_id
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    updation_time: datetime = Field(default_factory=datetime.utcnow)
+
+
 class FormTemplates:
     DB_COLLECTION_FORM_TEMPLATES = "form_templates"
     data_service = DatabaseOperations()
@@ -227,3 +243,44 @@ class FormTemplates:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"FormTemplate not found or no changes to update",
             )
+
+
+class FormTemplatesData:
+    DB_COLLECTION_FORM_TEMPLATES_DATA = "form_templates_data"
+    data_service = DatabaseOperations()
+
+    @staticmethod
+    async def create(
+        form_template_data: FormTemplateData_Db,
+    ):
+        return await FormTemplatesData.data_service.insert_one(
+            collection=FormTemplatesData.DB_COLLECTION_FORM_TEMPLATES_DATA,
+            data=jsonable_encoder(form_template_data),
+        )
+
+    @staticmethod
+    async def update(
+        form_template_data: FormTemplateData_Db,
+    ):
+        update_request = {"$set": {}}
+        update_request["$set"]["top_themes"] = form_template_data.top_themes
+        update_request["$set"]["updation_time"] = datetime.utcnow()
+        return await FormTemplatesData.data_service.update_one(
+            collection=FormTemplatesData.DB_COLLECTION_FORM_TEMPLATES_DATA,
+            query={"_id": str(form_template_data.id)},
+            data=jsonable_encoder(update_request),
+        )
+
+    @staticmethod
+    async def get_template_data(
+        form_template_id: PyObjectId,
+    ) -> Optional[FormTemplateData_Db]:
+        template = await FormTemplatesData.data_service.find_one(
+            collection=FormTemplatesData.DB_COLLECTION_FORM_TEMPLATES_DATA,
+            query={
+                "_id": str(form_template_id),
+            },
+        )
+        if template:
+            return FormTemplateData_Db(**template)
+        return None

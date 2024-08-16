@@ -33,6 +33,7 @@ class FormData_Base(SailBaseModel):
     form_template_id: PyObjectId = Field()
     values: Dict[StrictStr, Any] = Field(default=None)
     state: FormDataState = Field(default=FormDataState.ACTIVE)
+    themes: List[StrictStr] = Field(default=None)
 
 
 class RegisterFormData_In(FormData_Base):

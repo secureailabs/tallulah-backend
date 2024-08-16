@@ -54,6 +54,7 @@ from app.api import (
     patient_profiles,
     patient_chat,
     response_templates,
+    organization,
 )
 from app.data.operations import DatabaseOperations
 from app.migrations.es_from_mongodb import move_data_from_mongo_to_es
@@ -103,6 +104,7 @@ server.include_router(etapestry_repositories.router)
 server.include_router(etapestry_data.router)
 server.include_router(dashboard_templates.router)
 server.include_router(media.router)
+server.include_router(organization.router)
 
 # Setup CORS to allow all origins
 origins = [
