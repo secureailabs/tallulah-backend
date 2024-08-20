@@ -12,11 +12,14 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import base64
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import motor.motor_asyncio
 import pymongo.results as results
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 from pymongo import ReturnDocument
 from pymongo.server_api import ServerApi
 
@@ -30,9 +33,17 @@ class DatabaseOperations:
         if cls._instance is None:
             # write the certificate to a tmp file
             with open("/tmp/mongo_atlas_cert.pem", "w") as f:
-                print(secret_store.MONGO_CONNECTION_CERT)
-                print(secret_store.MONGO_CONNECTION_URL)
-                f.write(secret_store.MONGO_CONNECTION_CERT)
+                credential = DefaultAzureCredential()
+                client = SecretClient(vault_url="https://arin-test-kv.vault.azure.net", credential=credential)
+                secret = client.get_secret("mongo-connection-certificate")
+                print(secret)
+                if not secret.value:
+                    raise Exception("Could not retrieve the secret")
+                print(secret.value)
+                f.write(secret.value)
+                # cert_bytes = base64.b64decode(secret.value)
+                # print(cert_bytes)
+                # print(cert_bytes.decode("utf-8"))
 
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
