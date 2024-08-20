@@ -30,6 +30,8 @@ class DatabaseOperations:
         if cls._instance is None:
             # write the certificate to a tmp file
             with open("/tmp/mongo_atlas_cert.pem", "w") as f:
+                print(secret_store.MONGO_CONNECTION_CERT)
+                print(secret_store.MONGO_CONNECTION_URL)
                 f.write(secret_store.MONGO_CONNECTION_CERT)
 
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
