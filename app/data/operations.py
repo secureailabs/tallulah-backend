@@ -12,11 +12,13 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import motor.motor_asyncio
 import pymongo.results as results
 from pymongo import ReturnDocument
+from pymongo.server_api import ServerApi
 
 from app.utils.secrets import secret_store
 
@@ -26,10 +28,19 @@ class DatabaseOperations:
 
     def __new__(cls):
         if cls._instance is None:
+            # write the certificate to a tmp file
+            with open("/tmp/mongo_atlas_cert.pem", "w") as f:
+                f.write(secret_store.MONGO_CONNECTION_CERT)
+
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
-            cls.client = motor.motor_asyncio.AsyncIOMotorClient(cls.mongodb_host)
+            cls.client = motor.motor_asyncio.AsyncIOMotorClient(
+                cls.mongodb_host, tls=True, tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem", server_api=ServerApi("1")
+            )
             cls.sail_db = cls.client[secret_store.MONGO_DB_NAME]
+
+            # remove the certificate
+            os.remove("/tmp/mongo_atlas_cert.pem")
         return cls._instance
 
     async def find_one(self, collection, query) -> Optional[dict]:

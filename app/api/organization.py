@@ -12,46 +12,37 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime
-from typing import List, Optional
-from collections.abc import Iterable
-
-from app.models.form_templates import FormTemplate_Db, FormTemplates
-from fastapi import BackgroundTasks, APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
-from fastapi_utils.tasks import repeat_every
-from fastapi.encoders import jsonable_encoder
-from fastapi.concurrency import run_in_threadpool
-
-from app.api.authentication import get_current_user
-from app.models.authentication import TokenData
-from app.models.common import PyObjectId
-from app.models.form_data import FormDatas
-from app.models.organizations import (
-    ExportData_Db,
-    ExportData_Out,
-    DataExports,
-    ExportState,
-    ExportType,
-)
-from app.models.form_templates import (
-    FormTemplatesData,
-    FormTemplateData_Db,
-    FormTemplateData_Base,
-    FormTheme,
-)
-from app.models.form_templates import GetStorageUrl_Out
-from app.models.content_generation_template import Context
-from app.utils.azure_openai import OpenAiGenerator
-from app.utils.secrets import secret_store
-from collections import Counter
-from app.data.operations import DatabaseOperations
-from app.utils.azure_blob_manager import AzureBlobManager
+import csv
 import json
 import os
 import shutil
-import csv
+from collections import Counter
+from collections.abc import Iterable
+from typing import List
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, status
+from fastapi.concurrency import run_in_threadpool
+from fastapi.encoders import jsonable_encoder
+
+from app.api.authentication import get_current_user
+from app.data.operations import DatabaseOperations
+from app.models.authentication import TokenData
+from app.models.common import PyObjectId
+from app.models.form_data import FormDatas
+from app.models.form_templates import (
+    FormTemplate_Db,
+    FormTemplateData_Db,
+    FormTemplates,
+    FormTemplatesData,
+    FormTheme,
+    GetStorageUrl_Out,
+)
+from app.models.organizations import DataExports, ExportData_Db, ExportData_Out, ExportState, ExportType
+from app.utils.azure_blob_manager import AzureBlobManager
+from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/organization", tags=["organization"])
+
 
 async def aggregate_themes(template: FormTemplate_Db):
     skip = 0
@@ -81,11 +72,11 @@ async def aggregate_themes(template: FormTemplate_Db):
         old_data.top_themes = db_themes
         await FormTemplatesData.update(old_data)
     else:
-        await FormTemplatesData.create(FormTemplateData_Db(id=template.id, top_themes=db_themes))
+        await FormTemplatesData.create(FormTemplateData_Db(_id=template.id, top_themes=db_themes))
 
 
 async def write_export_data(basedir: str, filename: str, export_data: list):
-    with open(basedir+"/"+filename, 'w') as file:
+    with open(basedir + "/" + filename, "w") as file:
         await run_in_threadpool(lambda: json.dump(export_data, file))
 
 
@@ -112,29 +103,29 @@ async def export_all_data(request: ExportData_Db):
     request.filename = f"{str(request.id)}.zip"
     request.status = ExportState.COMPLETED
 
-    await run_in_threadpool(lambda: shutil.make_archive(basedir, 'zip', basedir))
+    await run_in_threadpool(lambda: shutil.make_archive(basedir, "zip", basedir))
     shutil.rmtree(basedir)
 
-    storage_manager = AzureBlobManager(
-        secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "exports"
-    )
-    with open(basedir+".zip", "rb") as file:
+    storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "exports")
+    with open(basedir + ".zip", "rb") as file:
         await storage_manager.upload_blob(request.filename, file.read())
 
-    os.remove(basedir+".zip")
+    os.remove(basedir + ".zip")
     await DataExports.update(request)
 
 
 async def export_forms_csv(filename: str, ds: DatabaseOperations, request: ExportData_Db):
     templates = await ds.find_sorted_pagination(
         collection="form_templates",
-        query=jsonable_encoder({
-            "organization_id": request.organization_id,
-        }),
+        query=jsonable_encoder(
+            {
+                "organization_id": request.organization_id,
+            }
+        ),
         sort_key="_id",
         sort_direction=-1,
         skip=0,
-        limit=1000, # Expecting only a max 1000 templates in an organization
+        limit=1000,  # Expecting only a max 1000 templates in an organization
     )
     if not templates or len(templates) == 0:
         return
@@ -148,9 +139,11 @@ async def export_forms_csv(filename: str, ds: DatabaseOperations, request: Expor
         while True:
             data = await ds.find_sorted_pagination(
                 collection="form_data",
-                query=jsonable_encoder({
-                    "form_template_id": {"$in": [template["_id"]]},
-                }),
+                query=jsonable_encoder(
+                    {
+                        "form_template_id": {"$in": [template["_id"]]},
+                    }
+                ),
                 sort_key="_id",
                 sort_direction=-1,
                 skip=skip,
@@ -166,7 +159,11 @@ async def export_forms_csv(filename: str, ds: DatabaseOperations, request: Expor
             rows = []
             headers = ["id", "time", "state"]
             for form in data:
-                row = {"id": form["_id"], "time": form["creation_time"], "state": form["state"] if "state" in form else ""}
+                row = {
+                    "id": form["_id"],
+                    "time": form["creation_time"],
+                    "state": form["state"] if "state" in form else "",
+                }
                 for k, v in form["values"].items():
                     if "value" in v:
                         v = v["value"]
@@ -174,10 +171,10 @@ async def export_forms_csv(filename: str, ds: DatabaseOperations, request: Expor
                     if isinstance(v, str):
                         row[k] = v
                     elif isinstance(v, Iterable):
-                        if len(v) <= 0:
+                        if len(v) <= 0:  # type: ignore
                             row[k] = ""
-                        elif isinstance(v[0], dict):
-                            row[k] = v[0]["name"] if "name" in v[0] else "Unknown"
+                        elif isinstance(v[0], dict):  # type: ignore
+                            row[k] = v[0]["name"] if "name" in v[0] else "Unknown"  # type: ignore
                         else:
                             row[k] = ";".join(v)
                     else:
@@ -186,7 +183,7 @@ async def export_forms_csv(filename: str, ds: DatabaseOperations, request: Expor
                         headers.append(k)
                 rows.append(row)
 
-            with open(fullname, 'w') as file:
+            with open(fullname, "w") as file:
                 csvwriter = csv.DictWriter(file, fieldnames=headers)
                 csvwriter.writeheader()
                 csvwriter.writerows(rows)
@@ -223,9 +220,11 @@ async def export_as_json(basedir: str, ds: DatabaseOperations, request: ExportDa
         while True:
             response = await ds.find_sorted_pagination(
                 collection=collection,
-                query=jsonable_encoder({
-                    "organization_id": request.organization_id,
-                }),
+                query=jsonable_encoder(
+                    {
+                        "organization_id": request.organization_id,
+                    }
+                ),
                 sort_key="_id",
                 sort_direction=-1,
                 skip=skip,
@@ -247,9 +246,11 @@ async def export_as_json(basedir: str, ds: DatabaseOperations, request: ExportDa
                 while True:
                     child_response = await ds.find_sorted_pagination(
                         collection=child_collection,
-                        query=jsonable_encoder({
-                            key: {"$in": [r["_id"] for r in response]},
-                        }),
+                        query=jsonable_encoder(
+                            {
+                                key: {"$in": [r["_id"] for r in response]},
+                            }
+                        ),
                         sort_key="_id",
                         sort_direction=-1,
                         skip=cskip,
@@ -272,8 +273,8 @@ async def export_as_json(basedir: str, ds: DatabaseOperations, request: ExportDa
     operation_id="regenerate_themes",
 )
 async def regenerate_themes(
+    background_tasks: BackgroundTasks,
     current_user: TokenData = Depends(get_current_user),
-    background_tasks: BackgroundTasks = None,
 ) -> str:
     templates = await FormTemplates.read(organization_id=current_user.organization_id)
     if not templates:
@@ -298,9 +299,9 @@ async def regenerate_themes(
     operation_id="export_organization_data",
 )
 async def export_organization_data(
+    background_tasks: BackgroundTasks,
     export_type: str = Path(description="Export Type - csv or json"),
     current_user: TokenData = Depends(get_current_user),
-    background_tasks: BackgroundTasks = None,
 ) -> ExportData_Db:
     if export_type not in [item.value for item in ExportType]:
         raise HTTPException(
@@ -309,7 +310,9 @@ async def export_organization_data(
         )
 
     # TODO: Implement export_type = csv as well
-    export_data = ExportData_Db(user_id=current_user.id, organization_id=current_user.organization_id, export_type=export_type)
+    export_data = ExportData_Db(
+        user_id=current_user.id, organization_id=current_user.organization_id, export_type=ExportType(export_type)
+    )
     await DataExports.create(export_data)
 
     # await export_all_data(request=export_data)
@@ -368,15 +371,17 @@ async def download_export(
 ) -> GetStorageUrl_Out:
     export_data = await DataExports.read(export_id=export_id)
     export_data = export_data[0]
-    if export_data.organization_id != current_user.organization_id or export_data.status != ExportState.COMPLETED or not export_data.filename:
+    if (
+        export_data.organization_id != current_user.organization_id
+        or export_data.status != ExportState.COMPLETED
+        or not export_data.filename
+    ):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Export not found",
         )
 
-    storage_manager = AzureBlobManager(
-        secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "exports"
-    )
+    storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "exports")
     download_url = storage_manager.generate_read_sas(export_data.filename)
 
     return GetStorageUrl_Out(id=export_data.id, url=download_url)

@@ -47,6 +47,10 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.mongo_connection_url
   }
   secret {
+    name  = "mongo-connection-cert"
+    value = var.mongo_connection_cert
+  }
+  secret {
     name  = "outlook-client-id"
     value = var.outlook_client_id
   }
@@ -124,6 +128,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "MONGO_CONNECTION_URL"
         secret_name = "mongo-connection-url"
+      }
+      env {
+        name        = "MONGO_CONNECTION_CERT"
+        secret_name = "mongo-connection-cert"
       }
       env {
         name        = "JWT_SECRET"

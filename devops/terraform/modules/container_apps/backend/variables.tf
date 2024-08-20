@@ -43,6 +43,11 @@ variable "mongo_connection_url" {
   type        = string
 }
 
+variable "mongo_connection_cert" {
+  description = "The connection certificate of the MongoDB instance"
+  type        = string
+}
+
 variable "outlook_client_id" {
   description = "The ID of the Outlook client"
   type        = string
