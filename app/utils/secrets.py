@@ -25,7 +25,6 @@ class SecretStore(BaseModel):
     AZURE_KEYVAULT_URL: str
     JWT_SECRET: str
     MONGO_CONNECTION_URL: str
-    MONGO_CONNECTION_CERT: str
     MONGO_DB_NAME: str
     OUTLOOK_CLIENT_ID: str
     OUTLOOK_CLIENT_SECRET: str
@@ -58,7 +57,6 @@ secret_store = SecretStore(
     AZURE_KEYVAULT_URL=get_secret_env("AZURE_KEYVAULT_URL"),
     JWT_SECRET=get_secret_env("JWT_SECRET"),
     MONGO_CONNECTION_URL=get_secret_env("MONGO_CONNECTION_URL"),
-    MONGO_CONNECTION_CERT=get_secret_env("MONGO_CONNECTION_CERT"),
     MONGO_DB_NAME=get_secret_env("MONGO_DB_NAME"),
     OUTLOOK_CLIENT_ID=get_secret_env("OUTLOOK_CLIENT_ID"),
     OUTLOOK_CLIENT_SECRET=get_secret_env("OUTLOOK_CLIENT_SECRET"),
