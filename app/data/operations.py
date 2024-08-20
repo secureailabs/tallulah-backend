@@ -37,7 +37,7 @@ class DatabaseOperations:
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
             cls.client = motor.motor_asyncio.AsyncIOMotorClient(
-                cls.mongodb_host, tls=True, tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem", server_api=ServerApi("1")
+                cls.mongodb_host, tls=True, tlsCertificateKeyFile="/mongo_cert.pem", server_api=ServerApi("1")
             )
             cls.sail_db = cls.client[secret_store.MONGO_DB_NAME]
 
