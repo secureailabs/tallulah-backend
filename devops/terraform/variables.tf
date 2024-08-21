@@ -54,6 +54,11 @@ variable "devops_keyvault_name" {
   type        = string
 }
 
+variable "devops_keyvault_url" {
+  description = "The URL of the keyvault"
+  type        = string
+}
+
 variable "devops_resource_group_name" {
   description = "The name of the resource group"
   type        = string

@@ -7,14 +7,13 @@ data "azurerm_key_vault_secrets" "keyvault_secrets" {
   key_vault_id = data.azurerm_key_vault.keyvault_devops.id
 }
 
-data "azurerm_key_vault_certificates" "keyvault_certs" {
-  key_vault_id = data.azurerm_key_vault.keyvault_devops.id
-}
-
-
 data "azurerm_key_vault_secret" "keyvault_secrets" {
   for_each     = toset(data.azurerm_key_vault_secrets.keyvault_secrets.names)
   name         = each.key
+  key_vault_id = data.azurerm_key_vault.keyvault_devops.id
+}
+
+data "azurerm_key_vault_certificates" "keyvault_certs" {
   key_vault_id = data.azurerm_key_vault.keyvault_devops.id
 }
 
@@ -111,9 +110,9 @@ module "container_app_backend" {
   azure_client_secret               = data.azurerm_key_vault_secret.keyvault_secrets["azure-client-secret"].value
   azure_tenant_id                   = data.azurerm_key_vault_secret.keyvault_secrets["azure-tenant-id"].value
   keyvault_url                      = module.keyvault.keyvault_url
+  devops_keyvault_url               = data.azurerm_key_vault.keyvault_devops.vault_uri
   jwt_secret                        = data.azurerm_key_vault_secret.keyvault_secrets["jwt-secret"].value
   mongo_connection_url              = data.azurerm_key_vault_secret.keyvault_secrets["mongo-connection-url"].value
-  mongo_connection_cert             = data.azurerm_key_vault_certificate.keyvault_certs["mongo-connection-certificate"].value
   outlook_client_id                 = data.azurerm_key_vault_secret.keyvault_secrets["outlook-client-id"].value
   outlook_client_secret             = data.azurerm_key_vault_secret.keyvault_secrets["outlook-client-secret"].value
   outlook_tenant_id                 = data.azurerm_key_vault_secret.keyvault_secrets["outlook-tenant-id"].value

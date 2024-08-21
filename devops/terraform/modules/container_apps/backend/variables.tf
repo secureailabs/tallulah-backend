@@ -23,6 +23,11 @@ variable "keyvault_url" {
   type        = string
 }
 
+variable "devops_keyvault_url" {
+  description = "The URL of the devops keyvault"
+  type        = string
+}
+
 variable "azure_tenant_id" {
   description = "The ID of the Azure tenant"
   type        = string
@@ -40,11 +45,6 @@ variable "jwt_secret" {
 
 variable "mongo_connection_url" {
   description = "The connection URL of the MongoDB instance"
-  type        = string
-}
-
-variable "mongo_connection_cert" {
-  description = "The connection certificate of the MongoDB instance"
   type        = string
 }
 

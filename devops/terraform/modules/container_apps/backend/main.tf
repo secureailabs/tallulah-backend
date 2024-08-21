@@ -31,6 +31,10 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.keyvault_url
   }
   secret {
+    name  = "devops-keyvault-url"
+    value = var.devops_keyvault_url
+  }
+  secret {
     name  = "azure-tenant-id"
     value = var.azure_tenant_id
   }
@@ -45,10 +49,6 @@ resource "azurerm_container_app" "container_app_backend" {
   secret {
     name  = "mongo-connection-url"
     value = var.mongo_connection_url
-  }
-  secret {
-    name  = "mongo-connection-cert"
-    value = var.mongo_connection_cert
   }
   secret {
     name  = "outlook-client-id"
@@ -130,10 +130,6 @@ resource "azurerm_container_app" "container_app_backend" {
         secret_name = "mongo-connection-url"
       }
       env {
-        name        = "MONGO_CONNECTION_CERT"
-        secret_name = "mongo-connection-cert"
-      }
-      env {
         name        = "JWT_SECRET"
         secret_name = "jwt-secret"
       }
@@ -168,6 +164,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "AZURE_KEYVAULT_URL"
         secret_name = "azure-keyvault-url"
+      }
+      env {
+        name        = "DEVOPS_KEYVAULT_URL"
+        secret_name = "devops-keyvault-url"
       }
       env {
         name        = "STORAGE_CONTAINER_SAS_URL"

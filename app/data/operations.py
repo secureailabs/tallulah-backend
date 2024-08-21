@@ -12,7 +12,6 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-import base64
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -34,16 +33,11 @@ class DatabaseOperations:
             # write the certificate to a tmp file
             with open("/tmp/mongo_atlas_cert.pem", "w") as f:
                 credential = DefaultAzureCredential()
-                client = SecretClient(vault_url="https://arin-test-kv.vault.azure.net", credential=credential)
+                client = SecretClient(vault_url=secret_store.DEVOPS_KEYVAULT_URL, credential=credential)
                 secret = client.get_secret("mongo-connection-certificate")
-                print(secret)
                 if not secret.value:
                     raise Exception("Could not retrieve the secret")
-                print(secret.value)
                 f.write(secret.value)
-                # cert_bytes = base64.b64decode(secret.value)
-                # print(cert_bytes)
-                # print(cert_bytes.decode("utf-8"))
 
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
