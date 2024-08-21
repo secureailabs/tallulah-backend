@@ -25,6 +25,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.15.0] - 2024-08-21
+
+### Added
+
+- **Patient chat feature via sidebar**
+  - Users can now chat with patient stories data via a chat like interface
+  - The chat interface is available on the sidebar of the patient stories page
+
+- **Patient story data export**
+  - Users can now export patient story data in CSV format
+  - The exported data includes patient information, tags, themes, and other relevant data
+
+### Changed
+
+- **Mongodb authentication**
+  - Mongodb now uses username and certificate for authentication
+  - The certificate is stored in Azure Keyvault for added security
+
+
 ## [0.14.0] - 2024-08-07
 
 ### Added

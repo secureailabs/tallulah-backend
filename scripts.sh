@@ -23,8 +23,6 @@ push_image_to_registry() {
         exit 1
     fi
 
-    echo "login to azure account"
-    az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
     az account set --subscription $AZURE_SUBSCRIPTION_ID
 
     echo "log in to azure registry"
@@ -132,6 +130,7 @@ generate_client() {
 }
 
 deploy() {
+    az login
     make build_image
     make push_all
 
@@ -160,7 +159,6 @@ deploy() {
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
 
-    az login
     az account set --subscription $AZURE_SUBSCRIPTION_ID
     terraform init -backend-config="backend.tfvars" -reconfigure
     terraform apply -var-file="development.tfvars" -auto-approve
@@ -169,6 +167,7 @@ deploy() {
 
 
 release() {
+    az login
     make build_image
     make push_all
 
@@ -197,12 +196,11 @@ release() {
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
 
-    az login
     az account set --subscription $AZURE_SUBSCRIPTION_ID
     terraform init -backend-config="backend_prod.tfvars" -reconfigure
     # export AZURE_SUBSCRIPTION_ID="b7a46052-b7b1-433e-9147-56efbfe28ac5"
     # az account set --subscription $AZURE_SUBSCRIPTION_ID
-    # terraform apply -var-file="production.tfvars"
+    terraform apply -var-file="production.tfvars"
     popd
 }
 
