@@ -217,7 +217,7 @@ async def set_body(request: Request, body: bytes):
 
 async def get_body(request: Request) -> bytes:
     body = await request.body()
-    await set_body(request, body)
+    #await set_body(request, body)
     return body
 
 
@@ -239,7 +239,7 @@ def remove_sensitive_info(request_body: Union[Dict, List, Any]):
 
 @server.middleware("http")
 async def add_audit_log(request: Request, call_next: Callable):
-    await set_body(request, await request.body())
+    #await set_body(request, await request.body())
     request_body = await get_body(request)
 
     # remove sensitive data from the request body
