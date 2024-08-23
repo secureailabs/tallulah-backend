@@ -23,6 +23,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 class SecretStore(BaseModel):
     AZURE_KEYVAULT_URL: str
+    DEVOPS_KEYVAULT_URL: str
     JWT_SECRET: str
     MONGO_CONNECTION_URL: str
     MONGO_DB_NAME: str
@@ -55,6 +56,7 @@ def get_secret_env(secret_name) -> str:
 
 secret_store = SecretStore(
     AZURE_KEYVAULT_URL=get_secret_env("AZURE_KEYVAULT_URL"),
+    DEVOPS_KEYVAULT_URL=get_secret_env("DEVOPS_KEYVAULT_URL"),
     JWT_SECRET=get_secret_env("JWT_SECRET"),
     MONGO_CONNECTION_URL=get_secret_env("MONGO_CONNECTION_URL"),
     MONGO_DB_NAME=get_secret_env("MONGO_DB_NAME"),

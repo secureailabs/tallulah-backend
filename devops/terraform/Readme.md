@@ -23,10 +23,13 @@ Gitignore file to exclude sensitive files and directories.
 ## Usage
 
 ### Initialization:
-Navigate to the root of the project and initialize Terraform.
+Make sure you are logged in to azure with the `az login` command and have the necessary permissions to create resources.
 
 ``` bash
-terraform init
+# Azure Login
+az login
+# Set the subscription
+az account set --subscription $AZURE_SUBSCRIPTION_ID
 ```
 
 ### Configuration:
@@ -35,7 +38,7 @@ Update the terraform.tfvars or equivalent files in the environments directory wi
 ### Planning:
 Init the Terraform configuration
 ``` bash
-terraform init -backend-config="backend.tfvars"
+terraform init -backend-config="backend.tfvars" -reconfigure
 ```
 
 Review the changes that will be applied.
@@ -49,15 +52,6 @@ Apply the Terraform configuration to create resources.
 ``` bash
 terraform apply -var-file="development.tfvars"
 ```
-
-### Apply Configuration to Specific Environment:
-Apply the Terraform configuration to create resources in a specific environment.
-
-``` bash
-terraform apply -var-file="development.tfvars"
-```
-
-
 
 ### Destruction (If Necessary):
 To destroy the resources managed by Terraform.

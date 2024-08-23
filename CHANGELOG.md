@@ -25,6 +25,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.15.0] - 2024-08-21
+
+### Added
+
+- **Patient chat feature via sidebar**
+  - Users can now chat with patient stories data via a chat like interface
+  - The chat interface is available on the sidebar of the patient stories page
+
+- **Patient story data export**
+  - Users can now export patient story data in CSV format
+  - The exported data includes patient information, tags, themes, and other relevant data
+
+### Changed
+
+- **Mongodb authentication**
+  - Mongodb now uses username and certificate for authentication
+  - The certificate is stored in Azure Keyvault for added security
+
+
+## [0.14.0] - 2024-08-07
+
+### Added
+
+### Story Assistant
+  - Users can chat with patient story data with a chat like interface
+
+### Auto Tagging, Themes
+  - Tags and themes are auto-generated for all patient stories
+
+- **Terraform secrets in Kevault**
+  - All secrets used in terraform are now stored on Azure Keyvault with access control
+  - The keyvault access is limited from within the VPN with user access control
+
+- **VPN implementation**
+  - Test deployemnt can now only be accessed using a VPN
+  - All of production deployment can be accessed using VPN but frontend and backend service are only exposed to public internet
+  - Firewall protection rules are implemented for Production deployment
+
+### Changed
+
+- **Azure OpenAI**
+  - Azure OpenAI now uses gpt-4o model
+  - Tallulah connects to azure openai using a private connection
+
+- **Elastic search connection**
+  - Elastic cloud connection is now done via private link for added security
+
 ## [0.13.0] - 2023-06-12
 
 ### Added

@@ -23,6 +23,11 @@ variable "keyvault_url" {
   type        = string
 }
 
+variable "devops_keyvault_url" {
+  description = "The URL of the devops keyvault"
+  type        = string
+}
+
 variable "azure_tenant_id" {
   description = "The ID of the Azure tenant"
   type        = string

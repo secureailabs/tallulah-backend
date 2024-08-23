@@ -1,3 +1,7 @@
+# Using the Azure Application Gateway with a public IP even though the access is only via private IP addresses.
+# All the public access is done via DNAT to the private IP addresses from the public IP address.
+# Azure Application Gateway does not support Application Gateway without Public IP
+
 resource "azurerm_web_application_firewall_policy" "web_application_firewall_policy" {
   location            = "westus"
   name                = "waf-policy"
@@ -31,10 +35,27 @@ resource "azurerm_application_gateway" "application_gateway" {
       subnet_id                     = var.container_app_subnet_id
     }
   }
+  private_link_configuration {
+    name = "app-gateway-private-link-private-ip"
+    ip_configuration {
+      name                          = "private-link-ip-config"
+      primary                       = false
+      private_ip_address_allocation = "Dynamic"
+      subnet_id                     = var.container_app_subnet_id
+    }
+  }
   frontend_ip_configuration {
     name                            = "appGwPublicFrontendIpIPv4"
     private_link_configuration_name = "app-gateway-private-link"
     public_ip_address_id            = var.gateway_public_ip_id
+  }
+  frontend_ip_configuration {
+    # Application Gateway with SKU tier WAF_v2 can only use PrivateIPAddress with IpAllocationMethod as Static.
+    name                            = "appGwPrivateFrontendIpIPv4"
+    private_link_configuration_name = "app-gateway-private-link-private-ip"
+    subnet_id                       = var.gateway_subnet_id
+    private_ip_address_allocation   = "Static"
+    private_ip_address              = "10.0.16.250"
   }
   frontend_port {
     name = "port_443"
@@ -56,7 +77,7 @@ resource "azurerm_application_gateway" "application_gateway" {
   }
   http_listener {
     name                           = "app-gateway-listener"
-    frontend_ip_configuration_name = "appGwPublicFrontendIpIPv4"
+    frontend_ip_configuration_name = "appGwPrivateFrontendIpIPv4"
     frontend_port_name             = "port_443"
     protocol                       = "Https"
     ssl_certificate_name           = "app-gateway-ssl-cert"
@@ -64,7 +85,7 @@ resource "azurerm_application_gateway" "application_gateway" {
   }
   http_listener {
     name                           = "app-gateway-listener-2"
-    frontend_ip_configuration_name = "appGwPublicFrontendIpIPv4"
+    frontend_ip_configuration_name = "appGwPrivateFrontendIpIPv4"
     frontend_port_name             = "port_443"
     protocol                       = "Https"
     ssl_certificate_name           = "app-gateway-ssl-cert-2"

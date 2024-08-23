@@ -31,6 +31,10 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.keyvault_url
   }
   secret {
+    name  = "devops-keyvault-url"
+    value = var.devops_keyvault_url
+  }
+  secret {
     name  = "azure-tenant-id"
     value = var.azure_tenant_id
   }
@@ -160,6 +164,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "AZURE_KEYVAULT_URL"
         secret_name = "azure-keyvault-url"
+      }
+      env {
+        name        = "DEVOPS_KEYVAULT_URL"
+        secret_name = "devops-keyvault-url"
       }
       env {
         name        = "STORAGE_CONTAINER_SAS_URL"

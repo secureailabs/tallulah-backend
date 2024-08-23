@@ -7,7 +7,7 @@ class OpenAiGenerator:
     def __new__(cls, api_base, api_key) -> "OpenAiGenerator":
         if not hasattr(cls, "instance"):
             cls.client = AsyncAzureOpenAI(azure_endpoint=api_base, api_key=api_key, api_version="2024-02-01")
-            cls.model = "paggpt4"
+            cls.model = "gpt4o"
             cls.instance = super(OpenAiGenerator, cls).__new__(cls)
         return cls.instance
 
