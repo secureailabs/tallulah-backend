@@ -1,6 +1,6 @@
 import pytest
-from . import conftest
-from .conftest import logger
+import conftest
+from conftest import logger
 
 
 @pytest.mark.asyncio
