@@ -37,7 +37,7 @@ class FormData_Base(SailBaseModel):
 
 
 class RegisterFormData_In(FormData_Base):
-    creation_time: Optional[datetime] = Field()
+    creation_time: Optional[datetime] = Field(default=None)
 
 
 class RegisterFormData_Out(SailBaseModel):

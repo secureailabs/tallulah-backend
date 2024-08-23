@@ -97,11 +97,11 @@ class RegisterContentGenerationTemplate_Out(SailBaseModel):
 
 
 class UpdateContentGenerationTemplate_In(SailBaseModel):
-    name: Optional[StrictStr] = Field()
-    description: Optional[StrictStr] = Field()
-    parameters: Optional[List[ParameterField]] = Field()
-    context: Optional[List[Context]] = Field()
-    prompt: Optional[StrictStr] = Field()
+    name: Optional[StrictStr] = Field(default=None)
+    description: Optional[StrictStr] = Field(default=None)
+    parameters: Optional[List[ParameterField]] = Field(default=None)
+    context: Optional[List[Context]] = Field(default=None)
+    prompt: Optional[StrictStr] = Field(default=None)
 
 
 class ContentGenerationTemplates:

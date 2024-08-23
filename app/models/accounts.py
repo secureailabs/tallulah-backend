@@ -66,8 +66,8 @@ class UserInfo_Out(User_Base):
 
 class RegisterUser_In(User_Base):
     password: str = Field()
-    organization_id: Optional[PyObjectId] = Field()
-    organization_name: Optional[StrictStr] = Field()
+    organization_id: Optional[PyObjectId] = Field(default=None)
+    organization_name: Optional[StrictStr] = Field(default=None)
 
 
 class RegisterUser_Out(SailBaseModel):
@@ -88,10 +88,10 @@ class GetMultipleUsers_Out(SailBaseModel):
 
 
 class UpdateUser_In(SailBaseModel):
-    job_title: Optional[StrictStr] = Field()
-    roles: Optional[List[UserRole]] = Field()
-    account_state: Optional[UserAccountState] = Field()
-    avatar: Optional[StrictStr] = Field()
+    job_title: Optional[StrictStr] = Field(default=None)
+    roles: Optional[List[UserRole]] = Field(default=None)
+    account_state: Optional[UserAccountState] = Field(default=None)
+    avatar: Optional[StrictStr] = Field(default=None)
 
 
 class Users:

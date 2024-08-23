@@ -33,7 +33,7 @@ class PatientChat_Base(SailBaseModel):
 
 class PatientChat_Out(SailBaseModel):
     id: PyObjectId = Field()
-    chat: Optional[List[Context]] = Field()
+    chat: Optional[List[Context]] = Field(default=None)
 
 
 class PatientChat_Db(PatientChat_Base):
@@ -45,7 +45,7 @@ class PatientChat_Db(PatientChat_Base):
     # state: ContentGenerationState = Field(default=ContentGenerationState.RECEIVED)
     # error_message: Optional[StrictStr] = Field(default=None)
     creation_time: datetime = Field(default_factory=datetime.utcnow)
-    chat: Optional[List[Context]] = Field()
+    chat: Optional[List[Context]] = Field(default=None)
 
 
 # class Context(SailBaseModel):
