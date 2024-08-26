@@ -1,3 +1,23 @@
+variable "azure_client_id" {
+  description = "The ID of the Azure client"
+  type        = string
+}
+
+variable "azure_client_secret" {
+  description = "The secret of the Azure client"
+  type        = string
+}
+
+variable "azure_tenant_id" {
+  description = "The ID of the Azure tenant"
+  type        = string
+}
+
+variable "devops_keyvault_url" {
+  description = "The URL of the devops keyvault"
+  type        = string
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group"
   type        = string

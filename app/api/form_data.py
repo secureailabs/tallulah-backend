@@ -16,7 +16,7 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from fastapi import BackgroundTasks, APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi_utils.tasks import repeat_every
 from pydantic import StrictStr
@@ -37,11 +37,11 @@ from app.models.form_data import (
 )
 from app.models.form_templates import FormMediaTypes, FormTemplates, GetStorageUrl_Out
 from app.utils.azure_blob_manager import AzureBlobManager
+from app.utils.azure_openai import OpenAiGenerator
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.secrets import secret_store
-from app.utils.azure_openai import OpenAiGenerator
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
@@ -89,8 +89,8 @@ async def notify_users(form_template_id: PyObjectId):
     operation_id="add_form_data",
 )
 async def add_form_data(
+    background_tasks: BackgroundTasks,
     form_data: RegisterFormData_In = Body(description="Form data information"),
-    background_tasks: BackgroundTasks = None,
 ) -> RegisterFormData_Out:
 
     # Check if the form template exists
@@ -382,22 +382,25 @@ async def backfill_tags(background_tasks: BackgroundTasks):
     return Response(status_code=status.HTTP_200_OK)
 
 
-async def generate_tags(
-    form_data: FormData_Db
-):
+async def generate_tags(form_data: FormData_Db):
     await generate_tag_for_form(form_data=form_data)
     await generate_theme_for_story(form_data=form_data)
 
 
 async def generate_tag_for_form(form_data: FormData_Db):
-    #preferred_tags = ""
+    # preferred_tags = ""
     patient = FormDatas.convert_form_data_to_string(form_data)
     # Get the tags
-    messages=[{"role": "system", "content": """
+    messages = [
+        {
+            "role": "system",
+            "content": """
         You are an assistant who helps with reading patient data and providing tags for the data.
         Don't forget to separate the tags with commas and no special characters. Do not include personal information.
-    """}]
-    #messages.append({"role": "user", "content": "Pick from the following tags, if possible, and don't hesitate to add new ones: " + preferred_tags})
+    """,
+        }
+    ]
+    # messages.append({"role": "user", "content": "Pick from the following tags, if possible, and don't hesitate to add new ones: " + preferred_tags})
     messages.append({"role": "user", "content": patient})
     openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
     generated_content = await openai.get_response(messages=messages)
@@ -410,16 +413,21 @@ async def generate_tag_for_form(form_data: FormData_Db):
 
 
 async def generate_theme_for_story(form_data: FormData_Db):
-    if 'patientStory' not in form_data.values:
+    if "patientStory" not in form_data.values:
         return
-    patient_story = form_data.values['patientStory']['value']
+    patient_story = form_data.values["patientStory"]["value"]
     if not patient_story:
         return
 
-    messages=[{"role": "system", "content": """
+    messages = [
+        {
+            "role": "system",
+            "content": """
         You are an assistant who helps with reading patient stories and providing themes for those stories. Provide at most 5 themes.
         Don't forget to separate the themes with commas and no special characters. Do not include personal information.
-    """}]
+    """,
+        }
+    ]
     messages.append({"role": "user", "content": patient_story})
     openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
     generated_content = await openai.get_response(messages=messages)

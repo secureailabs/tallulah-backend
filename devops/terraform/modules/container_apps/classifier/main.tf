@@ -9,6 +9,22 @@ resource "azurerm_container_app" "container_app_classifier" {
     username             = var.container_registry_username
   }
   secret {
+    name  = "azure-client-id"
+    value = var.azure_client_id
+  }
+  secret {
+    name  = "azure-client-secret"
+    value = var.azure_client_secret
+  }
+  secret {
+    name  = "devops-keyvault-url"
+    value = var.devops_keyvault_url
+  }
+  secret {
+    name  = "azure-tenant-id"
+    value = var.azure_tenant_id
+  }
+  secret {
     name  = "container-registry-password"
     value = var.container_registry_password
   }
@@ -28,6 +44,22 @@ resource "azurerm_container_app" "container_app_classifier" {
       image  = var.docker_image
       memory = "1Gi"
       name   = "classifier"
+      env {
+        name        = "AZURE_CLIENT_ID"
+        secret_name = "azure-client-id"
+      }
+      env {
+        name        = "AZURE_CLIENT_SECRET"
+        secret_name = "azure-client-secret"
+      }
+      env {
+        name        = "AZURE_TENANT_ID"
+        secret_name = "azure-tenant-id"
+      }
+      env {
+        name        = "DEVOPS_KEYVAULT_URL"
+        secret_name = "devops-keyvault-url"
+      }
       env {
         name  = "RABBIT_MQ_PORT"
         value = "5672"

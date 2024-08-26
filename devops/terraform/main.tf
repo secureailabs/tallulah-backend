@@ -150,6 +150,10 @@ module "container_app_classifier" {
   container_registry_server   = var.container_registry_server
   container_registry_username = data.azurerm_key_vault_secret.keyvault_secrets["container-registry-username"].value
   container_registry_password = data.azurerm_key_vault_secret.keyvault_secrets["container-registry-password"].value
+  azure_client_id             = data.azurerm_key_vault_secret.keyvault_secrets["azure-client-id"].value
+  azure_client_secret         = data.azurerm_key_vault_secret.keyvault_secrets["azure-client-secret"].value
+  azure_tenant_id             = data.azurerm_key_vault_secret.keyvault_secrets["azure-tenant-id"].value
+  devops_keyvault_url         = data.azurerm_key_vault.keyvault_devops.vault_uri
   mongo_connection_url        = data.azurerm_key_vault_secret.keyvault_secrets["mongo-connection-url"].value
   rabbit_mq_host              = data.azurerm_key_vault_secret.keyvault_secrets["rabbit-mq-host"].value
 }
