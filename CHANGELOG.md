@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+
+## [0.15.1] - 2024-08-27
+
+### Fixed
+
+- **Patient chat via sidebar**
+  - Fixed a bug where the patient chat feature was not working on the patients listed via tab on the sidebar.
+
+
 ## [0.15.0] - 2024-08-21
 
 ### Added
