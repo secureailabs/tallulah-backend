@@ -33,7 +33,7 @@ class FormData_Base(SailBaseModel):
     form_template_id: PyObjectId = Field()
     values: Dict[StrictStr, Any] = Field(default=None)
     state: FormDataState = Field(default=FormDataState.ACTIVE)
-    themes: List[StrictStr] = Field(default=None)
+    themes: List[StrictStr] = Field(default=[])
 
 
 class RegisterFormData_In(FormData_Base):
@@ -78,7 +78,6 @@ class FormDatas:
             data=jsonable_encoder(form_data),
         )
 
-
     @staticmethod
     def convert_form_data_to_string(form_data: FormData_Db):
         remove_form_fields = ["consentToTag", "image", "consent", "tags"]
@@ -90,11 +89,15 @@ class FormDatas:
 
         patient = ""
         for key, value in data.items():
-            if 'value' in value and isinstance(value['value'], str) and value['value'].strip() and value['value'].strip() != 'n/a':
+            if (
+                "value" in value
+                and isinstance(value["value"], str)
+                and value["value"].strip()
+                and value["value"].strip() != "n/a"
+            ):
                 patient += f"{value['label'] if 'label' in value else key}: {value['value'].strip()}, "
 
         return patient
-
 
     @staticmethod
     async def read_forms_without_tags() -> List[FormData_Db]:
@@ -203,7 +206,7 @@ class FormDatas:
             update_request["$set"]["values"] = update_form_data_values
         if update_form_data_tags:
             update_request["$set"]["values.tags"] = {
-                "value": ', '.join(update_form_data_tags),
+                "value": ", ".join(update_form_data_tags),
                 "label": "Tags",
                 "type": "STRING",
             }
