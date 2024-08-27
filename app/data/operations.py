@@ -47,7 +47,10 @@ class DatabaseOperations:
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
             if use_cert:
                 cls.client = motor.motor_asyncio.AsyncIOMotorClient(
-                    cls.mongodb_host, tls=True, tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem", server_api=ServerApi("1")
+                    cls.mongodb_host,
+                    tls=True,
+                    tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem",
+                    server_api=ServerApi("1"),
                 )
             else:
                 cls.client = cls.client = motor.motor_asyncio.AsyncIOMotorClient(cls.mongodb_host)

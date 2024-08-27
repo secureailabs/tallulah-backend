@@ -8,3 +8,4 @@ node_modules
 temp
 .DS_Store
 researcher-ui
+requirements.txt
