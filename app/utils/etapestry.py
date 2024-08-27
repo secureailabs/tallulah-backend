@@ -9,56 +9,56 @@ from pydantic import BaseModel
 
 
 class AccountInfo(BaseModel):
-    id: Optional[str]
-    firstName: Optional[str]
-    lastName: Optional[str]
-    middleName: Optional[str]
-    suffix: Optional[str]
-    initials: Optional[str]
-    name: Optional[str]
-    email: Optional[str]
-    phones: Optional[str]
-    socialMediaProfiles: Optional[str]
-    address: Optional[str]
-    streetName: Optional[str]
-    apartmentNumber: Optional[str]
-    buildingNumber: Optional[str]
-    city: Optional[str]
-    state: Optional[str]
-    postalCode: Optional[str]
-    country: Optional[str]
-    county: Optional[str]
-    suburb: Optional[str]
-    webAddress: Optional[str]
-    title: Optional[str]
-    donorRecognitionName: Optional[str]
-    donorRecognitionType: Optional[str]
-    envelopeSalutation: Optional[str]
-    longSalutation: Optional[str]
-    shortSalutation: Optional[str]
-    nameFormat: Optional[str]
-    sortName: Optional[str]
-    accountCreatedDate: Optional[str]
-    accountLastModifiedDate: Optional[str]
-    personaCreatedDate: Optional[str]
-    personaLastModifiedDate: Optional[str]
-    optOutDate: Optional[str]
-    optedOut: Optional[str]
-    accountRoleType: Optional[str]
-    personaType: Optional[str]
-    personaTypes: Optional[str]
-    primaryPersona: Optional[str]
-    donorRoleRef: Optional[str]
-    teamRoleRef: Optional[str]
-    tributeRoleRef: Optional[str]
-    userRoleRef: Optional[str]
-    ref: Optional[str]
-    note: Optional[str]
-    defined_values: Optional[Dict[str, str]]
-    accountDefinedValues: Optional[str]
-    personaDefinedValues: Optional[str]
-    oldFormattedAddress: Optional[str]
-    stickyNoteType: Optional[str]
+    id: Optional[str] = None
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    middleName: Optional[str] = None
+    suffix: Optional[str] = None
+    initials: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phones: Optional[str] = None
+    socialMediaProfiles: Optional[str] = None
+    address: Optional[str] = None
+    streetName: Optional[str] = None
+    apartmentNumber: Optional[str] = None
+    buildingNumber: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postalCode: Optional[str] = None
+    country: Optional[str] = None
+    county: Optional[str] = None
+    suburb: Optional[str] = None
+    webAddress: Optional[str] = None
+    title: Optional[str] = None
+    donorRecognitionName: Optional[str] = None
+    donorRecognitionType: Optional[str] = None
+    envelopeSalutation: Optional[str] = None
+    longSalutation: Optional[str] = None
+    shortSalutation: Optional[str] = None
+    nameFormat: Optional[str] = None
+    sortName: Optional[str] = None
+    accountCreatedDate: Optional[str] = None
+    accountLastModifiedDate: Optional[str] = None
+    personaCreatedDate: Optional[str] = None
+    personaLastModifiedDate: Optional[str] = None
+    optOutDate: Optional[str] = None
+    optedOut: Optional[str] = None
+    accountRoleType: Optional[str] = None
+    personaType: Optional[str] = None
+    personaTypes: Optional[str] = None
+    primaryPersona: Optional[str] = None
+    donorRoleRef: Optional[str] = None
+    teamRoleRef: Optional[str] = None
+    tributeRoleRef: Optional[str] = None
+    userRoleRef: Optional[str] = None
+    ref: Optional[str] = None
+    note: Optional[str] = None
+    defined_values: Optional[Dict[str, str]] = None
+    accountDefinedValues: Optional[str] = None
+    personaDefinedValues: Optional[str] = None
+    oldFormattedAddress: Optional[str] = None
+    stickyNoteType: Optional[str] = None
 
 
 class Etapestry:

@@ -69,8 +69,8 @@ class RegisterPatientProfileRepository_Out(SailBaseModel):
 
 
 class UpdatePatientProfileRepository_In(SailBaseModel):
-    name: Optional[str] = Field()
-    description: Optional[str] = Field()
+    name: Optional[str] = Field(default=None)
+    description: Optional[str] = Field(default=None)
 
 
 class PatientProfileRepositories:

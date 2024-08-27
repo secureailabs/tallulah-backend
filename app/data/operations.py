@@ -30,20 +30,27 @@ class DatabaseOperations:
 
     def __new__(cls):
         if cls._instance is None:
+            use_cert = True
             # write the certificate to a tmp file
-            with open("/tmp/mongo_atlas_cert.pem", "w") as f:
-                credential = DefaultAzureCredential()
-                client = SecretClient(vault_url=secret_store.DEVOPS_KEYVAULT_URL, credential=credential)
-                secret = client.get_secret("mongo-connection-certificate")
-                if not secret.value:
-                    raise Exception("Could not retrieve the secret")
-                f.write(secret.value)
+            try:
+                with open("/tmp/mongo_atlas_cert.pem", "w") as f:
+                    credential = DefaultAzureCredential()
+                    client = SecretClient(vault_url=secret_store.DEVOPS_KEYVAULT_URL, credential=credential)
+                    secret = client.get_secret("mongo-connection-certificate")
+                    if not secret.value:
+                        raise Exception("Could not retrieve the secret")
+                    f.write(secret.value)
+            except:
+                use_cert = False
 
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
-            cls.client = motor.motor_asyncio.AsyncIOMotorClient(
-                cls.mongodb_host, tls=True, tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem", server_api=ServerApi("1")
-            )
+            if use_cert:
+                cls.client = motor.motor_asyncio.AsyncIOMotorClient(
+                    cls.mongodb_host, tls=True, tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem", server_api=ServerApi("1")
+                )
+            else:
+                cls.client = cls.client = motor.motor_asyncio.AsyncIOMotorClient(cls.mongodb_host)
             cls.sail_db = cls.client[secret_store.MONGO_DB_NAME]
 
             # remove the certificate

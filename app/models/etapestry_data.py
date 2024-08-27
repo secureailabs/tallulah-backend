@@ -46,11 +46,11 @@ class ETapestryData_Db(ETapestryData_Base):
 
 
 class UpdateETapestryData_In(SailBaseModel):
-    state: Optional[ETapestryDataState] = Field()  # TODO: Prawal dont allow this
-    notes: Optional[str] = Field()
-    tags: Optional[List[str]] = Field()
-    photos: Optional[List[PyObjectId]] = Field()
-    videos: Optional[List[PyObjectId]] = Field()
+    state: Optional[ETapestryDataState] = Field(default=None) # TODO: Prawal dont allow this
+    notes: Optional[str] = Field(default=None)
+    tags: Optional[List[str]] = Field(default=None)
+    photos: Optional[List[PyObjectId]] = Field(default=None)
+    videos: Optional[List[PyObjectId]] = Field(default=None)
 
 
 class GetETapestryData_Out(ETapestryData_Base):
