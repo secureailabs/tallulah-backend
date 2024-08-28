@@ -14,6 +14,27 @@ import { request as __request } from '../core/request';
 export class PatientProfilesService {
 
     /**
+     * Add New Patient Profile
+     * Add a new patient profile if it does not exist else replace the existing one
+     * @param requestBody
+     * @returns RegisterPatientProfile_Out Successful Response
+     * @throws ApiError
+     */
+    public static addPatientProfile(
+        requestBody: RegisterPatientProfile_In,
+    ): CancelablePromise<RegisterPatientProfile_Out> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/patient-profiles/',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Get All Patient Profiles
      * Get all the patient profiles owned by the current user with pagination
      * @param repositoryId Patient Profile Repository id
@@ -41,27 +62,6 @@ export class PatientProfilesService {
                 'sort_key': sortKey,
                 'sort_direction': sortDirection,
             },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Add New Patient Profile
-     * Add a new patient profile if it does not exist else replace the existing one
-     * @param requestBody
-     * @returns RegisterPatientProfile_Out Successful Response
-     * @throws ApiError
-     */
-    public static addPatientProfile(
-        requestBody: RegisterPatientProfile_In,
-    ): CancelablePromise<RegisterPatientProfile_Out> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/patient-profiles/',
-            body: requestBody,
-            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

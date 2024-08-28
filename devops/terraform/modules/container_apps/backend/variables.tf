@@ -137,3 +137,8 @@ variable "email_no_reply_refresh_token" {
   description = "value of email no reply refresh token"
   type        = string
 }
+
+variable "google_recaptcha_secret_key" {
+  description = "value of google recaptcha secret key"
+  type        = string
+}

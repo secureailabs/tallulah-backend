@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DashboardLayout } from './DashboardLayout';
+import type { DashboardLayout_Input } from './DashboardLayout_Input';
 
 export type RegisterDashboardTemplate_In = {
     name: string;
-    description?: string;
+    description?: (string | null);
     repository_id: string;
-    layout?: DashboardLayout;
+    layout?: DashboardLayout_Input;
 };

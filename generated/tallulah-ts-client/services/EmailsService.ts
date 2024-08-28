@@ -30,8 +30,8 @@ export class EmailsService {
         limit: number = 20,
         sortKey: string = 'received_time',
         sortDirection: number = -1,
-        filterLabels?: Array<string>,
-        filterState?: Array<EmailState>,
+        filterLabels?: (Array<string> | null),
+        filterState?: (Array<EmailState> | null),
     ): CancelablePromise<GetMultipleEmail_Out> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -63,8 +63,8 @@ export class EmailsService {
      */
     public static replyToEmails(
         mailboxId: string,
-        emailIds?: Array<string>,
-        labels?: Array<string>,
+        emailIds?: (Array<string> | null),
+        labels?: (Array<string> | null),
         requestBody?: Body_reply_to_emails,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {

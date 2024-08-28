@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { app__models__patient_profile_repositories__CardLayout } from './app__models__patient_profile_repositories__CardLayout';
+import type { CardLayout } from './CardLayout';
 import type { PatientProfileRepositoryState } from './PatientProfileRepositoryState';
 
 export type GetPatientProfileRepository_Out = {
     name: string;
-    description?: string;
-    card_layout?: app__models__patient_profile_repositories__CardLayout;
+    description?: (string | null);
+    card_layout?: (CardLayout | null);
     id: string;
     user_id: string;
     organization_id: string;

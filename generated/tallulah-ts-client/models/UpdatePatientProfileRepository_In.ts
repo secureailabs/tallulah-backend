@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export type UpdatePatientProfileRepository_In = {
-    name?: string;
-    description?: string;
+    name?: (string | null);
+    description?: (string | null);
 };

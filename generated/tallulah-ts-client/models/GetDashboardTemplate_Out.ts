@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DashboardLayout } from './DashboardLayout';
+import type { DashboardLayout_Output } from './DashboardLayout_Output';
 import type { DashboardTemplateState } from './DashboardTemplateState';
 
 export type GetDashboardTemplate_Out = {
     name: string;
-    description?: string;
+    description?: (string | null);
     repository_id: string;
-    layout?: DashboardLayout;
+    layout?: DashboardLayout_Output;
     id: string;
     creation_time?: string;
     state: DashboardTemplateState;

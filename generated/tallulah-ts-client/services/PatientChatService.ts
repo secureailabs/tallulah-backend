@@ -26,6 +26,7 @@ export class PatientChatService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                403: `Patient form not found`,
                 404: `Chat not found`,
                 422: `Validation Error`,
             },

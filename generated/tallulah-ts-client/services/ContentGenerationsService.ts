@@ -13,6 +13,27 @@ import { request as __request } from '../core/request';
 export class ContentGenerationsService {
 
     /**
+     * Create Content Generation
+     * Create a new content generation record
+     * @param requestBody
+     * @returns RegisterContentGeneration_Out Successful Response
+     * @throws ApiError
+     */
+    public static createContentGeneration(
+        requestBody: RegisterContentGeneration_In,
+    ): CancelablePromise<RegisterContentGeneration_Out> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/content-generations/',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Get All Content Generations
      * Get all content generation records for a user
      * @param contentGenerationTemplateId Content generation template id
@@ -40,27 +61,6 @@ export class ContentGenerationsService {
                 'sort_key': sortKey,
                 'sort_direction': sortDirection,
             },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Create Content Generation
-     * Create a new content generation record
-     * @param requestBody
-     * @returns RegisterContentGeneration_Out Successful Response
-     * @throws ApiError
-     */
-    public static createContentGeneration(
-        requestBody: RegisterContentGeneration_In,
-    ): CancelablePromise<RegisterContentGeneration_Out> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/content-generations/',
-            body: requestBody,
-            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

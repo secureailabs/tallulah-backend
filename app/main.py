@@ -22,6 +22,7 @@ from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
 import aiohttp
+import fastapi.openapi.utils as web_utils
 import fastapi.openapi.utils as utils
 import sentry_sdk
 from fastapi import FastAPI, Response, status
@@ -47,7 +48,6 @@ from app.api import (
     etapestry_repositories,
     form_data,
     form_templates,
-    internal_utils,
     mailbox,
     media,
     organization,
@@ -55,10 +55,9 @@ from app.api import (
     patient_profile_repositories,
     patient_profiles,
     response_templates,
+    web_utils,
 )
 from app.data.operations import DatabaseOperations
-from app.migrations.es_from_mongodb import move_data_from_mongo_to_es
-from app.migrations.org_name_to_id import org_name_to_id
 from app.models.common import PyObjectId
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.log_manager import LogLevel, add_log_message
@@ -89,7 +88,7 @@ server.openapi = custom_openapi(server)
 # Add all the API services here exposed to the public
 server.include_router(authentication.router)
 server.include_router(accounts.router)
-server.include_router(internal_utils.router)
+server.include_router(web_utils.router)
 server.include_router(mailbox.router)
 server.include_router(emails.router)
 server.include_router(response_templates.router)
@@ -217,7 +216,7 @@ async def set_body(request: Request, body: bytes):
 
 async def get_body(request: Request) -> bytes:
     body = await request.body()
-    #await set_body(request, body)
+    # await set_body(request, body)
     return body
 
 
@@ -239,7 +238,7 @@ def remove_sensitive_info(request_body: Union[Dict, List, Any]):
 
 @server.middleware("http")
 async def add_audit_log(request: Request, call_next: Callable):
-    #await set_body(request, await request.body())
+    # await set_body(request, await request.body())
     request_body = await get_body(request)
 
     # remove sensitive data from the request body

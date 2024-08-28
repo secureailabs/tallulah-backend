@@ -5,9 +5,9 @@
 import type { ETapestryDataState } from './ETapestryDataState';
 
 export type UpdateETapestryData_In = {
-    state?: ETapestryDataState;
-    notes?: string;
-    tags?: Array<string>;
-    photos?: Array<string>;
-    videos?: Array<string>;
+    state?: (ETapestryDataState | null);
+    notes?: (string | null);
+    tags?: (Array<string> | null);
+    photos?: (Array<string> | null);
+    videos?: (Array<string> | null);
 };

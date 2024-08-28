@@ -99,28 +99,6 @@ export class EtapestryDataService {
     }
 
     /**
-     * Delete Etapestry Data
-     * Delete the response template for the current user
-     * @param etapestryDataId eTapestry data id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteEtapestryData(
-        etapestryDataId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/etapestry-data/{etapestry_data_id}',
-            path: {
-                'etapestry_data_id': etapestryDataId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Etapestry Data
      * Update the metadata for the eTapestry data
      * @param etapestryDataId eTapestry data id
@@ -140,6 +118,28 @@ export class EtapestryDataService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Etapestry Data
+     * Delete the response template for the current user
+     * @param etapestryDataId eTapestry data id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteEtapestryData(
+        etapestryDataId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/etapestry-data/{etapestry_data_id}',
+            path: {
+                'etapestry_data_id': etapestryDataId,
+            },
             errors: {
                 422: `Validation Error`,
             },
