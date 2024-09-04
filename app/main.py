@@ -22,7 +22,6 @@ from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
 import aiohttp
-import fastapi.openapi.utils as web_utils
 import fastapi.openapi.utils as utils
 import sentry_sdk
 from fastapi import FastAPI, Response, status
