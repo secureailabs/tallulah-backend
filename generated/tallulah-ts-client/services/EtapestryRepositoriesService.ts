@@ -70,28 +70,6 @@ export class EtapestryRepositoriesService {
     }
 
     /**
-     * Delete Etapestry Repository
-     * Delete the eTapestry respository for the current user
-     * @param etapestryRepositoryId eTapestry repository id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteEtapestryRepository(
-        etapestryRepositoryId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/etapestry-repositories/{etapestry_repository_id}',
-            path: {
-                'etapestry_repository_id': etapestryRepositoryId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Etapestry Repository
      * Update the eTapestry respository for the current user
      * @param etapestryRepositoryId eTapestry repository id
@@ -111,6 +89,28 @@ export class EtapestryRepositoriesService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Etapestry Repository
+     * Delete the eTapestry respository for the current user
+     * @param etapestryRepositoryId eTapestry repository id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteEtapestryRepository(
+        etapestryRepositoryId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/etapestry-repositories/{etapestry_repository_id}',
+            path: {
+                'etapestry_repository_id': etapestryRepositoryId,
+            },
             errors: {
                 422: `Validation Error`,
             },

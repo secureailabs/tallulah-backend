@@ -70,28 +70,6 @@ export class PatientProfileRepositoriesService {
     }
 
     /**
-     * Delete Patient Profile Repository
-     * Delete a patient profile repository for the current user
-     * @param patientProfileRepositoryId Patient profile repository id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deletePatientProfileRepository(
-        patientProfileRepositoryId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/patient-profile-repositories/{patient_profile_repository_id}',
-            path: {
-                'patient_profile_repository_id': patientProfileRepositoryId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Patient Profile Repository
      * Update a patient profile repository for the current user
      * @param patientProfileRepositoryId Patient profile repository id
@@ -111,6 +89,28 @@ export class PatientProfileRepositoriesService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Patient Profile Repository
+     * Delete a patient profile repository for the current user
+     * @param patientProfileRepositoryId Patient profile repository id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deletePatientProfileRepository(
+        patientProfileRepositoryId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/patient-profile-repositories/{patient_profile_repository_id}',
+            path: {
+                'patient_profile_repository_id': patientProfileRepositoryId,
+            },
             errors: {
                 422: `Validation Error`,
             },

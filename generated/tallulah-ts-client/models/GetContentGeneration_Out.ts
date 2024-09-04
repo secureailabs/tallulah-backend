@@ -9,7 +9,7 @@ export type GetContentGeneration_Out = {
     values: any;
     id: string;
     state: app__models__content_generation__ContentGenerationState;
-    generated?: string;
-    error_message?: string;
+    generated?: (string | null);
+    error_message?: (string | null);
     creation_time: string;
 };

@@ -4,8 +4,8 @@
 
 import type { FormField } from './FormField';
 
-export type FormFieldGroup = {
+export type FormFieldGroup_Input = {
     name: string;
-    description?: string;
+    description?: (string | null);
     fields?: Array<FormField>;
 };

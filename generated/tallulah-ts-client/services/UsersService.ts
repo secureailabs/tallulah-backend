@@ -59,29 +59,6 @@ export class UsersService {
     }
 
     /**
-     * Soft Delete User
-     * Soft Delete user
-     * @param userId UUID of the user
-     * @returns void
-     * @throws ApiError
-     */
-    public static softDeleteUser(
-        userId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/users/{user_id}',
-            path: {
-                'user_id': userId,
-            },
-            errors: {
-                403: `Unauthorized`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update User Info
      * Update user information.
      * @param userId UUID of the user
@@ -101,6 +78,29 @@ export class UsersService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                403: `Unauthorized`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Soft Delete User
+     * Soft Delete user
+     * @param userId UUID of the user
+     * @returns void
+     * @throws ApiError
+     */
+    public static softDeleteUser(
+        userId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/users/{user_id}',
+            path: {
+                'user_id': userId,
+            },
             errors: {
                 403: `Unauthorized`,
                 422: `Validation Error`,

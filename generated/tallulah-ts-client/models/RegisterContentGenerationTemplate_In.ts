@@ -7,7 +7,7 @@ import type { ParameterField } from './ParameterField';
 
 export type RegisterContentGenerationTemplate_In = {
     name: string;
-    description?: string;
+    description?: (string | null);
     parameters?: Array<ParameterField>;
     context?: Array<Context>;
     prompt: string;

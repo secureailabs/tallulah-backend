@@ -16,6 +16,27 @@ import { request as __request } from '../core/request';
 export class FormDataService {
 
     /**
+     * Add Form Data
+     * Add a new form data
+     * @param requestBody
+     * @returns RegisterFormData_Out Successful Response
+     * @throws ApiError
+     */
+    public static addFormData(
+        requestBody: RegisterFormData_In,
+    ): CancelablePromise<RegisterFormData_Out> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/form-data/',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Get All Form Data
      * Get all the form data for the current user for the template
      * @param formTemplateId Form template id
@@ -33,7 +54,7 @@ export class FormDataService {
         limit: number = 200,
         sortKey: string = 'creation_time',
         sortDirection: number = -1,
-        requestBody?: Record<string, Array<string>>,
+        requestBody?: (Record<string, Array<string>> | null),
     ): CancelablePromise<GetMultipleFormData_Out> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -45,27 +66,6 @@ export class FormDataService {
                 'sort_key': sortKey,
                 'sort_direction': sortDirection,
             },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Add Form Data
-     * Add a new form data
-     * @param requestBody
-     * @returns RegisterFormData_Out Successful Response
-     * @throws ApiError
-     */
-    public static addFormData(
-        requestBody: RegisterFormData_In,
-    ): CancelablePromise<RegisterFormData_Out> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/form-data/',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -96,28 +96,6 @@ export class FormDataService {
     }
 
     /**
-     * Get Form Data
-     * Get the response data for the form
-     * @param formDataId Form data id
-     * @returns GetFormData_Out Successful Response
-     * @throws ApiError
-     */
-    public static getFormData(
-        formDataId: string,
-    ): CancelablePromise<GetFormData_Out> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/form-data/{form_data_id}',
-            path: {
-                'form_data_id': formDataId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Form Data
      * Update the form data for the current user
      * @param formDataId Form data id
@@ -137,6 +115,28 @@ export class FormDataService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Get Form Data
+     * Get the response data for the form
+     * @param formDataId Form data id
+     * @returns GetFormData_Out Successful Response
+     * @throws ApiError
+     */
+    public static getFormData(
+        formDataId: string,
+    ): CancelablePromise<GetFormData_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-data/{form_data_id}',
+            path: {
+                'form_data_id': formDataId,
+            },
             errors: {
                 422: `Validation Error`,
             },

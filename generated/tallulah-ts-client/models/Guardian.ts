@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 export type Guardian = {
-    relationship?: string;
+    relationship?: (string | null);
     name: string;
-    employer?: string;
-    email?: string;
-    phone?: string;
+    employer?: (string | null);
+    email?: (string | null);
+    phone?: (string | null);
 };

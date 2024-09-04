@@ -6,9 +6,9 @@ import type { Context } from './Context';
 import type { ParameterField } from './ParameterField';
 
 export type UpdateContentGenerationTemplate_In = {
-    name?: string;
-    description?: string;
-    parameters?: Array<ParameterField>;
-    context?: Array<Context>;
-    prompt?: string;
+    name?: (string | null);
+    description?: (string | null);
+    parameters?: (Array<ParameterField> | null);
+    context?: (Array<Context> | null);
+    prompt?: (string | null);
 };

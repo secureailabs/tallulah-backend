@@ -70,28 +70,6 @@ export class FormTemplatesService {
     }
 
     /**
-     * Delete Form Template
-     * Delete the response template for the current user
-     * @param formTemplateId Form template id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteFormTemplate(
-        formTemplateId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/form-templates/{form_template_id}',
-            path: {
-                'form_template_id': formTemplateId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Form Template
      * Update the response template for the current user
      * @param formTemplateId Form template id
@@ -111,6 +89,28 @@ export class FormTemplatesService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Form Template
+     * Delete the response template for the current user
+     * @param formTemplateId Form template id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteFormTemplate(
+        formTemplateId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/form-templates/{form_template_id}',
+            path: {
+                'form_template_id': formTemplateId,
+            },
             errors: {
                 422: `Validation Error`,
             },

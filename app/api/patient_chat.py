@@ -14,30 +14,20 @@
 
 from datetime import datetime
 
-from app.models.form_templates import FormTemplates
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
-from fastapi_utils.tasks import repeat_every
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
-from app.models.form_data import FormDatas
-from app.models.patient_profile import (
-    PatientProfile_Base,
-    PatientProfiles,
-)
-from app.models.patient_chat import (
-    PatientChat,
-    PatientChat_Base,
-    PatientChat_Out,
-    PatientChat_Db,
-    PatientChatTemplates,
-)
 from app.models.content_generation_template import Context
+from app.models.form_data import FormDatas
+from app.models.form_templates import FormTemplates
+from app.models.patient_chat import PatientChat, PatientChat_Base, PatientChat_Db, PatientChat_Out
 from app.utils.azure_openai import OpenAiGenerator
 from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/patient-chat", tags=["patient-chat"])
+
 
 @router.post(
     path="/",
@@ -121,7 +111,7 @@ async def patient_chat(
     if not chat.chat:
         chat.chat = [Context(role="user", content=patient)]
 
-    conversation=[Context(role="system", content=system_prompt)]
+    conversation = [Context(role="system", content=system_prompt)]
     conversation.extend(chat.chat)
     conversation.append(Context(role="user", content=query))
     messages = [message.dict() for message in conversation]

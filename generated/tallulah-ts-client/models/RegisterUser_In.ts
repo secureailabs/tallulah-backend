@@ -9,8 +9,8 @@ export type RegisterUser_In = {
     email: string;
     job_title: string;
     roles: Array<UserRole>;
-    avatar?: string;
+    avatar?: (string | null);
     password: string;
-    organization_id?: string;
-    organization_name?: string;
+    organization_id?: (string | null);
+    organization_name?: (string | null);
 };

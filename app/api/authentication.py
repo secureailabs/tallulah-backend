@@ -33,7 +33,7 @@ router = APIRouter(tags=["authentication"])
 
 # Authentication settings
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 20
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
@@ -99,7 +99,7 @@ async def login_for_access_token(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    found_user = await Users.read(email=form_data.username.lower(), throw_on_not_found=False)
+    found_user = await Users.read(email=form_data.username.strip().lower(), throw_on_not_found=False)
     if not found_user:
         raise exception_authentication_failed
     found_user_db = found_user[0]
@@ -111,7 +111,7 @@ async def login_for_access_token(
         )
 
     if not pwd_context.verify(
-        secret=f"{found_user_db.email.lower()}{form_data.password}{secret_store.PASSWORD_PEPPER}",
+        secret=f"{found_user_db.email.strip().lower()}{form_data.password}{secret_store.PASSWORD_PEPPER}",
         hash=found_user_db.hashed_password,
     ):
         # If this is a 5th failed attempt, lock the account and increase the failed login attempts

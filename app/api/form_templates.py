@@ -18,7 +18,6 @@ from datetime import datetime
 from fastapi import APIRouter, Body, Depends, Path, Response, status
 
 from app.api.authentication import get_current_user
-from app.models import organizations
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.form_templates import (

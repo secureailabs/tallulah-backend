@@ -70,28 +70,6 @@ export class ContentGenerationTemplatesService {
     }
 
     /**
-     * Delete Content Generation Template
-     * Delete a content generation template for the current user
-     * @param contentGenerationTemplateId Content generation template id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteContentGenerationTemplate(
-        contentGenerationTemplateId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/content-generation-templates/{content_generation_template_id}',
-            path: {
-                'content_generation_template_id': contentGenerationTemplateId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Content Generation Template
      * Update a content generation template for the current user
      * @param contentGenerationTemplateId Content generation template id
@@ -111,6 +89,28 @@ export class ContentGenerationTemplatesService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Content Generation Template
+     * Delete a content generation template for the current user
+     * @param contentGenerationTemplateId Content generation template id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteContentGenerationTemplate(
+        contentGenerationTemplateId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/content-generation-templates/{content_generation_template_id}',
+            path: {
+                'content_generation_template_id': contentGenerationTemplateId,
+            },
             errors: {
                 422: `Validation Error`,
             },

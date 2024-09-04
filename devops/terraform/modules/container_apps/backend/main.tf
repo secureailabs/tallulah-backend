@@ -102,6 +102,10 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "email-no-reply-refresh-token"
     value = var.email_no_reply_refresh_token
   }
+  secret {
+    name  = "google-recaptcha-secret-key"
+    value = var.google_recaptcha_secret_key
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -208,6 +212,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "EMAIL_NO_REPLY_REFRESH_TOKEN"
         secret_name = "email-no-reply-refresh-token"
+      }
+      env {
+        name        = "GOOGLE_RECAPTCHA_SECRET_KEY"
+        secret_name = "google-recaptcha-secret-key"
       }
     }
   }
