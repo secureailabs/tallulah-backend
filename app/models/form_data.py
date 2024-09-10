@@ -33,7 +33,7 @@ class FormData_Base(SailBaseModel):
     form_template_id: PyObjectId = Field()
     values: Dict[StrictStr, Any] = Field(default=None)
     state: FormDataState = Field(default=FormDataState.ACTIVE)
-    themes: List[StrictStr] = Field(default=[])
+    themes: Optional[List[StrictStr]] = Field(default=None)
 
 
 class RegisterFormData_In(FormData_Base):
@@ -115,6 +115,24 @@ class FormDatas:
                 form_data_list.append(FormData_Db(**form_data))
 
         return form_data_list
+
+
+    @staticmethod
+    async def read_forms_without_themes() -> List[FormData_Db]:
+        form_data_list = []
+        query = {
+            "$or": [{"themes": {"$exists": False}}, {"themes": None}]
+        }
+        response = await FormDatas.data_service.find_by_query(
+            collection=FormDatas.DB_COLLECTION_FORM_DATA,
+            query=jsonable_encoder(query),
+        )
+        if response:
+            for form_data in response:
+                form_data_list.append(FormData_Db(**form_data))
+
+        return form_data_list
+
 
     @staticmethod
     async def read(
