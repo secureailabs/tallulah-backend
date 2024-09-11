@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type { FormMediaTypes } from '../models/FormMediaTypes';
 import type { GetFormData_Out } from '../models/GetFormData_Out';
+import type { GetFormDataLocation_Out } from '../models/GetFormDataLocation_Out';
 import type { GetMultipleFormData_Out } from '../models/GetMultipleFormData_Out';
 import type { GetStorageUrl_Out } from '../models/GetStorageUrl_Out';
 import type { RegisterFormData_In } from '../models/RegisterFormData_In';
@@ -205,6 +206,28 @@ export class FormDataService {
             query: {
                 'form_data_id': formDataId,
                 'media_type': mediaType,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Get Zipcodes
+     * Get the zipcodes for all the form data for the template
+     * @param formTemplateId Form template id
+     * @returns GetFormDataLocation_Out Successful Response
+     * @throws ApiError
+     */
+    public static getZipcodes(
+        formTemplateId: string,
+    ): CancelablePromise<GetFormDataLocation_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/form-datazipcodes',
+            query: {
+                'form_template_id': formTemplateId,
             },
             errors: {
                 422: `Validation Error`,

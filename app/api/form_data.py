@@ -31,6 +31,7 @@ from app.models.form_data import (
     FormDatas,
     FormDataState,
     GetFormData_Out,
+    GetFormDataLocation_Out,
     GetMultipleFormData_Out,
     RegisterFormData_In,
     RegisterFormData_Out,
@@ -294,6 +295,27 @@ async def get_download_url(
     download_url = storage_manager.generate_read_sas(str(form_data_id))
 
     return GetStorageUrl_Out(id=form_data_id, url=download_url)
+
+
+@router.get(
+    path="/zipcodes",
+    description="Get the zipcodes for all the form data for the template",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    operation_id="get_zipcodes",
+)
+async def get_zipcodes(
+    form_template_id: PyObjectId = Query(description="Form template id"),
+    current_user: TokenData = Depends(get_current_user),
+) -> GetFormDataLocation_Out:
+    # Check if the user is the owner of the response template
+    _ = await FormTemplates.read(
+        template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
+    )
+
+    form_data_list = await FormDatas.get_zipcodes(form_template_id=form_template_id)
+
+    return GetFormDataLocation_Out(form_data_location=form_data_list)
 
 
 @router.get(
