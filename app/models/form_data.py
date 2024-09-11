@@ -12,14 +12,17 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import math
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+import pgeocode
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import Field, StrictStr
 
+import app.utils.log_manager as logger
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
 
@@ -69,7 +72,6 @@ class Location(SailBaseModel):
     latitude: float = Field()
     longitude: float = Field()
     city: str = Field()
-    country: str = Field()
 
 
 class FormDataLocation(SailBaseModel):
@@ -78,8 +80,8 @@ class FormDataLocation(SailBaseModel):
     location: Location = Field()
 
 
-class GetZipcode_Out(SailBaseModel):
-    patient_location: List[FormDataLocation] = Field()
+class GetFormDataLocation_Out(SailBaseModel):
+    form_data_location: List[FormDataLocation] = Field()
 
 
 class FormDatas:
@@ -255,3 +257,55 @@ class FormDatas:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Form Data not found or no changes to update",
                 )
+
+    @staticmethod
+    async def get_zipcodes(
+        form_template_id: PyObjectId,
+    ) -> List[FormDataLocation]:
+
+        agg_pipeline = [
+            {"$match": {"form_template_id": str(form_template_id), "state": FormDataState.ACTIVE.value}},
+            {
+                "$project": {
+                    "_id": 1,
+                    "zipcode": {
+                        "$filter": {
+                            "input": {"$objectToArray": "$values"},
+                            "as": "item",
+                            "cond": {"$eq": ["$$item.v.type", "ZIPCODE"]},
+                        }
+                    },
+                }
+            },
+            {"$project": {"_id": 1, "zipcode": {"$first": "$zipcode.v.value"}}},
+        ]
+
+        response = await FormDatas.data_service.aggregate(
+            collection=FormDatas.DB_COLLECTION_FORM_DATA,
+            pipeline=agg_pipeline,
+        )
+
+        nomi = pgeocode.Nominatim("us")
+
+        form_data_location_list: List[FormDataLocation] = []
+        for zipcode in response:
+            zipcode_info = nomi.query_postal_code(zipcode["zipcode"])
+
+            # check if latitude and longitude are valid
+            if not zipcode_info["latitude"] or not zipcode_info["longitude"]:
+                continue
+
+            if math.isnan(zipcode_info["latitude"]) or math.isnan(zipcode_info["longitude"]):  # type: ignore
+                logger.INFO({"message": f"Invalid latitude or longitude for zipcode: {zipcode['zipcode']}"})
+                continue
+
+            location = Location(
+                latitude=zipcode_info["latitude"],  # type: ignore
+                longitude=zipcode_info["longitude"],  # type: ignore
+                city=zipcode_info["place_name"] + " " + zipcode_info["state_name"] + " " + zipcode_info["country_code"],  # type: ignore
+            )
+            form_data_location_list.append(
+                FormDataLocation(form_data_id=zipcode["_id"], zipcode=zipcode["zipcode"], location=location)
+            )
+
+        return form_data_location_list
