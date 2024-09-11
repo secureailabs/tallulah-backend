@@ -43,8 +43,13 @@ from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.secrets import secret_store
 
+import logging
+import asyncio
+
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 async def notify_users(form_template_id: PyObjectId):
     # Get the form template
@@ -128,6 +133,7 @@ async def add_form_data(
     operation_id="add_form_data_manual",
 )
 async def add_form_data_manual(
+    background_tasks: BackgroundTasks,
     form_data: RegisterFormData_In = Body(description="Form data information for manual entry"),
     current_user: TokenData = Depends(get_current_user),
 ) -> RegisterFormData_Out:
@@ -151,6 +157,9 @@ async def add_form_data_manual(
         id=str(form_data_db.id),
         document=jsonable_encoder(form_data_db, exclude=set(["_id", "id"])),
     )
+
+    # Generate Tags
+    background_tasks.add_task(generate_tags, form_data_db)
 
     return RegisterFormData_Out(id=form_data_db.id)
 
@@ -378,6 +387,7 @@ async def delete_form_data(
 async def backfill_tags(background_tasks: BackgroundTasks):
     # Generate Tags
     background_tasks.add_task(generate_all_tags)
+    background_tasks.add_task(generate_all_themes)
 
     return Response(status_code=status.HTTP_200_OK)
 
@@ -388,6 +398,7 @@ async def generate_tags(form_data: FormData_Db):
 
 
 async def generate_tag_for_form(form_data: FormData_Db):
+    logger.info(f"Generating tags for form data: {form_data.id}")
     # preferred_tags = ""
     patient = FormDatas.convert_form_data_to_string(form_data)
     # Get the tags
@@ -405,15 +416,20 @@ async def generate_tag_for_form(form_data: FormData_Db):
     openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
     generated_content = await openai.get_response(messages=messages)
     if generated_content is None:
+        logger.error(f"OpenAI Could not generate tags: {form_data.id}")
         return
+    logger.info(f"Generated: {form_data.id} {generated_content}")
     tags = generated_content.split(",")
     tags = [tag.strip() for tag in tags]
     tags = list(set(tags))
+
     await FormDatas.update(query_form_data_id=form_data.id, update_form_data_tags=tags, throw_on_no_update=False)
 
 
 async def generate_theme_for_story(form_data: FormData_Db):
+    logger.info(f"Generating themes for form data: {form_data.id}")
     if "patientStory" not in form_data.values:
+        logger.error(f"No patient story found in form data: {form_data.id}")
         return
     patient_story = form_data.values["patientStory"]["value"]
     if not patient_story:
@@ -432,8 +448,10 @@ async def generate_theme_for_story(form_data: FormData_Db):
     openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
     generated_content = await openai.get_response(messages=messages)
     if generated_content is None:
+        logger.error(f"OpenAI Could not generate themes: {form_data.id}")
         return
     # TODO: Check if generated_content is not 'Sorry', 'Apologies', etc.
+    logger.info(f"Generated: {form_data.id} {generated_content}")
     themes = generated_content.split(",")
     themes = [theme.strip() for theme in themes]
     themes = list(set(themes))
@@ -448,5 +466,25 @@ async def generate_all_tags():
 
     # Process one at a time
     for data in form_data:
-        await generate_tag_for_form(data)
-        await generate_theme_for_story(data)
+        try:
+            await generate_tag_for_form(data)
+            await asyncio.sleep(2)
+        except Exception as e:
+            print(e)
+            logger.error(f"Error generating tags for form data: {data.id}")
+
+
+async def generate_all_themes():
+    # Get all the form data
+    form_data = await FormDatas.read_forms_without_themes()
+    if not form_data:
+        return
+
+    # Process one at a time
+    for data in form_data:
+        try:
+            await generate_theme_for_story(data)
+            await asyncio.sleep(2)
+        except Exception as e:
+            print(e)
+            logger.error(f"Error generating themes for form data: {data.id}")
