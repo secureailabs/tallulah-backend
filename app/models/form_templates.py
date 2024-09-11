@@ -25,22 +25,24 @@ from app.models.common import PyObjectId, SailBaseModel
 
 
 class FormFieldTypes(Enum):
-    TEXT = "STRING"
-    NUMBER = "NUMBER"
+    CHECKBOX = "CHECKBOX"
+    CONSENT_CHECKBOX = "CONSENT_CHECKBOX"
     DATE = "DATE"
-    TIME = "TIME"
     DATETIME = "DATETIME"
     EMAIL = "EMAIL"
-    PHONE = "PHONE"
-    URL = "URL"
-    TEXTAREA = "TEXTAREA"
-    SELECT = "SELECT"
-    RADIO = "RADIO"
-    CHECKBOX = "CHECKBOX"
     FILE = "FILE"
     IMAGE = "IMAGE"
+    NUMBER = "NUMBER"
+    PHONE = "PHONE"
+    PROFILE_PICTURE = "PROFILE_PICTURE"
+    RADIO = "RADIO"
+    SELECT = "SELECT"
+    TEXT = "STRING"
+    TEXTAREA = "TEXTAREA"
+    TIME = "TIME"
+    URL = "URL"
     VIDEO = "VIDEO"
-    CONSENT_CHECKBOX = "CONSENT_CHECKBOX"
+    ZIPCODE = "ZIPCODE"
 
 
 class FormMediaTypes(Enum):
@@ -75,6 +77,7 @@ class FormFieldGroup(SailBaseModel):
 class CardLayout(SailBaseModel):
     name: StrictStr = Field()
     fields: List[StrictStr] = Field(default=None)
+    title_field: Optional[List[StrictStr]] = Field(default=None)
 
 
 class FormTemplate_Base(SailBaseModel):
