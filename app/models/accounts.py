@@ -56,6 +56,7 @@ class User_Db(User_Base):
     state: UserAccountState = Field()
     last_login_time: Optional[datetime] = Field(default=None)
     failed_login_attempts: int = Field(default=0)
+    phone: Optional[StrictStr] = Field(default=None)
 
 
 class UserInfo_Out(User_Base):
@@ -92,6 +93,7 @@ class UpdateUser_In(SailBaseModel):
     roles: Optional[List[UserRole]] = Field(default=None)
     account_state: Optional[UserAccountState] = Field(default=None)
     avatar: Optional[StrictStr] = Field(default=None)
+    phone: Optional[StrictStr] = Field(default=None)
 
 
 class Users:
@@ -150,6 +152,8 @@ class Users:
         update_failed_login_attempts: Optional[int] = None,
         update_password_hash: Optional[str] = None,
         increment_failed_login_attempts: Optional[bool] = None,
+        update_phone: Optional[str] = None,
+        ignore_no_update: bool = False,
     ):
         query = {}
         if query_user_id:
@@ -170,6 +174,8 @@ class Users:
             update_request["$inc"] = {"failed_login_attempts": 1}
         if update_password_hash:
             update_request["$set"]["hashed_password"] = update_password_hash
+        if update_phone:
+            update_request["$set"]["phone"] = update_phone
 
         update_response = await Users.data_service.update_many(
             collection=Users.DB_COLLECTION_USERS,
@@ -177,7 +183,7 @@ class Users:
             data=jsonable_encoder(update_request),
         )
 
-        if update_response.modified_count == 0:
+        if update_response.modified_count == 0 and not ignore_no_update:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User not found or no changes to update",

@@ -136,6 +136,7 @@ async def update_user_info(
         update_job_title=update_user_info.job_title,
         update_avatar=update_user_info.avatar,
         update_account_state=update_user_info.account_state,
+        update_phone=update_user_info.phone,
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
