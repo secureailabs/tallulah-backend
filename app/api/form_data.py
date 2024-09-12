@@ -44,8 +44,6 @@ from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.secrets import secret_store
 
-import logging
-import asyncio
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
