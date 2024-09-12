@@ -7,7 +7,7 @@ import type { ParametersType } from './ParametersType';
 export type ParameterField = {
     name: string;
     label: string;
-    description?: string;
+    description?: (string | null);
     place_holder?: string;
     type?: ParametersType;
     required?: boolean;

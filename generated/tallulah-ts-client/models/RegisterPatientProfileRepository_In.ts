@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { app__models__patient_profile_repositories__CardLayout } from './app__models__patient_profile_repositories__CardLayout';
+import type { CardLayout } from './CardLayout';
 
 export type RegisterPatientProfileRepository_In = {
     name: string;
-    description?: string;
-    card_layout?: app__models__patient_profile_repositories__CardLayout;
+    description?: (string | null);
+    card_layout?: (CardLayout | null);
 };

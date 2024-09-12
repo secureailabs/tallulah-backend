@@ -13,12 +13,13 @@
 # -------------------------------------------------------------------------------
 
 
+import asyncio
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
-from fastapi_utils.tasks import repeat_every
 from pydantic import StrictStr
 
 from app.api.authentication import get_current_user
@@ -50,6 +51,7 @@ router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 async def notify_users(form_template_id: PyObjectId):
     # Get the form template

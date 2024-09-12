@@ -9,10 +9,10 @@ export type GetETapestryData_Out = {
     repository_id: string;
     account: AccountInfo;
     state?: ETapestryDataState;
-    notes?: string;
-    tags?: Array<string>;
-    photos?: Array<string>;
-    videos?: Array<string>;
+    notes?: (string | null);
+    tags?: (Array<string> | null);
+    photos?: (Array<string> | null);
+    videos?: (Array<string> | null);
     id: string;
     creation_time?: string;
 };

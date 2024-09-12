@@ -26,6 +26,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -
 
 
+## [0.16.0] - 2024-09-05
+
+### Added
+
+- **ReCAPTCH v3**
+  - Backend APIs Implemented Google reCAPTCHA v3 for enhanced security and protection against spam and abuse.
+
+### Fixed
+
+- **Patient Form edit images and videos**
+  - Fixed a bug where the images and videos section were not being displayed correctly in the patient form edit section.
+
+### Changed
+
+- **Fast API version upgrade**
+  - Upgraded Fast API to the latest version for improved performance and stability.
+  - Also upgraded pydantic to use the latest version for better and faster data validation and serialization.
+
+
 ## [0.15.1] - 2024-08-27
 
 ### Fixed

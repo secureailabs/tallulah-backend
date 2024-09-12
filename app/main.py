@@ -12,6 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import asyncio
 import base64
 import json
 import logging
@@ -23,7 +24,6 @@ from urllib.parse import parse_qs, urlencode
 
 import aiohttp
 import fastapi.openapi.utils as utils
-import sentry_sdk
 from fastapi import FastAPI, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -34,8 +34,10 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
+from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
+import app.utils.log_manager as arin_logger
 from app.api import (
     accounts,
     authentication,
@@ -47,7 +49,6 @@ from app.api import (
     etapestry_repositories,
     form_data,
     form_templates,
-    internal_utils,
     mailbox,
     media,
     organization,
@@ -55,13 +56,14 @@ from app.api import (
     patient_profile_repositories,
     patient_profiles,
     response_templates,
+    web_utils,
 )
 from app.data.operations import DatabaseOperations
-from app.migrations.es_from_mongodb import move_data_from_mongo_to_es
-from app.migrations.org_name_to_id import org_name_to_id
 from app.models.common import PyObjectId
+from app.tasks.structured_data import generate_structured_data_consumer
+from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
-from app.utils.log_manager import LogLevel, add_log_message
+from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, TaskMessages
 from app.utils.secrets import secret_store
 
 # sentry_sdk.init(
@@ -89,7 +91,7 @@ server.openapi = custom_openapi(server)
 # Add all the API services here exposed to the public
 server.include_router(authentication.router)
 server.include_router(accounts.router)
-server.include_router(internal_utils.router)
+server.include_router(web_utils.router)
 server.include_router(mailbox.router)
 server.include_router(emails.router)
 server.include_router(response_templates.router)
@@ -178,7 +180,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     await data_service.insert_one("errors", jsonable_encoder(message))
 
     # Add the exception to the audit log as well
-    add_log_message(LogLevel.ERROR, message)
+    arin_logger.ERROR(message)
 
     # Respond with a 500 error
     return Response(
@@ -217,7 +219,7 @@ async def set_body(request: Request, body: bytes):
 
 async def get_body(request: Request) -> bytes:
     body = await request.body()
-    #await set_body(request, body)
+    # await set_body(request, body)
     return body
 
 
@@ -239,7 +241,7 @@ def remove_sensitive_info(request_body: Union[Dict, List, Any]):
 
 @server.middleware("http")
 async def add_audit_log(request: Request, call_next: Callable):
-    #await set_body(request, await request.body())
+    # await set_body(request, await request.body())
     request_body = await get_body(request)
 
     # remove sensitive data from the request body
@@ -280,14 +282,23 @@ async def add_audit_log(request: Request, call_next: Callable):
         "response_time": process_time,
     }
 
-    add_log_message(LogLevel.INFO, message)
+    arin_logger.INFO(message)
 
     return response
 
 
-# at a startup script
 @server.on_event("startup")
-async def startup_event():
-    pass
-    # await org_name_to_id()
-    # await move_data_from_mongo_to_es()
+@repeat_every(seconds=60)
+async def start_queue_producers():
+    arin_logger.DEBUG({"message": "Pushing a message to the task queue to generate structured data"})
+    # Push a message to the task queue to generate structured data
+    task_queue = InMemoryProducerConsumer(queue_name=MessageQueueTypes.TASK_QUEUE, connection_string="")
+    await task_queue.connect()
+    await task_queue.push_message(TaskMessages.GENERATE_STRUCTURED_DATA.value)
+
+
+@server.on_event("startup")
+async def start_queue_consumers():
+    arin_logger.DEBUG({"message": "Starting the task queue consumer for generating structured data"})
+    async_task_manager = AsyncTaskManager()
+    async_task_manager.create_task(generate_structured_data_consumer())

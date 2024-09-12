@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { app__models__etapestry_repositories__CardLayout } from './app__models__etapestry_repositories__CardLayout';
+import type { CardLayout } from './CardLayout';
 
 export type RegisterETapestryRepository_In = {
     name: string;
     description: string;
-    card_layout?: app__models__etapestry_repositories__CardLayout;
+    card_layout?: (CardLayout | null);
     database_name: string;
     api_key: string;
 };

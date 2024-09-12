@@ -8,5 +8,6 @@ export type RegisterFormData_In = {
     form_template_id: string;
     values?: any;
     state?: FormDataState;
-    creation_time?: string;
+    themes?: (Array<string> | null);
+    creation_time?: (string | null);
 };

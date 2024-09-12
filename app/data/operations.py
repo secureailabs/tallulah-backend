@@ -112,3 +112,6 @@ class DatabaseOperations:
 
     async def create_index(self, collection: str, index: List[Tuple[str, int]], unique: bool = False):
         return await self.sail_db[collection].create_index(index, unique=unique)
+
+    async def aggregate(self, collection: str, pipeline: List[Dict]) -> List[Dict]:
+        return await self.sail_db[collection].aggregate(pipeline).to_list(10000)

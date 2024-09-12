@@ -5,7 +5,7 @@
 import type { EmailBody } from './EmailBody';
 
 export type UpdateResponseTemplate_In = {
-    subject?: string;
-    body?: EmailBody;
-    note?: string;
+    subject?: (string | null);
+    body?: (EmailBody | null);
+    note?: (string | null);
 };

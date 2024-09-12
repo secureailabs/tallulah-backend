@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type app__models__patient_profile_repositories__CardLayout = {
+export type CardLayout = {
     name: string;
     fields?: Array<string>;
+    title_field?: (Array<string> | null);
 };

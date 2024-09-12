@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DashboardLayout } from './DashboardLayout';
+import type { DashboardLayout_Input } from './DashboardLayout_Input';
 
 export type UpdateDashboardTemplate_In = {
-    name?: string;
-    description?: string;
-    layout?: DashboardLayout;
+    name?: (string | null);
+    description?: (string | null);
+    layout?: (DashboardLayout_Input | null);
 };

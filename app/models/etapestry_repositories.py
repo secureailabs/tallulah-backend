@@ -22,16 +22,12 @@ from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
+from app.models.form_templates import CardLayout
 
 
 class ETapestryRepositoryState(Enum):
     ACTIVE = "ACTIVE"
     DELETED = "DELETED"
-
-
-class CardLayout(SailBaseModel):
-    name: StrictStr = Field()
-    fields: List[StrictStr] = Field(default=None)
 
 
 class ETapestryRepository_Base(SailBaseModel):

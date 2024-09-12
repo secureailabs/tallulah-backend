@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { app__models__form_templates__CardLayout } from './app__models__form_templates__CardLayout';
-import type { FormFieldGroup } from './FormFieldGroup';
+import type { CardLayout } from './CardLayout';
+import type { FormFieldGroup_Input } from './FormFieldGroup_Input';
 
 export type RegisterFormTemplate_In = {
     name: string;
-    description?: string;
-    field_groups?: Array<FormFieldGroup>;
-    card_layout?: app__models__form_templates__CardLayout;
-    logo?: string;
+    description?: (string | null);
+    field_groups?: Array<FormFieldGroup_Input>;
+    card_layout?: (CardLayout | null);
+    logo?: (string | null);
 };

@@ -70,28 +70,6 @@ export class ResponseTemplatesService {
     }
 
     /**
-     * Delete Response Template
-     * Delete the response template for the current user
-     * @param responseTemplateId Response template id
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteResponseTemplate(
-        responseTemplateId: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/response-templates/{response_template_id}',
-            path: {
-                'response_template_id': responseTemplateId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Update Response Template
      * Update the response template for the current user
      * @param responseTemplateId Response template id
@@ -111,6 +89,28 @@ export class ResponseTemplatesService {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Response Template
+     * Delete the response template for the current user
+     * @param responseTemplateId Response template id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteResponseTemplate(
+        responseTemplateId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/response-templates/{response_template_id}',
+            path: {
+                'response_template_id': responseTemplateId,
+            },
             errors: {
                 422: `Validation Error`,
             },

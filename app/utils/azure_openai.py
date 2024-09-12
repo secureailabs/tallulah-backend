@@ -11,7 +11,7 @@ class OpenAiGenerator:
             cls.instance = super(OpenAiGenerator, cls).__new__(cls)
         return cls.instance
 
-    async def get_response(self, messages: List[Dict]) -> str | None:
+    async def get_response(self, messages: List[Dict]) -> str:
 
         response = await self.client.chat.completions.create(
             model=self.model,
@@ -28,6 +28,8 @@ class OpenAiGenerator:
             raise Exception("No response from OpenAI. Response: ", response)
         if not hasattr(response.choices[0].message, "content"):
             raise Exception("No content in OpenAI response. Response: ", response)
+        if not response.choices[0].message.content:
+            raise Exception("Empty content in OpenAI response. Response: ", response)
 
         return response.choices[0].message.content
 

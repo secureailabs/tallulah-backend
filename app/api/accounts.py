@@ -14,7 +14,6 @@
 
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
-from pydantic import EmailStr
 
 from app.api.authentication import RoleChecker, get_current_user, get_password_hash
 from app.models.accounts import (
@@ -49,7 +48,7 @@ async def register_user(
     _: TokenData = Depends(get_current_user),
 ) -> RegisterUser_Out:
     # Make the user's email lowercase
-    user.email = EmailStr(user.email.lower())
+    user.email = user.email.strip().lower()
 
     # Check if the organization exists
     if user.organization_id:
@@ -176,7 +175,7 @@ async def add_tallulah_admin():
     else:
         organization = Organization_Db(
             name="Array Insights",
-            admin=EmailStr("admin@tallulah.net"),
+            admin="admin@tallulah.net",
         )
         await Organizations.create(organization=organization)
 
@@ -189,7 +188,7 @@ async def add_tallulah_admin():
     user_db = User_Db(
         name="Tallulah Admin",
         organization_id=organization.id,
-        email=EmailStr("admin@tallulah.net"),
+        email="admin@tallulah.net",
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",
         hashed_password=get_password_hash("admin@tallulah.net", secret_store.TALLULAH_ADMIN_PASSWORD),

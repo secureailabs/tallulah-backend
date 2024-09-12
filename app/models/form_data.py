@@ -65,6 +65,23 @@ class GetMultipleFormData_Out(SailBaseModel):
     limit: int = Field()
 
 
+class Location(SailBaseModel):
+    latitude: float = Field()
+    longitude: float = Field()
+    city: str = Field()
+    country: str = Field()
+
+
+class FormDataLocation(SailBaseModel):
+    form_data_id: PyObjectId = Field()
+    zipcode: str = Field()
+    location: Location = Field()
+
+
+class GetZipcode_Out(SailBaseModel):
+    patient_location: List[FormDataLocation] = Field()
+
+
 class FormDatas:
     DB_COLLECTION_FORM_DATA = "form_data"
     data_service = DatabaseOperations()
@@ -133,6 +150,20 @@ class FormDatas:
 
         return form_data_list
 
+
+    @staticmethod
+    async def read_forms_without_themes() -> List[FormData_Db]:
+        form_data_list = []
+        query = {"$or": [{"themes": {"$exists": False}}, {"themes": None}]}
+        response = await FormDatas.data_service.find_by_query(
+            collection=FormDatas.DB_COLLECTION_FORM_DATA,
+            query=jsonable_encoder(query),
+        )
+        if response:
+            for form_data in response:
+                form_data_list.append(FormData_Db(**form_data))
+
+        return form_data_list
 
     @staticmethod
     async def read(

@@ -40,7 +40,7 @@ class Annotation(SailBaseModel):
 
 class Email_Base(SailBaseModel):
     subject: Optional[StrictStr] = Field(default=None)
-    body: Optional[Dict] = Field(default_factory=dict)
+    body: Dict = Field(default={})
     from_address: Dict = Field()
     received_time: str = Field()
     mailbox_id: PyObjectId = Field()

@@ -13,6 +13,7 @@
 # -------------------------------------------------------------------------------
 
 
+from re import M
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
@@ -25,7 +26,7 @@ from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMult
 from app.models.mailbox import Mailbox_Db, Mailboxes
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import EmailBody, Message, MessageResponse, OutlookClient
-from app.utils.message_queue import RabbitMQWorkQueue
+from app.utils.message_queue import MessageQueueTypes, RabbitMQWorkQueue
 from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_secret
 
 router = APIRouter(prefix="/api/emails", tags=["emails"])
@@ -66,7 +67,9 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         # Connect to the message queue
         rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
         rabbit_mq_queue_name = secret_store.RABBIT_MQ_QUEUE_NAME
-        rabbit_mq_client = RabbitMQWorkQueue(url=f"{rabbit_mq_connect_url}:5672", queue_name=rabbit_mq_queue_name)
+        rabbit_mq_client = RabbitMQWorkQueue(
+            connection_string=f"{rabbit_mq_connect_url}:5672", queue_name=MessageQueueTypes.EMAIL_QUEUE
+        )
         await rabbit_mq_client.connect()
 
         while len(emails) > 0:

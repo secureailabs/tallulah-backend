@@ -2,24 +2,23 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum FormFieldTypes {
-    STRING = 'STRING',
-    NUMBER = 'NUMBER',
+    CHECKBOX = 'CHECKBOX',
+    CONSENT_CHECKBOX = 'CONSENT_CHECKBOX',
     DATE = 'DATE',
-    TIME = 'TIME',
     DATETIME = 'DATETIME',
     EMAIL = 'EMAIL',
-    PHONE = 'PHONE',
-    URL = 'URL',
-    TEXTAREA = 'TEXTAREA',
-    SELECT = 'SELECT',
-    RADIO = 'RADIO',
-    CHECKBOX = 'CHECKBOX',
     FILE = 'FILE',
     IMAGE = 'IMAGE',
+    NUMBER = 'NUMBER',
+    PHONE = 'PHONE',
+    PROFILE_PICTURE = 'PROFILE_PICTURE',
+    RADIO = 'RADIO',
+    SELECT = 'SELECT',
+    STRING = 'STRING',
+    TEXTAREA = 'TEXTAREA',
+    TIME = 'TIME',
+    URL = 'URL',
     VIDEO = 'VIDEO',
-    CONSENT_CHECKBOX = 'CONSENT_CHECKBOX',
+    ZIPCODE = 'ZIPCODE',
 }
