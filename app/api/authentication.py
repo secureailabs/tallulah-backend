@@ -27,6 +27,7 @@ from app.models.authentication import LoginSuccess_Out, RefreshToken_In, ResetPa
 from app.models.common import PyObjectId
 from app.models.organizations import Organizations
 from app.utils.secrets import secret_store
+from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 
 from firebase_admin.auth import verify_id_token
 import firebase_admin
@@ -108,7 +109,7 @@ class RoleChecker:
     response_model_by_alias=False,
     operation_id="ssologin",
 )
-async def firebase_login_for_access_token(
+async def ssologin(
     current_user: FirebaseTokenData = Depends(firebase_get_current_user),
 ) -> LoginSuccess_Out:
     exception_authentication_failed = HTTPException(
@@ -341,9 +342,9 @@ async def unlock_user_account(
 
 
 @router.post("/api/auth/enable-2fa",
-             description="Enable 2FA for the user",
-             status_code=status.HTTP_204_NO_CONTENT,
-             operation_id="enable_2fa",
+    description="Enable 2FA for the user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="enable_2fa",
 )
 async def enable_2fa(
     current_user: FirebaseTokenData = Depends(firebase_get_current_user),
@@ -360,4 +361,56 @@ async def enable_2fa(
 
     await Users.update(query_user_id=found_user.id, update_phone=update_user_info.phone, ignore_no_update=True)
 
-    return Response(status_code=status.HTTP_200_OK)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/api/auth/migrate-users",
+    description="Migrate users to firebase",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="migrate_users",
+)
+async def migrate_users():
+    users = await Users.read()
+    for user in users:
+        # find if user exists in firebase
+        try:
+            firebase_admin.auth.get_user_by_email(user.email)
+            continue # user already exists
+        except firebase_admin.auth.UserNotFoundError:
+            pass
+        # Create user in firebase
+        firebase_admin.auth.create_user(
+            email=user.email,
+            password=f"arrayinsights",
+            display_name=user.name,
+            email_verified=True,
+            disabled=False,
+        )
+        # Send password reset email
+        reset_link = firebase_admin.auth.generate_password_reset_link(user.email)
+
+        # Send email
+        try:
+            client = OutlookClient(
+                client_id=secret_store.OUTLOOK_CLIENT_ID,
+                client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+                redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
+            )
+            await client.connect_with_refresh_token(secret_store.EMAIL_NO_REPLY_REFRESH_TOKEN)
+
+            # Send email notifications to the subscribed users
+            email_message = MessageResponse(
+                message=Message(
+                    subject="Tallulah just upgraded the authentication system!",
+                    body=EmailBody(
+                        contentType="html",
+                        content=f'<html>We just upgraded our authentication system to a better one! <br> You can reset the password <a href="{reset_link}">here.</a></html>',
+                    ),
+                    toRecipients=[ToRecipient(emailAddress=EmailAddress(address=user.email, name=user.name))],
+                )
+            )
+            await client.send_email(email_message)
+        except:
+            pass
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -50,12 +50,12 @@ class User_Base(SailBaseModel):
 
 class User_Db(User_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    organization_id: PyObjectId = Field()
+    organization_id: Optional[PyObjectId] = Field(default=None)
     account_creation_time: datetime = Field(default_factory=datetime.utcnow)
     hashed_password: StrictStr = Field()
     state: UserAccountState = Field()
     last_login_time: Optional[datetime] = Field(default=None)
-    failed_login_attempts: int = Field(default=0)
+    failed_login_attempts: Optional[int] = Field(default=0)
     phone: Optional[StrictStr] = Field(default=None)
 
 
