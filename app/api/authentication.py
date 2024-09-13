@@ -367,9 +367,12 @@ async def enable_2fa(
 @router.get("/api/auth/migrate-users",
     description="Migrate users to firebase",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
     operation_id="migrate_users",
 )
-async def migrate_users():
+async def migrate_users(
+    _: TokenData = Depends(get_current_user),
+):
     users = await Users.read()
     for user in users:
         # find if user exists in firebase
