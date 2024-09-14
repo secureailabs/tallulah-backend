@@ -19,6 +19,7 @@ from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.concurrency import run_in_threadpool
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
@@ -60,6 +61,16 @@ async def firebase_get_current_user(token: str = Depends(oauth2_scheme)):
             detail="Could not validate credentials.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+async def create_firebase_user(email: str, password: str, name: str):
+    return await run_in_threadpool(lambda: firebase_admin.auth.create_user(
+        email=email,
+        password=password,
+        display_name=name,
+        email_verified=True,
+        disabled=False,
+    ))
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -377,20 +388,15 @@ async def migrate_users(
     for user in users:
         # find if user exists in firebase
         try:
-            firebase_admin.auth.get_user_by_email(user.email)
+            await run_in_threadpool(lambda: firebase_admin.auth.get_user_by_email(user.email))
             continue # user already exists
         except firebase_admin.auth.UserNotFoundError:
             pass
         # Create user in firebase
-        firebase_admin.auth.create_user(
-            email=user.email,
-            password=f"arrayinsights",
-            display_name=user.name,
-            email_verified=True,
-            disabled=False,
-        )
+        await create_firebase_user(user.email, "arrayinsights", user.name)
+
         # Send password reset email
-        reset_link = firebase_admin.auth.generate_password_reset_link(user.email)
+        reset_link = await run_in_threadpool(lambda: firebase_admin.auth.generate_password_reset_link(user.email))
 
         # Send email
         try:
