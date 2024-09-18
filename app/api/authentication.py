@@ -39,6 +39,7 @@ router = APIRouter(tags=["authentication"])
 # Authentication settings
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 20
+REFRESH_TOKEN_EXPIRE_MINUTES = (60 * 24)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # Firebase
@@ -154,6 +155,8 @@ async def ssologin(
         key=secret_store.JWT_SECRET,
         algorithm=ALGORITHM,
     )
+
+    token_data.exp = int(time() + REFRESH_TOKEN_EXPIRE_MINUTES * 60)
     refresh_token = jwt.encode(
         claims=jsonable_encoder(token_data),
         key=secret_store.REFRESH_SECRET,
@@ -230,6 +233,7 @@ async def login_for_access_token(
         key=secret_store.JWT_SECRET,
         algorithm=ALGORITHM,
     )
+    token_data.exp = int(time() + REFRESH_TOKEN_EXPIRE_MINUTES * 60)
     refresh_token = jwt.encode(
         claims=jsonable_encoder(token_data),
         key=secret_store.REFRESH_SECRET,
@@ -273,6 +277,7 @@ async def refresh_for_access_token(
             algorithm=ALGORITHM,
         )
 
+        token_data.exp = int(time() + REFRESH_TOKEN_EXPIRE_MINUTES * 60)
         refresh_token = jwt.encode(
             claims=jsonable_encoder(token_data),
             key=secret_store.REFRESH_SECRET,
