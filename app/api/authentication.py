@@ -15,6 +15,7 @@
 from datetime import datetime
 from time import time
 from typing import List
+import json
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from fastapi.encoders import jsonable_encoder
@@ -43,7 +44,12 @@ REFRESH_TOKEN_EXPIRE_MINUTES = (60 * 24)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # Firebase
-cred = firebase_admin.credentials.Certificate(secret_store.FIREBASE_CREDENTIALS)
+cred = ""
+if secret_store.FIREBASE_CREDENTIALS_FILE:
+    cred = secret_store.FIREBASE_CREDENTIALS_FILE
+else:
+    cred = json.loads(bytes.fromhex(secret_store.FIREBASE_CREDENTIALS).decode("utf-8"))
+cred = firebase_admin.credentials.Certificate(cred)
 firebase_admin.initialize_app(cred)
 
 

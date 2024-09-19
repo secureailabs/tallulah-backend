@@ -43,6 +43,7 @@ class SecretStore(BaseModel):
     OPENAI_API_BASE: str
     OPENAI_API_KEY: str
     FIREBASE_CREDENTIALS: str
+    FIREBASE_CREDENTIALS_FILE: str
     GOOGLE_RECAPTCHA_SECRET_KEY: str
 
     class Config:
@@ -78,6 +79,7 @@ secret_store = SecretStore(
     OPENAI_API_BASE=get_secret_env("OPENAI_API_BASE"),
     OPENAI_API_KEY=get_secret_env("OPENAI_API_KEY"),
     FIREBASE_CREDENTIALS=get_secret_env("FIREBASE_CREDENTIALS"),
+    FIREBASE_CREDENTIALS_FILE=get_secret_env("FIREBASE_CREDENTIALS_FILE"),
     GOOGLE_RECAPTCHA_SECRET_KEY=get_secret_env("GOOGLE_RECAPTCHA_SECRET_KEY"),
 )
 
