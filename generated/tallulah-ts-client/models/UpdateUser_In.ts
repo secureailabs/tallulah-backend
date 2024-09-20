@@ -10,4 +10,5 @@ export type UpdateUser_In = {
     roles?: (Array<UserRole> | null);
     account_state?: (UserAccountState | null);
     avatar?: (string | null);
+    phone?: (string | null);
 };

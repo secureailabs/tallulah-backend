@@ -135,6 +135,7 @@ class FormDatas:
 
         return form_data_list
 
+
     @staticmethod
     async def read_forms_without_themes() -> List[FormData_Db]:
         form_data_list = []
@@ -148,6 +149,7 @@ class FormDatas:
                 form_data_list.append(FormData_Db(**form_data))
 
         return form_data_list
+
 
     @staticmethod
     async def read(

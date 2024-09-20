@@ -33,6 +33,11 @@ class TokenData(SailBaseModel):
     exp: int = Field()
 
 
+class FirebaseTokenData(SailBaseModel):
+    user_id: StrictStr = Field()
+    email: StrictStr = Field()
+
+
 class RefreshTokenData(SailBaseModel):
     id: PyObjectId = Field()
     organization_id: PyObjectId = Field()

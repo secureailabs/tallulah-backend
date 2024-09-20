@@ -5,6 +5,7 @@ import type { Body_login } from '../models/Body_login';
 import type { LoginSuccess_Out } from '../models/LoginSuccess_Out';
 import type { RefreshToken_In } from '../models/RefreshToken_In';
 import type { ResetPassword_In } from '../models/ResetPassword_In';
+import type { UpdateUser_In } from '../models/UpdateUser_In';
 import type { UserInfo_Out } from '../models/UserInfo_Out';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -12,6 +13,22 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
 export class AuthenticationService {
+
+    /**
+     * Firebase Login For Access Token
+     * User login with firebase token
+     * @returns LoginSuccess_Out Successful Response
+     * @throws ApiError
+     */
+    public static ssologin(): CancelablePromise<LoginSuccess_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/ssologin',
+            errors: {
+                401: `Incorrect username or password`,
+            },
+        });
+    }
 
     /**
      * Login For Access Token
@@ -109,6 +126,28 @@ export class AuthenticationService {
                 'user_id': userId,
             },
             errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Enable 2Fa
+     * Enable 2FA for the user
+     * @param requestBody
+     * @returns void
+     * @throws ApiError
+     */
+    public static enable2Fa(
+        requestBody: UpdateUser_In,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/auth/enable-2fa',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Phone number is required`,
                 422: `Validation Error`,
             },
         });

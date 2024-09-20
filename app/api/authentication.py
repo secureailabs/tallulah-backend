@@ -15,18 +15,24 @@
 from datetime import datetime
 from time import time
 from typing import List
+import json
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.concurrency import run_in_threadpool
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
-from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users
-from app.models.authentication import LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData
+from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users, UpdateUser_In
+from app.models.authentication import LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData, FirebaseTokenData
 from app.models.common import PyObjectId
 from app.models.organizations import Organizations
 from app.utils.secrets import secret_store
+from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
+
+from firebase_admin.auth import verify_id_token
+import firebase_admin
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(tags=["authentication"])
@@ -34,12 +40,44 @@ router = APIRouter(tags=["authentication"])
 # Authentication settings
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 20
+REFRESH_TOKEN_EXPIRE_MINUTES = (60 * 24)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+# Firebase
+cred = ""
+if secret_store.FIREBASE_CREDENTIALS_FILE:
+    cred = secret_store.FIREBASE_CREDENTIALS_FILE
+else:
+    cred = json.loads(bytes.fromhex(secret_store.FIREBASE_CREDENTIALS).decode("utf-8"))
+cred = firebase_admin.credentials.Certificate(cred)
+firebase_admin.initialize_app(cred)
 
 
 def get_password_hash(salt, password):
     PASSWORD_PEPPER = secret_store.PASSWORD_PEPPER
     return pwd_context.hash(f"{salt}{password}{PASSWORD_PEPPER}")
+
+
+async def firebase_get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        decoded_token = verify_id_token(token)
+        return FirebaseTokenData(**decoded_token)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+async def create_firebase_user(email: str, password: str, name: str):
+    return await run_in_threadpool(lambda: firebase_admin.auth.create_user(
+        email=email,
+        password=password,
+        display_name=name,
+        email_verified=True,
+        disabled=False,
+    ))
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -80,6 +118,58 @@ class RoleChecker:
                 if role in self.allowed_roles:
                     return None
             raise HTTPException(status_code=403, detail="Operation not permitted")
+
+
+@router.get(
+    path="/api/ssologin",
+    description="User login with firebase token",
+    response_model=LoginSuccess_Out,
+    response_model_by_alias=False,
+    operation_id="ssologin",
+)
+async def ssologin(
+    current_user: FirebaseTokenData = Depends(firebase_get_current_user),
+) -> LoginSuccess_Out:
+    exception_authentication_failed = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect username or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    # Two alternatives:
+        # 1. We can either create custom firebase token and send it to client
+        # 2. We can generate our own token -> Using this for now
+
+    found_user = await Users.read(email=current_user.email, throw_on_not_found=False)
+    if not found_user:
+        raise exception_authentication_failed
+    found_user_db = found_user[0]
+
+    if found_user_db.state is not UserAccountState.ACTIVE:
+        raise HTTPException(
+            status_code=403,
+            detail=f"User account is {found_user_db.state.value}. Contact Array Insights support.",
+        )
+
+    token_data = TokenData(
+        id=found_user_db.id,
+        roles=found_user_db.roles,
+        organization_id=found_user_db.organization_id,
+        exp=int(time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60),
+    )
+    access_token = jwt.encode(
+        claims=jsonable_encoder(token_data),
+        key=secret_store.JWT_SECRET,
+        algorithm=ALGORITHM,
+    )
+
+    token_data.exp = int(time() + REFRESH_TOKEN_EXPIRE_MINUTES * 60)
+    refresh_token = jwt.encode(
+        claims=jsonable_encoder(token_data),
+        key=secret_store.REFRESH_SECRET,
+        algorithm=ALGORITHM,
+    )
+
+    return LoginSuccess_Out(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
 
 @router.post(
@@ -149,6 +239,7 @@ async def login_for_access_token(
         key=secret_store.JWT_SECRET,
         algorithm=ALGORITHM,
     )
+    token_data.exp = int(time() + REFRESH_TOKEN_EXPIRE_MINUTES * 60)
     refresh_token = jwt.encode(
         claims=jsonable_encoder(token_data),
         key=secret_store.REFRESH_SECRET,
@@ -192,6 +283,7 @@ async def refresh_for_access_token(
             algorithm=ALGORITHM,
         )
 
+        token_data.exp = int(time() + REFRESH_TOKEN_EXPIRE_MINUTES * 60)
         refresh_token = jwt.encode(
             claims=jsonable_encoder(token_data),
             key=secret_store.REFRESH_SECRET,
@@ -261,11 +353,84 @@ async def reset_user_password(
 )
 async def unlock_user_account(
     user_id: PyObjectId = Path(description="The user id to unlock the account for"),
-    _: User_Db = Depends(get_current_user),
+    _: TokenData = Depends(get_current_user),
 ):
     # Update the user account state and reset the failed login attempts to 0
     await Users.update(
         query_user_id=user_id, update_account_state=UserAccountState.ACTIVE, update_failed_login_attempts=0
     )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/api/auth/enable-2fa",
+    description="Enable 2FA for the user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="enable_2fa",
+)
+async def enable_2fa(
+    current_user: FirebaseTokenData = Depends(firebase_get_current_user),
+    update_user_info: UpdateUser_In = Body(description="User Object - only phone is considered"),
+):
+    found_user = await Users.read(email=current_user.email)
+    found_user = found_user[0]
+    if not update_user_info.phone:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number is required")
+
+    # Update phone
+    firebase_admin.auth.update_user(current_user.user_id, email_verified=True, phone_number=update_user_info.phone)
+    # Firebase Python sdk missing enrollment of 2fa, so this is done via web
+
+    await Users.update(query_user_id=found_user.id, update_phone=update_user_info.phone, ignore_no_update=True)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/api/auth/migrate-users",
+    description="Migrate users to firebase",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
+    operation_id="migrate_users",
+)
+async def migrate_users(
+    _: TokenData = Depends(get_current_user),
+):
+    users = await Users.read()
+    for user in users:
+        # find if user exists in firebase
+        try:
+            await run_in_threadpool(lambda: firebase_admin.auth.get_user_by_email(user.email))
+            continue # user already exists
+        except firebase_admin.auth.UserNotFoundError:
+            pass
+        # Create user in firebase
+        await create_firebase_user(user.email, "arrayinsights", user.name)
+
+        # Send password reset email
+        reset_link = await run_in_threadpool(lambda: firebase_admin.auth.generate_password_reset_link(user.email))
+
+        # Send email
+        try:
+            client = OutlookClient(
+                client_id=secret_store.OUTLOOK_CLIENT_ID,
+                client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+                redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
+            )
+            await client.connect_with_refresh_token(secret_store.EMAIL_NO_REPLY_REFRESH_TOKEN)
+
+            # Send email notifications to the subscribed users
+            email_message = MessageResponse(
+                message=Message(
+                    subject="Tallulah just upgraded the authentication system!",
+                    body=EmailBody(
+                        contentType="html",
+                        content=f'<html>We just upgraded our authentication system to a better one! <br> You can reset the password <a href="{reset_link}">here.</a></html>',
+                    ),
+                    toRecipients=[ToRecipient(emailAddress=EmailAddress(address=user.email, name=user.name))],
+                )
+            )
+            await client.send_email(email_message)
+        except:
+            pass
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

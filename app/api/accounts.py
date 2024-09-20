@@ -15,7 +15,7 @@
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 
-from app.api.authentication import RoleChecker, get_current_user, get_password_hash
+from app.api.authentication import RoleChecker, get_current_user, get_password_hash, create_firebase_user
 from app.models.accounts import (
     GetUsers_Out,
     RegisterUser_In,
@@ -89,6 +89,8 @@ async def register_user(
     )
     await Users.create(user=user_db)
 
+    await create_firebase_user(user.email, user.password, user.name)
+
     return RegisterUser_Out(id=user_db.id)
 
 
@@ -135,6 +137,7 @@ async def update_user_info(
         update_job_title=update_user_info.job_title,
         update_avatar=update_user_info.avatar,
         update_account_state=update_user_info.account_state,
+        update_phone=update_user_info.phone,
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -183,11 +186,14 @@ async def add_tallulah_admin():
     if user_db:
         return
 
+    admin_email="admin@tallulah.net"
+    admin_name="Tallulah Admin"
+
     # Create the user and add it to the database
     user_db = User_Db(
-        name="Tallulah Admin",
+        name=admin_name,
         organization_id=organization.id,
-        email="admin@tallulah.net",
+        email=admin_email,
         roles=[UserRole.TALLULAH_ADMIN],
         job_title="Array Insights Admin",
         hashed_password=get_password_hash("admin@tallulah.net", secret_store.TALLULAH_ADMIN_PASSWORD),
@@ -195,3 +201,5 @@ async def add_tallulah_admin():
     )
 
     await Users.create(user=user_db)
+
+    await create_firebase_user(admin_email, secret_store.TALLULAH_ADMIN_PASSWORD, admin_name)
