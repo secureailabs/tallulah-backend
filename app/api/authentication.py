@@ -13,16 +13,16 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from time import time
 from typing import List
 
 import firebase_admin
+import firebase_admin.auth
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from firebase_admin.auth import verify_id_token
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
@@ -59,7 +59,7 @@ def get_password_hash(salt, password):
 
 async def firebase_get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        decoded_token = verify_id_token(token)
+        decoded_token = firebase_admin.auth.verify_id_token(token)
         return FirebaseTokenData(**decoded_token)
     except Exception as e:
         raise HTTPException(
@@ -225,7 +225,9 @@ async def login_for_access_token(
     else:
         # Reset the failed login attempts and update the last login time
         await Users.update(
-            query_user_id=found_user_db.id, update_last_login_time=datetime.utcnow(), update_failed_login_attempts=0
+            query_user_id=found_user_db.id,
+            update_last_login_time=datetime.now(timezone.utc),
+            update_failed_login_attempts=0,
         )
 
     # Create the access token and refresh token and return them

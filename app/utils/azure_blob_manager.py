@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta, timezone
 
 from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 from azure.storage.blob.aio import BlobServiceClient
@@ -34,7 +34,7 @@ class AzureBlobManager:
             blob_name=file_name,
             account_key=self.blob_service_client.credential.account_key,
             permission=BlobSasPermissions(read=True),
-            expiry=datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=expiry_hours),
+            expiry=datetime.now(timezone.utc) + timedelta(hours=expiry_hours),
         )
         return f"{blob_client.url}?{sas_token}"
 
@@ -48,7 +48,7 @@ class AzureBlobManager:
             blob_name=file_name,
             account_key=self.blob_service_client.credential.account_key,
             permission=BlobSasPermissions(write=True),
-            expiry=datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=expiry_hours),
+            expiry=datetime.now(timezone.utc) + timedelta(hours=expiry_hours),
         )
         return f"{blob_client.url}?{sas_token}"
 

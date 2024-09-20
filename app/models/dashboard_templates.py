@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -85,14 +85,14 @@ class DashboardTemplate_Db(DashboardTemplate_Base):
     user_id: PyObjectId = Field()
     organization_id: PyObjectId = Field()
     state: DashboardTemplateState = Field()
-    creation_time: datetime = Field(default_factory=datetime.now)
+    creation_time: datetime = Field(default=datetime.now(timezone.utc))
 
 
 class GetDashboardTemplate_Out(DashboardTemplate_Base):
     id: PyObjectId = Field()
-    creation_time: datetime = Field(default_factory=datetime.now)
+    creation_time: datetime = Field(default=datetime.now(timezone.utc))
     state: DashboardTemplateState = Field()
-    last_edit_time: datetime = Field(default_factory=datetime.now)
+    last_edit_time: datetime = Field(default=datetime.now(timezone.utc))
 
 
 class UpdateDashboardTemplate_In(SailBaseModel):

@@ -225,7 +225,7 @@ export class FormDataService {
     ): CancelablePromise<GetFormDataLocation_Out> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/form-datazipcodes',
+            url: '/api/form-data/zipcodes',
             query: {
                 'form_template_id': formTemplateId,
             },
@@ -262,6 +262,29 @@ export class FormDataService {
             },
             errors: {
                 422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Generate Metadata
+     * Generate metadata for the form data
+     * @param formDataId Form data id
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static generateMetadata(
+        formDataId: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/form-data/{form_data_id}/generate-metadata',
+            path: {
+                'form_data_id': formDataId,
+            },
+            errors: {
+                422: `Validation Error`,
+                429: `Metadata generation is already in progress. Please try again later after 10 minutes.`,
             },
         });
     }

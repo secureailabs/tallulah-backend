@@ -1,37 +1,73 @@
-from typing import Dict, List
+from typing import Any, Dict, List, Optional, Union
 
-from openai import AsyncAzureOpenAI
+from openai import NOT_GIVEN, AsyncAzureOpenAI
+from pydantic import BaseModel
 
 
 class OpenAiGenerator:
     def __new__(cls, api_base, api_key) -> "OpenAiGenerator":
         if not hasattr(cls, "instance"):
             cls.client = AsyncAzureOpenAI(azure_endpoint=api_base, api_key=api_key, api_version="2024-02-01")
-            cls.model = "gpt4o"
+            cls.model = "gpt-4o"
             cls.instance = super(OpenAiGenerator, cls).__new__(cls)
         return cls.instance
 
-    async def get_response(self, messages: List[Dict]) -> str:
-
-        response = await self.client.chat.completions.create(
+    async def get_response(
+        self,
+        messages: List[Dict],
+        response_model: Optional[type[BaseModel]] = None,
+    ) -> Union[str, Any]:
+        response = await self.client.beta.chat.completions.parse(
             model=self.model,
             messages=messages,  # type: ignore
-            temperature=0.7,
-            max_tokens=800,
-            top_p=0.95,
-            frequency_penalty=0,
-            presence_penalty=0,
-            stop=None,
+            stop=NOT_GIVEN,
+            response_format=response_model if response_model else NOT_GIVEN,
         )
 
         if not hasattr(response.choices[0], "message"):
             raise Exception("No response from OpenAI. Response: ", response)
         if not hasattr(response.choices[0].message, "content"):
             raise Exception("No content in OpenAI response. Response: ", response)
-        if not response.choices[0].message.content:
+        if not response_model and not response.choices[0].message.content:
             raise Exception("Empty content in OpenAI response. Response: ", response)
 
-        return response.choices[0].message.content
+        if response_model:
+            if response.choices[0].message.parsed:
+                return response.choices[0].message.parsed
+            else:
+                return response.choices[0].message.refusal
+        else:
+            return response.choices[0].message.content
+
+    async def generate_transcript(self, audio_path: str) -> str:
+        with open(audio_path, "rb") as audio_file:
+            response = await self.client.audio.transcriptions.create(
+                model="whisper",
+                file=audio_file,
+            )
+
+            if not hasattr(response, "text"):
+                raise Exception("No transcription from OpenAI. Response: ", response)
+
+            return response.text
+
+    async def describe_image(self, image_url: str) -> str:
+        prompt = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Describe the image."},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": image_url,
+                        },
+                    },
+                ],
+            }
+        ]
+
+        return await self.get_response(prompt)
 
 
 # test the OpenAiGenerator
