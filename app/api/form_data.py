@@ -15,11 +15,12 @@
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
+from fastapi_utils.tasks import repeat_every
 from pydantic import StrictStr
 
 from app.api.authentication import get_current_user
@@ -38,18 +39,44 @@ from app.models.form_data import (
     UpdateFormData_In,
 )
 from app.models.form_templates import FormMediaTypes, FormTemplates, GetStorageUrl_Out
+from app.utils import log_manager
 from app.utils.azure_blob_manager import AzureBlobManager
 from app.utils.azure_openai import OpenAiGenerator
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
+from app.utils.lock_store import LocalLockStore
+from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, TaskMessages
 from app.utils.secrets import secret_store
-
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
 # logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# @router.on_event("startup")
+# @repeat_every(seconds=60)
+async def queue_form_data_metadata_generation():
+    log_manager.DEBUG({"message": "Pushing a message to the task queue to generate structured data"})
+
+    # Get the 10 form data for which the metadata is not generated
+    metadata_not_generated = await FormDatas.read(
+        field_not_exists="metadata", limit=10, skip=0, throw_on_not_found=False
+    )
+    if not metadata_not_generated:
+        return
+
+    # Initialize the queue
+    task_queue = InMemoryProducerConsumer(
+        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION, connection_string=""
+    )
+    await task_queue.connect()
+
+    # Push the message to the queue
+    print("Data id", [str(data.id) for data in metadata_not_generated])
+    for data in metadata_not_generated:
+        await task_queue.push_message(str(data.id))
 
 
 async def notify_users(form_template_id: PyObjectId):
@@ -314,7 +341,7 @@ async def get_zipcodes(
         template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
 
-    form_data_list = await FormDatas.get_zipcodes(form_template_id=form_template_id)
+    form_data_list = await FormDatas.aggregate_zipcodes(form_template_id=form_template_id)
 
     return GetFormDataLocation_Out(form_data_location=form_data_list)
 
@@ -366,6 +393,55 @@ async def get_form_data(
     )
 
     return GetFormData_Out(**form_data[0].dict())
+
+
+@router.post(
+    path="/{form_data_id}/generate-metadata",
+    description="Generate metadata for the form data",
+    status_code=status.HTTP_202_ACCEPTED,
+    operation_id="generate_metadata",
+)
+async def generate_metadata(
+    form_data_id: PyObjectId = Path(description="Form data id"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+
+    form_data = await FormDatas.read(form_data_id=form_data_id, throw_on_not_found=True)
+
+    # Check if the user is the owner of the response template
+    _ = await FormTemplates.read(
+        template_id=form_data[0].form_template_id,
+        organization_id=current_user.organization_id,
+        throw_on_not_found=True,
+    )
+
+    # if the lock on the form data is acquired, return as the metadata is already being generated
+    lock_store = LocalLockStore()
+    is_locked = lock_store.is_locked(f"form_data_{str(form_data_id)}")
+    if is_locked:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Metadata generation is already in progress. Please try again later after 10 minutes.",
+        )
+
+    # Only generate metadata if it has been more than 5 minutes since the last time it was generated
+    # else throw a error saying warning about the rate limit
+    if form_data[0].metadata:
+        time_diff = datetime.now(timezone.utc) - form_data[0].metadata.creation_time
+        if time_diff.total_seconds() < 300:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Please try again after 5 minutes.",
+            )
+
+    # Generate metadata for the form data
+    task_queue = InMemoryProducerConsumer(
+        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION, connection_string=""
+    )
+    await task_queue.connect()
+    await task_queue.push_message(str(form_data_id))
+
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
 @router.delete(
@@ -498,7 +574,7 @@ async def generate_all_tags():
 
 async def generate_all_themes():
     # Get all the form data
-    form_data = await FormDatas.read_forms_without_themes()
+    form_data = await FormDatas.read(field_not_exists="themes", throw_on_not_found=False)
     if not form_data:
         return
 

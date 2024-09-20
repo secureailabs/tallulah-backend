@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -34,7 +34,7 @@ class MediaMetadata_Db(SailBaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     state: MediaState = Field(default=MediaState.ACTIVE)
     organization_id: PyObjectId = Field()
-    creation_time: datetime = Field(default_factory=datetime.now)
+    creation_time: datetime = Field(default=datetime.now(timezone.utc))
 
 
 class MediaMetadata:

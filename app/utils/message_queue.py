@@ -8,7 +8,7 @@ from aio_pika.abc import AbstractIncomingMessage
 
 
 class MessageQueueTypes(Enum):
-    TASK_QUEUE = "TASK_QUEUE"
+    FORM_DATA_METADATA_GENERATION = "FORM_DATA_METADATA_GENERATION"
     EMAIL_QUEUE = "email_queue"
 
 
@@ -61,8 +61,8 @@ class InMemoryProducerConsumer(AbstractMessageQueue):
         while True:
             print("Checking for messages in ", self.queue_name)
             if self.queue:
-                _ = self.queue.popleft()
-                await on_message()
+                message = self.queue.popleft()
+                await on_message(message)
             await asyncio.sleep(10)
 
     async def disconnect(self):
@@ -182,7 +182,7 @@ async def main():
             await asyncio.sleep(message.body.count(b"."))
             print(f"     Message body is: {message.body!r}")
 
-    mq = RabbitMQWorkQueue(MessageQueueTypes.TASK_QUEUE, "amqp://guest:guest@localhost/")
+    mq = RabbitMQWorkQueue(MessageQueueTypes.FORM_DATA_METADATA_GENERATION, "amqp://guest:guest@localhost/")
     await mq.connect()
     await mq.push_message("Hello World! Work Queue 1")
     await mq.push_message("Hello World! Work Queue 2")

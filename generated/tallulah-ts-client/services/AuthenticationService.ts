@@ -15,7 +15,7 @@ import { request as __request } from '../core/request';
 export class AuthenticationService {
 
     /**
-     * Firebase Login For Access Token
+     * Ssologin
      * User login with firebase token
      * @returns LoginSuccess_Out Successful Response
      * @throws ApiError
@@ -150,6 +150,19 @@ export class AuthenticationService {
                 400: `Phone number is required`,
                 422: `Validation Error`,
             },
+        });
+    }
+
+    /**
+     * Migrate Users
+     * Migrate users to firebase
+     * @returns void
+     * @throws ApiError
+     */
+    public static migrateUsers(): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/auth/migrate-users',
         });
     }
 

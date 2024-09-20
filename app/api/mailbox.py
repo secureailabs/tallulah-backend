@@ -81,7 +81,7 @@ async def add_new_mailbox(
         email=user_info["mail"],
         user_id=current_user.id,
         refresh_token_id=refresh_token_id,
-        state=MailboxState.IDLE,
+        state=MailboxState.ACTIVE,
     )
     await Mailboxes.create(mailbox=mailbox_db)
 
