@@ -12,27 +12,26 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import json
 from datetime import datetime
 from time import time
 from typing import List
-import json
 
+import firebase_admin
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.concurrency import run_in_threadpool
+from firebase_admin.auth import verify_id_token
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
-from app.models.accounts import User_Db, UserAccountState, UserInfo_Out, UserRole, Users, UpdateUser_In
-from app.models.authentication import LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData, FirebaseTokenData
+from app.models.accounts import UpdateUser_In, User_Db, UserAccountState, UserInfo_Out, UserRole, Users
+from app.models.authentication import FirebaseTokenData, LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData
 from app.models.common import PyObjectId
 from app.models.organizations import Organizations
-from app.utils.secrets import secret_store
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
-
-from firebase_admin.auth import verify_id_token
-import firebase_admin
+from app.utils.secrets import secret_store
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(tags=["authentication"])
@@ -40,7 +39,7 @@ router = APIRouter(tags=["authentication"])
 # Authentication settings
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 20
-REFRESH_TOKEN_EXPIRE_MINUTES = (60 * 24)
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # Firebase
@@ -71,13 +70,15 @@ async def firebase_get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 async def create_firebase_user(email: str, password: str, name: str):
-    return await run_in_threadpool(lambda: firebase_admin.auth.create_user(
-        email=email,
-        password=password,
-        display_name=name,
-        email_verified=True,
-        disabled=False,
-    ))
+    return await run_in_threadpool(
+        lambda: firebase_admin.auth.create_user(
+            email=email,
+            password=password,
+            display_name=name,
+            email_verified=True,
+            disabled=False,
+        )
+    )
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -136,8 +137,8 @@ async def ssologin(
         headers={"WWW-Authenticate": "Bearer"},
     )
     # Two alternatives:
-        # 1. We can either create custom firebase token and send it to client
-        # 2. We can generate our own token -> Using this for now
+    # 1. We can either create custom firebase token and send it to client
+    # 2. We can generate our own token -> Using this for now
 
     found_user = await Users.read(email=current_user.email, throw_on_not_found=False)
     if not found_user:
@@ -363,7 +364,8 @@ async def unlock_user_account(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/api/auth/enable-2fa",
+@router.post(
+    "/api/auth/enable-2fa",
     description="Enable 2FA for the user",
     status_code=status.HTTP_204_NO_CONTENT,
     operation_id="enable_2fa",
@@ -386,7 +388,8 @@ async def enable_2fa(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/api/auth/migrate-users",
+@router.get(
+    "/api/auth/migrate-users",
     description="Migrate users to firebase",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(RoleChecker(allowed_roles=[]))],
@@ -400,7 +403,7 @@ async def migrate_users(
         # find if user exists in firebase
         try:
             await run_in_threadpool(lambda: firebase_admin.auth.get_user_by_email(user.email))
-            continue # user already exists
+            continue  # user already exists
         except firebase_admin.auth.UserNotFoundError:
             pass
         # Create user in firebase
