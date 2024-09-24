@@ -129,6 +129,7 @@ module "container_app_backend" {
   openai_api_key                    = data.azurerm_key_vault_secret.keyvault_secrets["openai-api-key"].value
   email_no_reply_refresh_token      = data.azurerm_key_vault_secret.keyvault_secrets["email-no-reply-refresh-token"].value
   google_recaptcha_secret_key       = data.azurerm_key_vault_secret.keyvault_secrets["google-recaptcha-secret-key"].value
+  firebase_credentials              = data.azurerm_key_vault_secret.keyvault_secrets["firebase-credentials"].value
 }
 
 module "container_app_rabbit_mq" {

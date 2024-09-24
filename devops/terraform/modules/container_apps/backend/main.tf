@@ -106,6 +106,10 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "google-recaptcha-secret-key"
     value = var.google_recaptcha_secret_key
   }
+  secret {
+    name  = "firebase-credentials"
+    value = var.firebase_credentials
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -216,6 +220,14 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "GOOGLE_RECAPTCHA_SECRET_KEY"
         secret_name = "google-recaptcha-secret-key"
+      }
+      env {
+        name        = "FIREBASE_CREDENTIALS"
+        secret_name = "firebase-credentials"
+      }
+      env {
+        name  = "FIREBASE_CREDENTIALS_FILE"
+        value = ""
       }
     }
   }
