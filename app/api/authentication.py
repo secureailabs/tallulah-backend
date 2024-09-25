@@ -405,6 +405,7 @@ async def migrate_users(
             await run_in_threadpool(lambda: firebase_admin.auth.get_user_by_email(user.email))
             continue  # user already exists
         except firebase_admin.auth.UserNotFoundError:
+            print(f"Processing user: {user.email}")
             pass
         # Create user in firebase
         await create_firebase_user(user.email, "arrayinsights", user.name)
