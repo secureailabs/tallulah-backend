@@ -14,19 +14,47 @@
 
 from datetime import datetime
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 
 from app.api.authentication import get_current_user
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
 from app.models.content_generation_template import Context
-from app.models.form_data import FormDatas
+from app.models.form_data import FormDatas, GetFormData_Out, GetMultipleFormData_Out
 from app.models.form_templates import FormTemplates
 from app.models.patient_chat import PatientChat, PatientChat_Base, PatientChat_Db, PatientChat_Out
 from app.utils.azure_openai import OpenAiGenerator
 from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/patient-chat", tags=["patient-chat"])
+
+
+@router.get(
+    path="/",
+    description="Get list of form data, sorted by last updated",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    operation_id="get_patient_chats",
+)
+async def get_patient_chats(
+    current_user: TokenData = Depends(get_current_user),
+    skip: int = Query(default=0, description="Number of emails to skip"),
+    limit: int = Query(default=200, description="Number of emails to return"),
+) -> GetMultipleFormData_Out:
+
+    chats = await PatientChat.get_chats(current_user.id, current_user.organization_id, skip, limit)
+    form_data = []
+    for chat in chats:
+        form_data_list = await FormDatas.read(form_data_id=chat.form_data_id, throw_on_not_found=False)
+        if form_data_list and len(form_data_list) > 0:
+            form_data.append(GetFormData_Out(**form_data_list[0].dict()))
+
+    return GetMultipleFormData_Out(
+        form_data=form_data,
+        count=len(form_data),
+        next=skip + limit,
+        limit=limit,
+    )
 
 
 @router.post(
@@ -67,6 +95,7 @@ async def start_patient_chat(
         organization_id=current_user.organization_id,
         form_data_id=patient.form_data_id,
         creation_time=datetime.utcnow(),
+        updated_time=datetime.utcnow(),
     )
 
     await PatientChat.create(patient_chat)
