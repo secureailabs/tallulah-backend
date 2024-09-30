@@ -131,23 +131,6 @@ class PatientChat:
         )
 
     @staticmethod
-    async def add_updated_time():
-        update_request = {"$set": {}}
-        update_request["$set"]["updated_time"] = datetime.utcnow()
-
-        query = {
-            "updated_time": {"$exists": False},
-        }
-
-        await PatientChat.data_service.update_many(
-            collection=PatientChat.DB_PATIENT_CHAT,
-            query=query,
-            data=jsonable_encoder(update_request),
-        )
-
-        return None
-
-    @staticmethod
     async def get_chat(
         user_id: PyObjectId,
         organization_id: PyObjectId,
@@ -164,6 +147,19 @@ class PatientChat:
         if chat:
             return PatientChat_Db(**chat)
         return None
+
+    @staticmethod
+    async def count(
+        user_id: PyObjectId,
+        organization_id: PyObjectId,
+    ) -> int:
+        return await PatientChat.data_service.count(
+            collection=PatientChat.DB_PATIENT_CHAT,
+            query={
+                "user_id": str(user_id),
+                "organization_id": str(organization_id),
+            },
+        )
 
     @staticmethod
     async def get_chats(

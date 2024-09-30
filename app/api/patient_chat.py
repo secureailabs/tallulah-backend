@@ -49,9 +49,11 @@ async def get_patient_chats(
         if form_data_list and len(form_data_list) > 0:
             form_data.append(GetFormData_Out(**form_data_list[0].dict()))
 
+    chat_count = await PatientChat.count(current_user.id, current_user.organization_id)
+
     return GetMultipleFormData_Out(
         form_data=form_data,
-        count=len(form_data),
+        count=chat_count,
         next=skip + limit,
         limit=limit,
     )
