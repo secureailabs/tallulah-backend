@@ -135,7 +135,6 @@ class FormDatas:
 
         return form_data_list
 
-
     @staticmethod
     async def read_forms_without_themes() -> List[FormData_Db]:
         form_data_list = []
@@ -149,7 +148,6 @@ class FormDatas:
                 form_data_list.append(FormData_Db(**form_data))
 
         return form_data_list
-
 
     @staticmethod
     async def read(
@@ -219,7 +217,7 @@ class FormDatas:
             for key, value in data_filter.items():
                 query[f"values.{key}.value"] = {"$in": value}
 
-        return await FormDatas.data_service.sail_db[FormDatas.DB_COLLECTION_FORM_DATA].count_documents(query)
+        return await FormDatas.data_service.count(collection=FormDatas.DB_COLLECTION_FORM_DATA, query=query)
 
     @staticmethod
     async def update(
