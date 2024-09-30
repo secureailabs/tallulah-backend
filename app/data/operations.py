@@ -92,6 +92,9 @@ class DatabaseOperations:
     async def find_by_query(self, collection: str, query) -> List[Dict[str, Any]]:
         return await self.sail_db[collection].find(query).to_list(1000)
 
+    async def count(self, collection: str, query: Dict) -> int:
+        return await self.sail_db[collection].count_documents(query)
+
     async def insert_one(self, collection: str, data) -> results.InsertOneResult:
         return await self.sail_db[collection].insert_one(data)
 
