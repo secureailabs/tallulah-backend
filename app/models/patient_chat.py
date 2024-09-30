@@ -23,8 +23,8 @@ from pydantic import Field, StrictStr
 
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId, SailBaseModel
-from app.utils.secrets import secret_store
 from app.models.content_generation_template import Context
+from app.utils.secrets import secret_store
 
 
 class PatientChat_Base(SailBaseModel):
@@ -45,6 +45,7 @@ class PatientChat_Db(PatientChat_Base):
     # state: ContentGenerationState = Field(default=ContentGenerationState.RECEIVED)
     # error_message: Optional[StrictStr] = Field(default=None)
     creation_time: datetime = Field(default_factory=datetime.utcnow)
+    updated_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
     chat: Optional[List[Context]] = Field(default=None)
 
 
@@ -94,6 +95,7 @@ class PatientChatTemplates:
         )
         return [PatientChatTemplate_Base(**template) for template in templates]
 
+
 class PatientChat:
     DB_PATIENT_CHAT = "patient-chat"
     data_service = DatabaseOperations()
@@ -121,14 +123,29 @@ class PatientChat:
             context=[Context(role="system", content=content)],
             template="Patient Name: {name}, Age: {age}, Guardians: {guardians}, Diagnosis: {primary_cancer_diagnosis}, Household Details: {household_details}",
         )
-        #await PatientChatTemplates.create(template)
+        # await PatientChatTemplates.create(template)
 
         # Add Indexes
         await PatientChat.data_service.create_index(
-            collection=PatientChat.DB_PATIENT_CHAT,
-            index=[("user_id", 1), ("form_data_id", 1)],
-            unique=True
+            collection=PatientChat.DB_PATIENT_CHAT, index=[("user_id", 1), ("form_data_id", 1)], unique=True
         )
+
+    @staticmethod
+    async def add_updated_time():
+        update_request = {"$set": {}}
+        update_request["$set"]["updated_time"] = datetime.utcnow()
+
+        query = {
+            "updated_time": {"$exists": False},
+        }
+
+        await PatientChat.data_service.update_many(
+            collection=PatientChat.DB_PATIENT_CHAT,
+            query=query,
+            data=jsonable_encoder(update_request),
+        )
+
+        return None
 
     @staticmethod
     async def get_chat(
@@ -147,6 +164,26 @@ class PatientChat:
         if chat:
             return PatientChat_Db(**chat)
         return None
+
+    @staticmethod
+    async def get_chats(
+        user_id: PyObjectId,
+        organization_id: PyObjectId,
+        skip: int = 0,
+        limit: int = 1000,
+    ) -> List[PatientChat_Db]:
+        chats = await PatientChat.data_service.find_sorted_pagination(
+            collection=PatientChat.DB_PATIENT_CHAT,
+            query={
+                "user_id": str(user_id),
+                "organization_id": str(organization_id),
+            },
+            sort_key="updated_time",
+            sort_direction=-1,
+            skip=skip,
+            limit=limit,
+        )
+        return [PatientChat_Db(**chat) for chat in chats]
 
     @staticmethod
     async def get_chat_by_id(
@@ -169,6 +206,7 @@ class PatientChat:
     ):
         update_request = {"$set": {}}
         update_request["$set"]["chat"] = patient_chat.chat
+        update_request["$set"]["updated_time"] = datetime.utcnow()
         return await PatientChat.data_service.update_one(
             collection=PatientChat.DB_PATIENT_CHAT,
             query={"_id": str(chat_id)},
