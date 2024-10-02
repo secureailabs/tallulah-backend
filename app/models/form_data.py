@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -32,11 +32,32 @@ class FormDataState(Enum):
     DELETED = "DELETED"
 
 
+class VideoMetadata(SailBaseModel):
+    video_id: PyObjectId = Field()
+    transcript: str = Field()
+
+
+class AudioMetadata(SailBaseModel):
+    audio_id: PyObjectId = Field()
+    transcript: str = Field()
+
+
+class ImageMetadata(SailBaseModel):
+    image_id: PyObjectId = Field()
+    transcript: str = Field()
+
+
+class FormDataMetadata(SailBaseModel):
+    video_metadata: List[VideoMetadata] = Field(default=[])
+    audio_metadata: List[AudioMetadata] = Field(default=[])
+    image_metadata: List[ImageMetadata] = Field(default=[])
+    structured_data: Dict[StrictStr, Any] = Field(default={})
+    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+
+
 class FormData_Base(SailBaseModel):
     form_template_id: PyObjectId = Field()
     values: Dict[StrictStr, Any] = Field(default=None)
-    state: FormDataState = Field(default=FormDataState.ACTIVE)
-    themes: Optional[List[StrictStr]] = Field(default=None)
 
 
 class RegisterFormData_In(FormData_Base):
@@ -49,13 +70,19 @@ class RegisterFormData_Out(SailBaseModel):
 
 class FormData_Db(FormData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    creation_time: datetime = Field(default_factory=datetime.utcnow)
-    chat_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    chat_time: Optional[datetime] = Field(default=datetime.now(timezone.utc))
+    state: FormDataState = Field(default=FormDataState.ACTIVE)
+    themes: Optional[List[StrictStr]] = Field(default=None)
+    metadata: Optional[FormDataMetadata] = Field(default=None)
+    creation_time: datetime = Field(default=datetime.now(timezone.utc))
 
 
 class GetFormData_Out(FormData_Base):
     id: PyObjectId = Field()
-    creation_time: datetime = Field(default_factory=datetime.utcnow)
+    state: FormDataState = Field(default=FormDataState.ACTIVE)
+    themes: Optional[List[StrictStr]] = Field(default=None)
+    metadata: Optional[FormDataMetadata] = Field(default=None)
+    creation_time: datetime = Field()
 
 
 class UpdateFormData_In(SailBaseModel):
@@ -137,24 +164,11 @@ class FormDatas:
         return form_data_list
 
     @staticmethod
-    async def read_forms_without_themes() -> List[FormData_Db]:
-        form_data_list = []
-        query = {"$or": [{"themes": {"$exists": False}}, {"themes": None}]}
-        response = await FormDatas.data_service.find_by_query(
-            collection=FormDatas.DB_COLLECTION_FORM_DATA,
-            query=jsonable_encoder(query),
-        )
-        if response:
-            for form_data in response:
-                form_data_list.append(FormData_Db(**form_data))
-
-        return form_data_list
-
-    @staticmethod
     async def read(
         form_data_id: Optional[PyObjectId] = None,
         form_template_id: Optional[PyObjectId] = None,
         data_filter: Optional[Dict[StrictStr, List[StrictStr]]] = None,
+        field_not_exists: Optional[StrictStr] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
         sort_key: str = "creation_time",
@@ -171,6 +185,8 @@ class FormDatas:
         if data_filter:
             for key, value in data_filter.items():
                 query[f"values.{key}.value"] = {"$in": value}
+        if field_not_exists:
+            query["$or"] = [{field_not_exists: {"$exists": False}}, {field_not_exists: None}]
 
         # only read the non deleted ones
         query["state"] = FormDataState.ACTIVE.value
@@ -228,6 +244,7 @@ class FormDatas:
         update_form_data_tags: Optional[List[StrictStr]] = None,
         update_form_data_themes: Optional[List[StrictStr]] = None,
         update_chat_time: Optional[datetime] = None,
+        update_form_data_metadata: Optional[FormDataMetadata] = None,
         throw_on_no_update: bool = True,
     ):
         query = {}
@@ -249,6 +266,8 @@ class FormDatas:
             update_request["$set"]["themes"] = update_form_data_themes
         if update_chat_time:
             update_request["$set"]["chat_time"] = update_chat_time
+        if update_form_data_metadata:
+            update_request["$set"]["metadata"] = jsonable_encoder(update_form_data_metadata)
 
         update_response = await FormDatas.data_service.update_one(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,
@@ -263,7 +282,7 @@ class FormDatas:
                 )
 
     @staticmethod
-    async def get_zipcodes(
+    async def aggregate_zipcodes(
         form_template_id: PyObjectId,
     ) -> List[FormDataLocation]:
 

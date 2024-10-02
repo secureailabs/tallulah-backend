@@ -12,13 +12,12 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-import asyncio
 import base64
 import json
 import logging
 import time
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
@@ -37,7 +36,6 @@ from fastapi_responses import custom_openapi
 from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
-import app.utils.log_manager as arin_logger
 from app.api import (
     accounts,
     authentication,
@@ -61,9 +59,10 @@ from app.api import (
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
 from app.tasks.structured_data import generate_structured_data_consumer
+from app.utils import log_manager
 from app.utils.background_couroutines import AsyncTaskManager
+from app.utils.daemon_thread import DaemonManager
 from app.utils.elastic_search import ElasticsearchClient
-from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, TaskMessages
 from app.utils.secrets import secret_store
 
 # sentry_sdk.init(
@@ -153,7 +152,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
         "exception": f"{str(exc)}",
         "request": f"{request.method} {request.url}",
         "stack_trace": f"{traceback.format_exc()}",
-        "created_at": f"{datetime.utcnow()}",
+        "created_at": f"{datetime.now(timezone.utc)}",
     }
 
     # if the slack webhook is set, send the error to slack via aiohttp
@@ -180,7 +179,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     await data_service.insert_one("errors", jsonable_encoder(message))
 
     # Add the exception to the audit log as well
-    arin_logger.ERROR(message)
+    log_manager.ERROR(message)
 
     # Respond with a 500 error
     return Response(
@@ -282,23 +281,13 @@ async def add_audit_log(request: Request, call_next: Callable):
         "response_time": process_time,
     }
 
-    arin_logger.INFO(message)
+    log_manager.INFO(message)
 
     return response
 
 
 @server.on_event("startup")
-@repeat_every(seconds=60)
-async def start_queue_producers():
-    arin_logger.DEBUG({"message": "Pushing a message to the task queue to generate structured data"})
-    # Push a message to the task queue to generate structured data
-    task_queue = InMemoryProducerConsumer(queue_name=MessageQueueTypes.TASK_QUEUE, connection_string="")
-    await task_queue.connect()
-    await task_queue.push_message(TaskMessages.GENERATE_STRUCTURED_DATA.value)
-
-
-@server.on_event("startup")
 async def start_queue_consumers():
-    arin_logger.DEBUG({"message": "Starting the task queue consumer for generating structured data"})
-    async_task_manager = AsyncTaskManager()
-    async_task_manager.create_task(generate_structured_data_consumer())
+    log_manager.DEBUG({"message": "Starting the task queue consumer for generating structured data"})
+    daemon_tasks = DaemonManager()
+    daemon_tasks.add_task("generate_structured_data_consumer", generate_structured_data_consumer())

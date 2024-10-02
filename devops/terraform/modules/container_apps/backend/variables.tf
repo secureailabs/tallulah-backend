@@ -142,3 +142,8 @@ variable "google_recaptcha_secret_key" {
   description = "value of google recaptcha secret key"
   type        = string
 }
+
+variable "firebase_credentials" {
+  description = "value of firebase credentials"
+  type        = string
+}

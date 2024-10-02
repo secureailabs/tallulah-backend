@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { GetMultipleFormData_Out } from '../models/GetMultipleFormData_Out';
 import type { PatientChat_Base } from '../models/PatientChat_Base';
 import type { PatientChat_Out } from '../models/PatientChat_Out';
 
@@ -9,6 +10,31 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
 export class PatientChatService {
+
+    /**
+     * Get Patient Chats
+     * Get list of form data, sorted by last updated
+     * @param skip Number of emails to skip
+     * @param limit Number of emails to return
+     * @returns GetMultipleFormData_Out Successful Response
+     * @throws ApiError
+     */
+    public static getPatientChats(
+        skip?: number,
+        limit: number = 200,
+    ): CancelablePromise<GetMultipleFormData_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/patient-chat/',
+            query: {
+                'skip': skip,
+                'limit': limit,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
 
     /**
      * Start Patient Chat
