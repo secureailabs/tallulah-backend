@@ -153,6 +153,7 @@ async def patient_chat(
 
     chat.chat = conversation[1:]
     await PatientChat.update(chat_id, chat)
+    await FormDatas.update(chat.form_data_id, update_chat_time=datetime.utcnow(), throw_on_no_update=False)
 
     return PatientChat_Out(id=chat.id, chat=conversation[1:])
 

@@ -50,6 +50,7 @@ class RegisterFormData_Out(SailBaseModel):
 class FormData_Db(FormData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     creation_time: datetime = Field(default_factory=datetime.utcnow)
+    chat_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
 
 class GetFormData_Out(FormData_Base):
@@ -226,6 +227,7 @@ class FormDatas:
         update_form_data_values: Optional[Dict[StrictStr, Any]] = None,
         update_form_data_tags: Optional[List[StrictStr]] = None,
         update_form_data_themes: Optional[List[StrictStr]] = None,
+        update_chat_time: Optional[datetime] = None,
         throw_on_no_update: bool = True,
     ):
         query = {}
@@ -245,6 +247,8 @@ class FormDatas:
             }
         if update_form_data_themes:
             update_request["$set"]["themes"] = update_form_data_themes
+        if update_chat_time:
+            update_request["$set"]["chat_time"] = update_chat_time
 
         update_response = await FormDatas.data_service.update_one(
             collection=FormDatas.DB_COLLECTION_FORM_DATA,
