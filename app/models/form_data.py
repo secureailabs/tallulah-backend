@@ -70,6 +70,7 @@ class RegisterFormData_Out(SailBaseModel):
 
 class FormData_Db(FormData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    chat_time: Optional[datetime] = Field(default=datetime.now(timezone.utc))
     state: FormDataState = Field(default=FormDataState.ACTIVE)
     themes: Optional[List[StrictStr]] = Field(default=None)
     metadata: Optional[FormDataMetadata] = Field(default=None)
@@ -242,6 +243,7 @@ class FormDatas:
         update_form_data_values: Optional[Dict[StrictStr, Any]] = None,
         update_form_data_tags: Optional[List[StrictStr]] = None,
         update_form_data_themes: Optional[List[StrictStr]] = None,
+        update_chat_time: Optional[datetime] = None,
         update_form_data_metadata: Optional[FormDataMetadata] = None,
         throw_on_no_update: bool = True,
     ):
@@ -262,6 +264,8 @@ class FormDatas:
             }
         if update_form_data_themes:
             update_request["$set"]["themes"] = update_form_data_themes
+        if update_chat_time:
+            update_request["$set"]["chat_time"] = update_chat_time
         if update_form_data_metadata:
             update_request["$set"]["metadata"] = jsonable_encoder(update_form_data_metadata)
 
