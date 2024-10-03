@@ -334,15 +334,14 @@ async def reset_user_password(
     found_user = await Users.read(user_id=current_user.id)
     found_user = found_user[0]
 
-    if not pwd_context.verify(
-        secret=f"{found_user.email.lower()}{password_reset_req.current_password}{secret_store.PASSWORD_PEPPER}",
-        hash=found_user.hashed_password,
-    ):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect current password")
-
-    # Update the user password
-    new_password_hash = get_password_hash(found_user.email.lower(), password_reset_req.new_password)
-    await Users.update(query_user_id=found_user.id, update_password_hash=new_password_hash)
+    try:
+        user = await run_in_threadpool(lambda: firebase_admin.auth.get_user_by_email(found_user.email))
+        await run_in_threadpool(
+            lambda: firebase_admin.auth.update_user(user.uid, password=password_reset_req.new_password)
+        )
+    except Exception as e:
+        print(f"Password reset failed user: {found_user.email}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found in firebase")
 
     return Response(status_code=status.HTTP_200_OK)
 
