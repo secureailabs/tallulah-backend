@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FormFilter_In } from '../models/FormFilter_In';
 import type { FormMediaTypes } from '../models/FormMediaTypes';
 import type { GetFormData_Out } from '../models/GetFormData_Out';
 import type { GetFormDataLocation_Out } from '../models/GetFormDataLocation_Out';
@@ -55,7 +56,7 @@ export class FormDataService {
         limit: number = 200,
         sortKey: string = 'creation_time',
         sortDirection: number = -1,
-        requestBody?: (Record<string, Array<string>> | null),
+        requestBody?: FormFilter_In,
     ): CancelablePromise<GetMultipleFormData_Out> {
         return __request(OpenAPI, {
             method: 'PUT',

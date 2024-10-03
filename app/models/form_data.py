@@ -96,6 +96,12 @@ class GetMultipleFormData_Out(SailBaseModel):
     limit: int = Field()
 
 
+class FormFilter_In(SailBaseModel):
+    kv: Optional[Dict[StrictStr, List[StrictStr]]] = Field(default=None)
+    values_present: Optional[List[StrictStr]] = Field(default=None)
+    values_not_present: Optional[List[StrictStr]] = Field(default=None)
+
+
 class Location(SailBaseModel):
     latitude: float = Field()
     longitude: float = Field()
@@ -167,7 +173,7 @@ class FormDatas:
     async def read(
         form_data_id: Optional[PyObjectId] = None,
         form_template_id: Optional[PyObjectId] = None,
-        data_filter: Optional[Dict[StrictStr, List[StrictStr]]] = None,
+        data_filter: Optional[FormFilter_In] = None,
         field_not_exists: Optional[StrictStr] = None,
         skip: Optional[int] = None,
         limit: Optional[int] = None,
@@ -183,8 +189,26 @@ class FormDatas:
         if form_template_id:
             query["form_template_id"] = str(form_template_id)
         if data_filter:
-            for key, value in data_filter.items():
-                query[f"values.{key}.value"] = {"$in": value}
+            if data_filter.kv:
+                for key, value in data_filter.kv.items():
+                    query[f"values.{key}.value"] = {"$in": value}
+            if data_filter.values_present:
+                for field in data_filter.values_present:
+                    query["$and"] = [
+                        {f"values.{field}.value": {"$exists": True}},
+                        {f"values.{field}.value": {"$ne": None}},
+                        {f"values.{field}.value": {"$ne": ""}},
+                        {f"values.{field}.value": {"$ne": []}},
+                    ]
+            if data_filter.values_not_present:
+                for field in data_filter.values_not_present:
+                    query["$or"] = [
+                        {f"values.{field}.value": {"$exists": False}},
+                        {f"values.{field}.value": None},
+                        {f"values.{field}.value": {"$eq": []}},
+                        {f"values.{field}.value": {"$eq": ""}},
+                    ]
+
         if field_not_exists:
             query["$or"] = [{field_not_exists: {"$exists": False}}, {field_not_exists: None}]
 
@@ -225,14 +249,31 @@ class FormDatas:
     @staticmethod
     async def count(
         form_template_id: Optional[PyObjectId] = None,
-        data_filter: Optional[Dict[StrictStr, List[StrictStr]]] = None,
+        data_filter: Optional[FormFilter_In] = None,
     ) -> int:
         query = {}
         if form_template_id:
             query["form_template_id"] = str(form_template_id)
         if data_filter:
-            for key, value in data_filter.items():
-                query[f"values.{key}.value"] = {"$in": value}
+            if data_filter.kv:
+                for key, value in data_filter.kv.items():
+                    query[f"values.{key}.value"] = {"$in": value}
+            if data_filter.values_present:
+                for field in data_filter.values_present:
+                    query["$and"] = [
+                        {f"values.{field}.value": {"$exists": True}},
+                        {f"values.{field}.value": {"$ne": None}},
+                        {f"values.{field}.value": {"$ne": ""}},
+                        {f"values.{field}.value": {"$ne": []}},
+                    ]
+            if data_filter.values_not_present:
+                for field in data_filter.values_not_present:
+                    query["$or"] = [
+                        {f"values.{field}.value": {"$exists": False}},
+                        {f"values.{field}.value": None},
+                        {f"values.{field}.value": {"$eq": []}},
+                        {f"values.{field}.value": {"$eq": ""}},
+                    ]
 
         return await FormDatas.data_service.count(collection=FormDatas.DB_COLLECTION_FORM_DATA, query=query)
 

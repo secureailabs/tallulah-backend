@@ -36,6 +36,7 @@ export type { FormField } from './models/FormField';
 export type { FormFieldGroup_Input } from './models/FormFieldGroup_Input';
 export type { FormFieldGroup_Output } from './models/FormFieldGroup_Output';
 export { FormFieldTypes } from './models/FormFieldTypes';
+export type { FormFilter_In } from './models/FormFilter_In';
 export { FormMediaTypes } from './models/FormMediaTypes';
 export { FormTemplateState } from './models/FormTemplateState';
 export type { GetContentGeneration_Out } from './models/GetContentGeneration_Out';
