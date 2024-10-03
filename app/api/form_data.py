@@ -31,6 +31,7 @@ from app.models.form_data import (
     FormData_Db,
     FormDatas,
     FormDataState,
+    FormFilter_In,
     GetFormData_Out,
     GetFormDataLocation_Out,
     GetMultipleFormData_Out,
@@ -205,7 +206,7 @@ async def get_all_form_data(
     limit: int = Query(default=200, description="Number of emails to return"),
     sort_key: str = Query(default="creation_time", description="Sort key"),
     sort_direction: int = Query(default=-1, description="Sort direction"),
-    filters: Optional[Dict[StrictStr, List[StrictStr]]] = Body(default=None, description="Filter key"),
+    filters: FormFilter_In = Body(default=None, description="Filter key"),
     current_user: TokenData = Depends(get_current_user),
 ) -> GetMultipleFormData_Out:
 
