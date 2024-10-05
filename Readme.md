@@ -1,6 +1,12 @@
 # SAIL API Services Portal
 Set the environment variables in the .env file before running the application
 
+## Architecture Notes
+The application is build to run as a monolithic application with only one instance.
+There is future work to make the application stateless and horizontally scalable.
+There is a app/utils/lock_store.py file that is used to store the locks on the resources. This is a in-memory store and is not scalable.
+If the application is to be made stateless, the lock store should be replaced with a distributed lock store like Redis.
+
 ## Developer Virtual Environment
 To get started with the developemt environment, build a virtual development environment and install all the requirements using:
 `poetry shell`
