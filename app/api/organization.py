@@ -95,7 +95,7 @@ async def export_all_data(request: ExportData_Db):
             await export_as_csv(basedir, ds, request)
     except Exception as e:
         # TODO: Log error
-        # print(e)
+        print(e)
         request.status = ExportState.FAILED
         await DataExports.update(request)
         return
@@ -173,6 +173,8 @@ async def export_forms_csv(filename: str, ds: DatabaseOperations, request: Expor
                     elif isinstance(v, Iterable):
                         if len(v) <= 0:  # type: ignore
                             row[k] = ""
+                        elif isinstance(v, dict):
+                            row[k] = json.dumps(v)
                         elif isinstance(v[0], dict):  # type: ignore
                             row[k] = v[0]["name"] if "name" in v[0] else "Unknown"  # type: ignore
                         else:
