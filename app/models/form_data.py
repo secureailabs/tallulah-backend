@@ -353,6 +353,9 @@ class FormDatas:
 
         form_data_location_list: List[FormDataLocation] = []
         for zipcode in response:
+            if "zipcode" not in zipcode or not zipcode["zipcode"]:
+                continue
+
             zipcode_info = nomi.query_postal_code(zipcode["zipcode"])
 
             # check if latitude and longitude are valid
