@@ -17,7 +17,7 @@ import json
 import logging
 import time
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlencode
 
@@ -152,7 +152,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
         "exception": f"{str(exc)}",
         "request": f"{request.method} {request.url}",
         "stack_trace": f"{traceback.format_exc()}",
-        "created_at": f"{datetime.now(timezone.utc)}",
+        "created_at": f"{datetime.utcnow()}",
     }
 
     # if the slack webhook is set, send the error to slack via aiohttp

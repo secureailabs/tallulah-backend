@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -42,7 +42,7 @@ class ETapestryData_Base(SailBaseModel):
 
 class ETapestryData_Db(ETapestryData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+    creation_time: datetime = Field(default=datetime.utcnow())
 
 
 class UpdateETapestryData_In(SailBaseModel):
@@ -55,7 +55,7 @@ class UpdateETapestryData_In(SailBaseModel):
 
 class GetETapestryData_Out(ETapestryData_Base):
     id: PyObjectId = Field()
-    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+    creation_time: datetime = Field(default=datetime.utcnow())
 
 
 class GetMultipleETapestryData_Out(SailBaseModel):

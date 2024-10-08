@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi_utils.tasks import repeat_every
@@ -53,7 +53,7 @@ async def create_content_generation(
         values=content_generation.values,
         user_id=current_user.id,
         organization_id=current_user.organization_id,
-        creation_time=datetime.now(timezone.utc),
+        creation_time=datetime.utcnow(),
     )
 
     await ContentGenerations.create(content_generation_db)

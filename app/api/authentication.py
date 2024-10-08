@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from time import time
 from typing import List
 
@@ -226,7 +226,7 @@ async def login_for_access_token(
         # Reset the failed login attempts and update the last login time
         await Users.update(
             query_user_id=found_user_db.id,
-            update_last_login_time=datetime.now(timezone.utc),
+            update_last_login_time=datetime.utcnow(),
             update_failed_login_attempts=0,
         )
 

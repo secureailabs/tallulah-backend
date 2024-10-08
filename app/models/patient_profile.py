@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -67,7 +67,7 @@ class PatientProfile_Base(SailBaseModel):
 
 class PatientProfile_Db(PatientProfile_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+    creation_time: datetime = Field(default=datetime.utcnow())
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
     organization_id: PyObjectId = Field()
     owner_id: PyObjectId = Field()
@@ -83,7 +83,7 @@ class RegisterPatientProfile_Out(SailBaseModel):
 
 class GetPatientProfile_Out(PatientProfile_Base):
     id: PyObjectId = Field()
-    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+    creation_time: datetime = Field(default=datetime.utcnow())
     state: PatientProfileState = Field(default=PatientProfileState.ACTIVE)
     organization_id: PyObjectId = Field()
     owner_id: PyObjectId = Field()
