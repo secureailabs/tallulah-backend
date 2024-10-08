@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 import math
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -52,7 +52,7 @@ class FormDataMetadata(SailBaseModel):
     audio_metadata: List[AudioMetadata] = Field(default=[])
     image_metadata: List[ImageMetadata] = Field(default=[])
     structured_data: Dict[StrictStr, Any] = Field(default={})
-    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+    creation_time: datetime = Field(default=datetime.utcnow())
 
 
 class FormData_Base(SailBaseModel):
@@ -70,11 +70,11 @@ class RegisterFormData_Out(SailBaseModel):
 
 class FormData_Db(FormData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    chat_time: Optional[datetime] = Field(default=datetime.now(timezone.utc))
+    chat_time: Optional[datetime] = Field(default=datetime.utcnow())
     state: FormDataState = Field(default=FormDataState.ACTIVE)
     themes: Optional[List[StrictStr]] = Field(default=None)
     metadata: Optional[FormDataMetadata] = Field(default=None)
-    creation_time: datetime = Field(default=datetime.now(timezone.utc))
+    creation_time: datetime = Field(default=datetime.utcnow())
 
 
 class GetFormData_Out(FormData_Base):

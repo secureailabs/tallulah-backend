@@ -15,7 +15,7 @@
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
@@ -428,7 +428,7 @@ async def generate_metadata(
     # Only generate metadata if it has been more than 5 minutes since the last time it was generated
     # else throw a error saying warning about the rate limit
     if form_data[0].metadata:
-        time_diff = datetime.now(timezone.utc) - form_data[0].metadata.creation_time
+        time_diff = datetime.utcnow() - form_data[0].metadata.creation_time
         if time_diff.total_seconds() < 300:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
