@@ -114,6 +114,7 @@ class Users:
         user_id: Optional[PyObjectId] = None,
         email: Optional[str] = None,
         user_role: Optional[UserRole] = None,
+        user_state: Optional[UserAccountState] = None,
         throw_on_not_found: bool = True,
     ) -> List[User_Db]:
         dataset_version_list = []
@@ -123,8 +124,11 @@ class Users:
             query["_id"] = user_id
         if email:
             query["email"] = email
+        # FIXME: roles is an array, so we need to use $in operator
         if user_role:
             query["roles"] = user_role.value
+        if user_state:
+            query["state"] = user_state.value
 
         response = await Users.data_service.find_by_query(
             collection=Users.DB_COLLECTION_USERS,

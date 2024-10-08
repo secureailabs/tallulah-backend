@@ -399,7 +399,7 @@ async def enable_2fa(
 async def migrate_users(
     _: TokenData = Depends(get_current_user),
 ):
-    users = await Users.read()
+    users = await Users.read(user_state=UserAccountState.ACTIVE)
     for user in users:
         # find if user exists in firebase
         try:
