@@ -12,6 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import asyncio
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -51,9 +52,13 @@ class DatabaseOperations:
                     tls=True,
                     tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem",
                     server_api=ServerApi("1"),
+                    io_loop=asyncio.get_event_loop(),
                 )
             else:
-                cls.client = cls.client = motor.motor_asyncio.AsyncIOMotorClient(cls.mongodb_host)
+                cls.client = cls.client = motor.motor_asyncio.AsyncIOMotorClient(
+                    cls.mongodb_host,
+                    io_loop=asyncio.get_event_loop(),
+                )
             cls.sail_db = cls.client[secret_store.MONGO_DB_NAME]
 
             # remove the certificate
