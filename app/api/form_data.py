@@ -16,12 +16,9 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
-from fastapi_utils.tasks import repeat_every
-from pydantic import StrictStr
 
 from app.api.authentication import get_current_user
 from app.models.accounts import Users
@@ -47,7 +44,7 @@ from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.lock_store import LocalLockStore
-from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, TaskMessages
+from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, RabbitMQProducerConumer
 from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
@@ -435,9 +432,9 @@ async def generate_metadata(
                 detail="Rate limit exceeded. Please try again after 5 minutes.",
             )
 
-    # Generate metadata for the form data
-    task_queue = InMemoryProducerConsumer(
-        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION, connection_string=""
+    task_queue = RabbitMQProducerConumer(
+        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
+        connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
     )
     await task_queue.connect()
     await task_queue.push_message(str(form_data_id))

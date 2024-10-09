@@ -12,6 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import asyncio
 import base64
 import json
 import logging
@@ -33,7 +34,6 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_responses import custom_openapi
-from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel, Field, StrictStr
 
 from app.api import (
@@ -58,11 +58,10 @@ from app.api import (
 )
 from app.data.operations import DatabaseOperations
 from app.models.common import PyObjectId
-from app.tasks.structured_data import generate_structured_data_consumer
+from app.tasks.structured_data import on_generate_structured_data
 from app.utils import log_manager
-from app.utils.background_couroutines import AsyncTaskManager
-from app.utils.daemon_thread import DaemonManager
 from app.utils.elastic_search import ElasticsearchClient
+from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConumer
 from app.utils.secrets import secret_store
 
 # sentry_sdk.init(
@@ -286,8 +285,19 @@ async def add_audit_log(request: Request, call_next: Callable):
     return response
 
 
-@server.on_event("startup")
 async def start_queue_consumers():
     log_manager.DEBUG({"message": "Starting the task queue consumer for generating structured data"})
-    daemon_tasks = DaemonManager()
-    daemon_tasks.add_task("generate_structured_data_consumer", generate_structured_data_consumer())
+
+    rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
+    task_queue = RabbitMQProducerConumer(
+        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
+        connection_string=f"{rabbit_mq_connect_url}:5672",
+    )
+
+    await task_queue.connect()
+    await task_queue.consume_messages(on_generate_structured_data)
+
+
+@server.on_event("startup")
+async def startup_event():
+    asyncio.run_coroutine_threadsafe(start_queue_consumers(), asyncio.get_event_loop())
