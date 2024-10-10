@@ -25,6 +25,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.17.0] - 2024-10-08
+
+### Added
+
+- **2FA Authentication**
+  - Implemented Two-Factor Authentication (2FA) for enhanced security and user authentication.
+  - Users can now enable 2FA for their accounts and receive a verification code on their phone number.
+
+- **Zipcode Mapping**
+  - Added a feature to map zip codes to locations for better data visualization and analysis.
+  - Users can now view the geographical distribution of patient data based on zip codes.
+
+- **Patient chat for multiple forms**
+  - Users can now chat with patient stories data for multiple forms via a chat-like interface.
+  - The chat interface for each form is available via dropdown selection on the patient stories page.
+
+- **Patient story structured data generation**
+  - Implemented a feature to generate structured data for patient stories based on the form data including photos, videos, and form responses.
+  - Will be added to the frontend soon.
+
+- **Filter form data by videos and images**
+  - Added a filter option to view form data based on the presence of images and videos.
+  - Users can now filter form data to view only those with images or videos attached.
+
 
 ## [0.16.0] - 2024-09-05
 
