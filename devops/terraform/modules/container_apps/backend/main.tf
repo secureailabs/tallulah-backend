@@ -110,6 +110,10 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "firebase-credentials"
     value = var.firebase_credentials
   }
+  secret {
+    name  = "redis-password"
+    value = var.redis_password
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -228,6 +232,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name  = "FIREBASE_CREDENTIALS_FILE"
         value = ""
+      }
+      env {
+        name        = "REDIS_PASSWORD"
+        secret_name = "redis-password"
       }
     }
   }

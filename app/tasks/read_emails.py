@@ -4,7 +4,7 @@ from app.models.mailbox import Mailboxes
 from app.utils import log_manager
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import OutlookClient
-from app.utils.lock_store import LocalLockStore
+from app.utils.lock_store import RedisLockStore
 from app.utils.message_queue import MessageQueueTypes, RabbitMQWorkQueue
 from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_secret
 
@@ -12,8 +12,8 @@ from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_se
 async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
     try:
         # Acquire a lock on the mailbox for 1 hour max
-        lock_store = LocalLockStore()
-        acquire_lock = lock_store.acquire(f"mailbox_{str(mailbox_id)}", expiry=60 * 60)
+        lock_store = RedisLockStore()
+        acquire_lock = await lock_store.acquire(f"mailbox_{str(mailbox_id)}", expiry=60 * 60)
         if not acquire_lock:
             log_manager.INFO({"message": f"Mailbox {mailbox_id} is already being processed"})
             return
@@ -85,7 +85,7 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         log_manager.INFO({"message": f"Error: while reading emails: {exception}"})
     finally:
         # Unlock the mailbox after processing
-        lock_store.release(f"mailbox_{str(mailbox_id)}")
+        await lock_store.release(f"mailbox_{str(mailbox_id)}")
 
 
 async def read_all_mailboxes():

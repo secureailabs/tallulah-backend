@@ -3,7 +3,7 @@ import threading
 import time
 from typing import Dict
 
-# import redis
+from app.utils.redis_client import redis_client
 
 
 class LockStore(abc.ABC):
@@ -58,64 +58,25 @@ class LocalLockStore(LockStore):
             return name in self._locks and self._locks[name].locked()
 
 
-# class RedisLockStore(LockStore):
-#     def __init__(self, redis_client, expiry=None):
-#         super().__init__(expiry)
-#         self.redis_client = redis_client
-#         self._locks = {}
+class RedisLockStore(LockStore):
+    def __new__(cls) -> "RedisLockStore":
+        if not hasattr(cls, "_instance"):
+            cls._instance = super(RedisLockStore, cls).__new__(cls)
+            cls.redis_client = redis_client
+        return cls._instance
 
-#     def acquire(self, name, expiry=None):
-#         if name not in self._locks:
-#             actual_expiry = expiry if expiry is not None else self.expiry
-#             self._locks[name] = self.redis_client.lock(name, timeout=actual_expiry)
-#         return self._locks[name].acquire(blocking=False)
+    async def acquire(self, name, expiry=None):
+        if not expiry:
+            expiry = self.expiry
 
-#     def release(self, name):
-#         if name in self._locks:
-#             self._locks[name].release()
-#             del self._locks[name]
+        # Try to acquire the lock
+        lock_acquired = await self.redis_client.set(name, "LOCKED", ex=expiry, nx=True)
 
-#     def is_locked(self, name):
-#         # Redis locks don't provide a direct way to check if a lock is held,
-#         # but we can attempt to acquire it without blocking.
-#         if name not in self._locks:
-#             self._locks[name] = self.redis_client.lock(name, timeout=self.expiry)
-#         lock_acquired = self._locks[name].acquire(blocking=False)
-#         if lock_acquired:
-#             # We acquired the lock, so it was not held. Release it immediately.
-#             self._locks[name].release()
-#             return False
-#         else:
-#             # Lock is held by someone else.
-#             return True
+        # return True if lock is acquired else False
+        return lock_acquired
 
+    async def release(self, name):
+        await self.redis_client.delete(name)
 
-if __name__ == "__main__":
-    # Test LocalLockStore
-    print("Testing LocalLockStore")
-    local_lock_store = LocalLockStore()
-
-    lock_name = "my_local_lock"
-    if local_lock_store.acquire(lock_name, expiry=5):
-        print(f"Acquired local lock '{lock_name}'")
-        time.sleep(2)
-        print(f"Within local lock '{lock_name}'")
-        local_lock_store.release(lock_name)
-        print(f"Released local lock '{lock_name}'")
-    else:
-        print(f"Failed to acquire local lock '{lock_name}'")
-
-    # Test RedisLockStore (Requires a running Redis server)
-    # print("\nTesting RedisLockStore")
-    # redis_client = redis.Redis(host="localhost", port=6379, db=0)
-    # redis_lock_store = RedisLockStore(redis_client, expiry=5)
-
-    # lock_name = "my_redis_lock"
-    # if redis_lock_store.acquire(lock_name):
-    #     print(f"Acquired Redis lock '{lock_name}'")
-    #     time.sleep(2)
-    #     print(f"Within Redis lock '{lock_name}'")
-    #     redis_lock_store.release(lock_name)
-    #     print(f"Released Redis lock '{lock_name}'")
-    # else:
-    #     print(f"Failed to acquire Redis lock '{lock_name}'")
+    async def is_locked(self, name):
+        return await self.redis_client.exists(name)

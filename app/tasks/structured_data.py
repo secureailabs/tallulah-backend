@@ -7,7 +7,7 @@ from app.models.common import PyObjectId
 from app.models.content_generation_template import Context
 from app.models.form_data import AudioMetadata, FormDataMetadata, FormDatas, ImageMetadata, VideoMetadata
 from app.utils.azure_openai import OpenAiGenerator
-from app.utils.lock_store import LocalLockStore
+from app.utils.lock_store import RedisLockStore
 from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes
 from app.utils.secrets import secret_store
 from app.utils.transcribe_audio import transcribe_audio_from_id
@@ -80,8 +80,8 @@ async def on_generate_structured_data(message: AbstractIncomingMessage) -> None:
         form_data_id = PyObjectId(message.body.decode())
         print("Message body is: ", form_data_id)
 
-        lock_store = LocalLockStore()
-        acquire_lock = lock_store.acquire(f"form_data_{str(form_data_id)}", expiry=60 * 10)
+        lock_store = RedisLockStore()
+        acquire_lock = await lock_store.acquire(f"form_data_{str(form_data_id)}", expiry=60 * 10)
         if not acquire_lock:
             return
 
@@ -140,7 +140,7 @@ async def on_generate_structured_data(message: AbstractIncomingMessage) -> None:
         await FormDatas.update(query_form_data_id=form_data_id, update_form_data_metadata=form_metadata)
 
         # Release the lock
-        lock_store.release(f"form_data_{form_data_id}")
+        await lock_store.release(f"form_data_{form_data_id}")
 
 
 async def generate_structured_data_consumer():
