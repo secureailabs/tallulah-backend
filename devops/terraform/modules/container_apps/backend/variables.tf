@@ -147,3 +147,8 @@ variable "firebase_credentials" {
   description = "value of firebase credentials"
   type        = string
 }
+
+variable "redis_password" {
+  description = "The password for the Redis instance"
+  type        = string
+}
