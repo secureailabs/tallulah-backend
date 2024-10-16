@@ -2,6 +2,16 @@
 set -e
 set -x
 
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     machine=Linux;;
+    Darwin*)    machine=Mac;;
+    CYGWIN*)    machine=Cygwin;;
+    MINGW*)     machine=MinGw;;
+    MSYS_NT*)   machine=Git;;
+    *)          machine="UNKNOWN:${unameOut}"
+esac
+
 # Check if docker is installed
 check_docker() {
     docker --version
@@ -154,10 +164,17 @@ deploy() {
     popd
 
     pushd devops/terraform
-    sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
-    sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
-    sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
-    sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+    if [ $machine == "Mac" ]; then
+        sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
+        sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
+        sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
+        sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+    else
+        sed -i "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
+        sed -i "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
+        sed -i "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
+        sed -i "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+    fi
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
     terraform init -backend-config="backend.tfvars" -reconfigure
