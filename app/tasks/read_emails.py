@@ -10,6 +10,7 @@ from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_se
 
 
 async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
+    acquire_lock = False
     try:
         # Acquire a lock on the mailbox for 1 hour max
         lock_store = RedisLockStore()
@@ -85,7 +86,8 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         log_manager.INFO({"message": f"Error: while reading emails: {exception}"})
     finally:
         # Unlock the mailbox after processing
-        await lock_store.release(f"mailbox_{str(mailbox_id)}")
+        if acquire_lock:
+            await lock_store.release(f"mailbox_{str(mailbox_id)}")
 
 
 async def read_all_mailboxes():
