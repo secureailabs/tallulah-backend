@@ -147,3 +147,23 @@ variable "firebase_credentials" {
   description = "value of firebase credentials"
   type        = string
 }
+
+variable "dd_env" {
+  description = "value of datadog env"
+  type        = string
+}
+
+variable "dd_api_key" {
+  description = "value of datadog api key"
+  type        = string
+}
+
+variable "dd_azure_subscription_id" {
+  description = "The ID of the Azure subscription"
+  type        = string
+}
+
+variable "dd_azure_resource_group" {
+  description = "The name of the Azure resource group"
+  type        = string
+}

@@ -8,6 +8,14 @@ RUN apk --no-cache add gcc musl-dev linux-headers python3-dev ffmpeg
 COPY requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install --target /dd_tracer/python/ ddtrace
+RUN pip install ddtrace
+ENV DD_SERVICE=tallulah-backend
+ENV DD_VERSION=1
+
 COPY app /app
 
-ENTRYPOINT [ "uvicorn", "app.main:server", "--host", "0.0.0.0", "--port", "8000" ]
+COPY --from=datadog/serverless-init:1-alpine /datadog-init /app/datadog-init
+
+ENTRYPOINT ["/app/datadog-init"]
+CMD [ "/dd_tracer/python/bin/ddtrace-run", "uvicorn", "app.main:server", "--host", "0.0.0.0", "--port", "8000" ]
