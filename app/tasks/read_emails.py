@@ -12,6 +12,7 @@ from app.utils.secrets import get_keyvault_secret, secret_store, set_keyvault_se
 async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
     acquire_lock = False
     try:
+        log_manager.INFO({"message": f"Reading emails for mailbox {mailbox_id}"})
         # Acquire a lock on the mailbox for 1 hour max
         lock_store = RedisLockStore()
         acquire_lock = await lock_store.acquire(f"mailbox_{str(mailbox_id)}", expiry=60 * 60)
@@ -46,7 +47,6 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
 
         # Connect to the message queue
         rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
-        rabbit_mq_queue_name = secret_store.RABBIT_MQ_QUEUE_NAME
         rabbit_mq_client = RabbitMQWorkQueue(
             connection_string=f"{rabbit_mq_connect_url}:5672", queue_name=MessageQueueTypes.EMAIL_QUEUE
         )
@@ -69,6 +69,7 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
                     await Emails.create(email=email_db)
 
                     # Add the email to the queue for processing
+                    log_manager.DEBUG({"message": f"Pushing email {email_db.id} to the queue"})
                     await rabbit_mq_client.push_message(str(email_db.id))
                 except Exception as exception:
                     log_manager.INFO({"message": f"Error: while processing email {email['id']}: {exception}"})
@@ -83,7 +84,7 @@ async def read_emails(client: OutlookClient, mailbox_id: PyObjectId):
         # Close the connection to the message queue
         await rabbit_mq_client.disconnect()
     except Exception as exception:
-        log_manager.INFO({"message": f"Error: while reading emails: {exception}"})
+        log_manager.ERROR({"message": f"Error: while reading emails: {exception}"})
     finally:
         # Unlock the mailbox after processing
         if acquire_lock:

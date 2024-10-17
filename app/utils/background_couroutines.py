@@ -13,7 +13,10 @@
 # -------------------------------------------------------------------------------
 
 import asyncio
+import traceback
 from typing import Coroutine
+
+from app.utils import log_manager
 
 
 class AsyncTaskManager:
@@ -33,6 +36,7 @@ class AsyncTaskManager:
                 callback(result)
         except Exception as e:
             print(f"An exception was caught in the async task: {str(e)}")
+            log_manager.ERROR({"error": str(e), "stack_trace": traceback.format_exc()})
         finally:
             if self._tasks:
                 await asyncio.wait(self._tasks)

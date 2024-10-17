@@ -25,6 +25,7 @@ from app.models.common import PyObjectId
 from app.models.email import Email_Db, Emails, EmailState, GetEmail_Out, GetMultipleEmail_Out
 from app.models.mailbox import Mailbox_Db, Mailboxes
 from app.tasks.read_emails import read_all_mailboxes, read_emails
+from app.utils import log_manager
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.emails import EmailBody, Message, MessageResponse, OutlookClient
 from app.utils.message_queue import MessageQueueTypes, RabbitMQWorkQueue
@@ -47,58 +48,59 @@ async def reply_emails(
     email_ids: Optional[List[PyObjectId]] = None,
     labels: Optional[List[str]] = None,
 ):
-    # store all the outlook ids of the emails as a set
-    outlook_ids: Dict[PyObjectId, str] = {}
+    try:
+        # store all the outlook ids of the emails as a set
+        outlook_ids: Dict[PyObjectId, str] = {}
 
-    # Get the list of all the email_ids
-    if email_ids:
-        for id in email_ids:
-            email = await Emails.read(
-                email_id=id, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
+        # Get the list of all the email_ids
+        if email_ids:
+            for id in email_ids:
+                email = await Emails.read(
+                    email_id=id, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
+                )
+                outlook_ids[id] = email[0].outlook_id
+
+        # Get the list of all the emails with tags
+        if labels:
+            emails = await Emails.read(
+                filter_labels=labels, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
             )
-            outlook_ids[id] = email[0].outlook_id
+            for email in emails:
+                outlook_ids[email.id] = email.outlook_id
 
-    # Get the list of all the emails with tags
-    if labels:
-        emails = await Emails.read(
-            filter_labels=labels, user_id=current_user.id, mailbox_id=mailbox.id, throw_on_not_found=False
+        # Get the refresh token for the mailbox
+        refresh_token = await get_keyvault_secret(str(mailbox.refresh_token_id))
+        if not refresh_token:
+            raise Exception(f"Refresh token not found for mailbox {mailbox.id}")
+
+        # Connect to the mailbox
+        client = OutlookClient(
+            client_id=secret_store.OUTLOOK_CLIENT_ID,
+            client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+            redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
         )
-        for email in emails:
-            outlook_ids[email.id] = email.outlook_id
+        await client.connect_with_refresh_token(refresh_token)
+        if not client.refresh_token:
+            raise Exception(f"Refresh token not found after authentication for mailbox {mailbox.id}")
 
-    # Get the refresh token for the mailbox
-    refresh_token = await get_keyvault_secret(str(mailbox.refresh_token_id))
-    if not refresh_token:
-        print(f"Refresh token not found for mailbox {mailbox.id}")
-        raise Exception(f"Refresh token not found for mailbox {mailbox.id}")
+        # update the refresh token secret
+        await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
 
-    # Connect to the mailbox
-    client = OutlookClient(
-        client_id=secret_store.OUTLOOK_CLIENT_ID,
-        client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
-        redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
-    )
-    await client.connect_with_refresh_token(refresh_token)
-    if not client.refresh_token:
-        print(f"Refresh token not found after authentication for mailbox {mailbox.id}")
-        raise Exception(f"Refresh token not found after authentication for mailbox {mailbox.id}")
+        message = MessageResponse(message=Message(subject=subject, body=reply))
 
-    # update the refresh token secret
-    await set_keyvault_secret(str(mailbox.refresh_token_id), client.refresh_token)
-
-    message = MessageResponse(message=Message(subject=subject, body=reply))
-
-    # Reply to all the emails
-    for id, outlook_id in outlook_ids.items():
-        try:
-            await client.reply_email(email_id=outlook_id, message=message)
-        except Exception as exception:
-            print(f"Error: while replying to email {outlook_id}: {exception}")
-            await Emails.update(
-                query_message_id=id, update_message_state=EmailState.FAILED, update_message_note=str(exception)
-            )
-        else:
-            await Emails.update(query_message_id=id, update_message_state=EmailState.RESPONDED)
+        # Reply to all the emails
+        for id, outlook_id in outlook_ids.items():
+            try:
+                await client.reply_email(email_id=outlook_id, message=message)
+            except Exception as exception:
+                log_manager.ERROR({"message": "Error: while replying to email {outlook_id}: {exception}"})
+                await Emails.update(
+                    query_message_id=id, update_message_state=EmailState.FAILED, update_message_note=str(exception)
+                )
+            else:
+                await Emails.update(query_message_id=id, update_message_state=EmailState.RESPONDED)
+    except Exception as exception:
+        log_manager.ERROR({"message": f"Error: while replying to emails: {exception}"})
 
 
 @router.get(

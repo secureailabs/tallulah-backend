@@ -79,37 +79,40 @@ async def queue_form_data_metadata_generation():
 
 async def notify_users(form_template_id: PyObjectId):
     # Get the form template
-    form_template = await FormTemplates.read(template_id=form_template_id, throw_on_not_found=True)
-    form_template = form_template[0]
+    try:
+        form_template = await FormTemplates.read(template_id=form_template_id, throw_on_not_found=True)
+        form_template = form_template[0]
 
-    if not form_template.email_subscription:
-        return
+        if not form_template.email_subscription:
+            return
 
-    # Connect to the outlook client
-    client = OutlookClient(
-        client_id=secret_store.OUTLOOK_CLIENT_ID,
-        client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
-        redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
-    )
-    await client.connect_with_refresh_token(secret_store.EMAIL_NO_REPLY_REFRESH_TOKEN)
-
-    # Send email notifications to the subscribed users
-    for user_id in form_template.email_subscription:
-        # Get the user email
-        user = await Users.read(user_id=user_id, throw_on_not_found=True)
-        user = user[0]
-
-        email_message = MessageResponse(
-            message=Message(
-                subject="New Form Response!!",
-                body=EmailBody(
-                    contentType="Text",
-                    content=f'There is a new form response for "{form_template.name}". Check it out on the Tallulah portal.',
-                ),
-                toRecipients=[ToRecipient(emailAddress=EmailAddress(address=user.email, name=user.name))],
-            )
+        # Connect to the outlook client
+        client = OutlookClient(
+            client_id=secret_store.OUTLOOK_CLIENT_ID,
+            client_secret=secret_store.OUTLOOK_CLIENT_SECRET,
+            redirect_uri=secret_store.OUTLOOK_REDIRECT_URI,
         )
-        await client.send_email(email_message)
+        await client.connect_with_refresh_token(secret_store.EMAIL_NO_REPLY_REFRESH_TOKEN)
+
+        # Send email notifications to the subscribed users
+        for user_id in form_template.email_subscription:
+            # Get the user email
+            user = await Users.read(user_id=user_id, throw_on_not_found=True)
+            user = user[0]
+
+            email_message = MessageResponse(
+                message=Message(
+                    subject="New Form Response!!",
+                    body=EmailBody(
+                        contentType="Text",
+                        content=f'There is a new form response for "{form_template.name}". Check it out on the Tallulah portal.',
+                    ),
+                    toRecipients=[ToRecipient(emailAddress=EmailAddress(address=user.email, name=user.name))],
+                )
+            )
+            await client.send_email(email_message)
+    except Exception as e:
+        log_manager.ERROR({"message": f"Error: while sending email notifications: {e}"})
 
 
 @router.post(
@@ -432,6 +435,7 @@ async def generate_metadata(
                 detail="Rate limit exceeded. Please try again after 5 minutes.",
             )
 
+    log_manager.DEBUG({"message": f"Pushing a message {form_data_id} to the task queue to generate structured data"})
     task_queue = RabbitMQProducerConumer(
         queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
         connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
