@@ -111,6 +111,22 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.firebase_credentials
   }
   secret {
+    name  = "dd-env"
+    value = var.dd_env
+  }
+  secret {
+    name  = "dd-api-key"
+    value = var.dd_api_key
+  }
+  secret {
+    name  = "dd-azure-subscription-id"
+    value = var.dd_azure_subscription_id
+  }
+  secret {
+    name  = "dd-azure-resource-group"
+    value = var.dd_azure_resource_group
+  }
+  secret {
     name  = "redis-password"
     value = var.redis_password
   }
@@ -232,6 +248,34 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name  = "FIREBASE_CREDENTIALS_FILE"
         value = ""
+      }
+      env {
+        name        = "DD_ENV"
+        secret_name = "dd-env"
+      }
+      env {
+        name        = "DD_API_KEY"
+        secret_name = "dd-api-key"
+      }
+      env {
+        name  = "DD_LOGS_ENABLED"
+        value = "true"
+      }
+      env {
+        name  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL"
+        value = "true"
+      }
+      env {
+        name  = "DD_SITE"
+        value = "us3.datadoghq.com"
+      }
+      env {
+        name        = "DD_AZURE_SUBSCRIPTION_ID"
+        secret_name = "dd-azure-subscription-id"
+      }
+      env {
+        name        = "DD_AZURE_RESOURCE_GROUP"
+        secret_name = "dd-azure-resource-group"
       }
       env {
         name        = "REDIS_PASSWORD"

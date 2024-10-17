@@ -130,6 +130,10 @@ module "container_app_backend" {
   email_no_reply_refresh_token      = data.azurerm_key_vault_secret.keyvault_secrets["email-no-reply-refresh-token"].value
   google_recaptcha_secret_key       = data.azurerm_key_vault_secret.keyvault_secrets["google-recaptcha-secret-key"].value
   firebase_credentials              = data.azurerm_key_vault_secret.keyvault_secrets["firebase-credentials"].value
+  dd_api_key                        = data.azurerm_key_vault_secret.keyvault_secrets["dd-api-key"].value
+  dd_env                            = data.azurerm_key_vault_secret.keyvault_secrets["dd-env"].value
+  dd_azure_subscription_id          = data.azurerm_key_vault_secret.keyvault_secrets["dd-azure-subscription-id"].value
+  dd_azure_resource_group           = data.azurerm_key_vault_secret.keyvault_secrets["dd-azure-resource-group"].value
   redis_password                    = data.azurerm_key_vault_secret.keyvault_secrets["redis-password"].value
 }
 
