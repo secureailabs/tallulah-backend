@@ -6,6 +6,8 @@ from typing import Callable
 from aio_pika import DeliveryMode, Message, connect
 from aio_pika.abc import AbstractIncomingMessage
 
+from app.utils import log_manager
+
 
 class MessageQueueTypes(Enum):
     FORM_DATA_METADATA_GENERATION = "FORM_DATA_METADATA_GENERATION"
@@ -107,8 +109,10 @@ class RabbitMQProducerConumer(AbstractMessageQueue):
         if not self.is_connected:
             raise Exception("Not connected")
 
+        log_manager.DEBUG({"message": f"{self.queue_name} is waiting for messages"})
         async with self.queue.iterator() as queue_iter:
             async for message in queue_iter:
+                log_manager.DEBUG({"message": f"{self.queue_name} Received message: {message.body}"})
                 await on_message(message)
 
     async def disconnect(self):
