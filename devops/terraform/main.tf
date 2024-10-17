@@ -134,6 +134,7 @@ module "container_app_backend" {
   dd_env                            = data.azurerm_key_vault_secret.keyvault_secrets["dd-env"].value
   dd_azure_subscription_id          = data.azurerm_key_vault_secret.keyvault_secrets["dd-azure-subscription-id"].value
   dd_azure_resource_group           = data.azurerm_key_vault_secret.keyvault_secrets["dd-azure-resource-group"].value
+  redis_password                    = data.azurerm_key_vault_secret.keyvault_secrets["redis-password"].value
 }
 
 module "container_app_rabbit_mq" {
@@ -189,6 +190,16 @@ module "container_app_logstash" {
   elastic_cloud_host          = data.azurerm_key_vault_secret.keyvault_secrets["elastic-cloud-host"].value
 }
 
+module "container_app_redis" {
+  source                      = "./modules/container_apps/redis"
+  resource_group_name         = module.resource_group.resource_group_name
+  container_app_env_id        = module.container_apps_env.container_app_environment_id
+  docker_image                = format("%s/%s", var.container_registry_server, var.redis_container_image_tag)
+  container_registry_server   = var.container_registry_server
+  container_registry_username = data.azurerm_key_vault_secret.keyvault_secrets["container-registry-username"].value
+  container_registry_password = data.azurerm_key_vault_secret.keyvault_secrets["container-registry-password"].value
+  redis_password              = data.azurerm_key_vault_secret.keyvault_secrets["redis-password"].value
+}
 
 module "storage_account" {
   source              = "./modules/storage_account"

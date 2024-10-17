@@ -126,6 +126,7 @@ async def patient_chat(
         You do not include any personally identifiable information other than the person’s name, their state if applicable,
         their diagnosis and their current disease state. You do not use full names and you do not use any financial information.
         You do not embellish upon the information given to you and you do not sensationalize or use cliches.
+        You do not add any information that is not provided. You use empathy and write like a human.
     """
     # TODO: Avoid parallel chat on the same chat_id
     chat = await PatientChat.get_chat_by_id(chat_id)

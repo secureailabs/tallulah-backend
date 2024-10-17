@@ -167,3 +167,7 @@ variable "dd_azure_resource_group" {
   description = "The name of the Azure resource group"
   type        = string
 }
+variable "redis_password" {
+  description = "The password for the Redis instance"
+  type        = string
+}

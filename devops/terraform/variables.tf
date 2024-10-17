@@ -49,6 +49,11 @@ variable "classifier_container_image_tag" {
   type        = string
 }
 
+variable "redis_container_image_tag" {
+  description = "The tag of the redis container image"
+  type        = string
+}
+
 variable "devops_keyvault_name" {
   description = "The name of the keyvault"
   type        = string

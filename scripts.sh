@@ -62,6 +62,10 @@ build_image() {
     docker pull rabbitmq:3 --platform linux/amd64
     docker tag rabbitmq:3 tallulah/rabbitmq
 
+    # Build the redis image
+    docker pull redis:7.4.1 --platform linux/amd64
+    docker tag redis:7.4.1 tallulah/redis
+
     # Build the logstash image
     docker build . -f devops/docker/logstash/Dockerfile -t tallulah/logstash --platform linux/amd64
 }
@@ -78,7 +82,12 @@ run_image() {
 
     # Run rabbitmq if not already running
     if ! docker ps | grep -q "rabbitmq"; then
-        docker run -d --rm --name rabbitmq -p 5672:5672 -p 15672:15672 --network tallulah rabbitmq:3-management
+        docker run -d --rm --name rabbitmq -p 5672:5672 -p 15672:15672 --network tallulah rabbitmq:3-management --platform linux/amd64
+    fi
+
+    # Run the redis container if not already running
+    if ! docker ps | grep -q "redis"; then
+        docker run -d --rm --name redis -p 6379:6379 --network tallulah redis:7.4.1 --platform linux/amd64
     fi
 
     # Run the backend image
@@ -164,16 +173,19 @@ deploy() {
     popd
 
     pushd devops/terraform
+
     if [ $machine == "Mac" ]; then
         sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
         sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
         sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
         sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+        sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
     else
         sed -i "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
         sed -i "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
         sed -i "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
         sed -i "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+        sed -i "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
     fi
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
@@ -212,6 +224,7 @@ release() {
     sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
+    sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" production.tfvars
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
     terraform init -backend-config="backend_prod.tfvars" -reconfigure

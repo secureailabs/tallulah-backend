@@ -126,6 +126,10 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "dd-azure-resource-group"
     value = var.dd_azure_resource_group
   }
+  secret {
+    name  = "redis-password"
+    value = var.redis_password
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -272,6 +276,10 @@ resource "azurerm_container_app" "container_app_backend" {
       env {
         name        = "DD_AZURE_RESOURCE_GROUP"
         secret_name = "dd-azure-resource-group"
+      }
+      env {
+        name        = "REDIS_PASSWORD"
+        secret_name = "redis-password"
       }
     }
   }

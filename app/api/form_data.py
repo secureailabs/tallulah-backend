@@ -43,7 +43,7 @@ from app.utils.azure_openai import OpenAiGenerator
 from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
-from app.utils.lock_store import LocalLockStore
+from app.utils.lock_store import RedisLockStore
 from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, RabbitMQProducerConumer
 from app.utils.secrets import secret_store
 
@@ -414,8 +414,8 @@ async def generate_metadata(
     )
 
     # if the lock on the form data is acquired, return as the metadata is already being generated
-    lock_store = LocalLockStore()
-    is_locked = lock_store.is_locked(f"form_data_{str(form_data_id)}")
+    lock_store = RedisLockStore()
+    is_locked = await lock_store.is_locked(f"form_data_{str(form_data_id)}")
     if is_locked:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

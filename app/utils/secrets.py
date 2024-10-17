@@ -34,6 +34,7 @@ class SecretStore(BaseModel):
     PASSWORD_PEPPER: str
     RABBIT_MQ_HOST: str
     RABBIT_MQ_QUEUE_NAME: str
+    REDIS_PASSWORD: str
     REFRESH_SECRET: str
     SLACK_WEBHOOK: str
     TALLULAH_ADMIN_PASSWORD: str
@@ -70,6 +71,7 @@ secret_store = SecretStore(
     PASSWORD_PEPPER=get_secret_env("PASSWORD_PEPPER"),
     RABBIT_MQ_HOST=get_secret_env("RABBIT_MQ_HOST"),
     RABBIT_MQ_QUEUE_NAME=get_secret_env("RABBIT_MQ_QUEUE_NAME"),
+    REDIS_PASSWORD=get_secret_env("REDIS_PASSWORD"),
     REFRESH_SECRET=get_secret_env("REFRESH_SECRET"),
     SLACK_WEBHOOK=get_secret_env("SLACK_WEBHOOK"),
     TALLULAH_ADMIN_PASSWORD=get_secret_env("TALLULAH_ADMIN_PASSWORD"),
