@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
 import aiohttp
-from azure.communication.email import EmailClient
+from azure.communication.email.aio import EmailClient
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_fixed
 
@@ -77,9 +77,8 @@ class AzureClient:
                 },
                 "senderAddress": self.from_address,
             }
-            poller = self.client.begin_send(msg)
-            result = poller.result()
-            return result
+            poller = await self.client.begin_send(msg)
+            return await poller.result()
         except Exception as e:
             print("Failed to send email: " + str(e))
         return False
