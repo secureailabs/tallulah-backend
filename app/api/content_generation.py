@@ -12,6 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
+import traceback
 from datetime import datetime
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
@@ -29,7 +30,8 @@ from app.models.content_generation import (
     RegisterContentGeneration_In,
     RegisterContentGeneration_Out,
 )
-from app.models.content_generation_template import ContentGenerationTemplates, Context
+from app.models.content_generation_template import ContentGenerationTemplate_Db, ContentGenerationTemplates, Context
+from app.utils import log_manager
 from app.utils.azure_openai import OpenAiGenerator
 from app.utils.secrets import secret_store
 
@@ -48,17 +50,61 @@ async def create_content_generation(
     current_user: TokenData = Depends(get_current_user),
 ) -> RegisterContentGeneration_Out:
 
+    # Get the content generation template
+    content_generation_template = await ContentGenerationTemplates.read(
+        content_generation_template_id=content_generation.template_id,
+        organization_id=current_user.organization_id,
+        throw_on_not_found=True,
+    )
+
+    generated_content = await generate_content(content_generation, content_generation_template[0])
+
     content_generation_db = ContentGeneration_Db(
         template_id=content_generation.template_id,
         values=content_generation.values,
         user_id=current_user.id,
         organization_id=current_user.organization_id,
+        generated=generated_content,
+        state=ContentGenerationState.ACTIVE,
         creation_time=datetime.utcnow(),
     )
 
     await ContentGenerations.create(content_generation_db)
 
-    return RegisterContentGeneration_Out(id=content_generation_db.id)
+    return RegisterContentGeneration_Out(id=content_generation_db.id, generated=generated_content)
+
+
+@router.post(
+    path="/public",
+    description="Create a new public content generation record",
+    status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=False,
+    operation_id="create_public_content_generation",
+)
+async def create_public_content_generation(
+    content_generation: RegisterContentGeneration_In = Body(description="Content generation information"),
+) -> RegisterContentGeneration_Out:
+
+    content_generation_template = await ContentGenerationTemplates.read(
+        content_generation_template_id=content_generation.template_id,
+        is_public=True,
+        throw_on_not_found=True,
+    )
+
+    generated_content = await generate_content(content_generation, content_generation_template[0])
+
+    content_generation_db = ContentGeneration_Db(
+        template_id=content_generation.template_id,
+        values=content_generation.values,
+        organization_id=content_generation_template[0].organization_id,
+        generated=generated_content,
+        state=ContentGenerationState.ACTIVE,
+        creation_time=datetime.utcnow(),
+    )
+
+    await ContentGenerations.create(content_generation_db)
+
+    return RegisterContentGeneration_Out(id=content_generation_db.id, generated=generated_content)
 
 
 @router.get(
@@ -121,89 +167,31 @@ async def get_content_generation(
     return GetContentGeneration_Out(**content_generation[0].dict())
 
 
-@router.post(
-    path="/{content_generation_id}/retry",
-    description="Retry a failed content generation record",
-    status_code=status.HTTP_201_CREATED,
-    operation_id="retry_content_generation",
-)
-async def retry_content_generation(
-    content_generation_id: PyObjectId = Path(description="Content generation record id"),
-    current_user: TokenData = Depends(get_current_user),
-) -> Response:
+async def generate_content(
+    content_generation_req: RegisterContentGeneration_In, content_generation_template: ContentGenerationTemplate_Db
+) -> str:
+    try:
+        # prepare the content generation messages
+        messages = content_generation_template.context
+        prompt = content_generation_template.prompt.format(**content_generation_req.values)
 
-    # Only retry failed content generation records
-    content_generation = await ContentGenerations.read(
-        content_generation_id=content_generation_id,
-        content_generation_state=ContentGenerationState.ERROR,
-        organization_id=current_user.organization_id,
-        throw_on_not_found=True,
-    )
-    if not content_generation:
-        raise HTTPException(status_code=404, detail="Content generation not found")
+        messages.append(Context(role="user", content=prompt))
+        messages = [message.dict() for message in messages]
 
-    # This is done by updating the state to received
-    await ContentGenerations.update(
-        query_content_generation_id=content_generation_id,
-        update_state=ContentGenerationState.RECEIVED,
-    )
+        # Make a call to OpenAI to generate the content
+        openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
+        generated_content = await openai.get_response(messages=messages)
 
-    return Response(status_code=status.HTTP_201_CREATED)
-
-
-@router.on_event("startup")
-# 1 second interval between each run. No overlap as the next run will only start after the current run is finished
-# This is done to prevent the open ai rate limiter from blocking the requests. Only 1 request per second will be processed
-@repeat_every(seconds=1)
-async def generate_content():
-
-    # read the database to get the content generation object that is not processed yet and is the oldest one
-    content_generation_req = await ContentGenerations.read(
-        content_generation_state=ContentGenerationState.RECEIVED,
-        skip=0,
-        limit=1,
-        sort_key="creation_time",
-        sort_direction=1,
-        throw_on_not_found=False,
-    )
-
-    if content_generation_req:
-        content_generation_req = content_generation_req[0]
-
-        try:
-            # Get the content generation template
-            content_generation_template = await ContentGenerationTemplates.read(
-                content_generation_template_id=content_generation_req.template_id
-            )
-
-            # prepare the content generation messages
-            messages = content_generation_template[0].context
-            prompt = content_generation_template[0].prompt.format(**content_generation_req.values)
-
-            messages.append(Context(role="user", content=prompt))
-            messages = [message.dict() for message in messages]
-
-            # Update the state to processing
-            await ContentGenerations.update(
-                query_content_generation_id=content_generation_req.id,
-                update_state=ContentGenerationState.PROCESSING,
-            )
-
-            # Make a call to OpenAI to generate the content
-            openai = OpenAiGenerator(secret_store.OPENAI_API_BASE, secret_store.OPENAI_API_KEY)
-            generated_content = await openai.get_response(messages=messages)
-
-            # Update the state to processed
-            await ContentGenerations.update(
-                query_content_generation_id=content_generation_req.id,
-                update_generated_content=generated_content,
-                update_state=ContentGenerationState.DONE,
-            )
-
-        except Exception as e:
-            # Update the state to failed
-            await ContentGenerations.update(
-                query_content_generation_id=content_generation_req.id,
-                update_state=ContentGenerationState.ERROR,
-                update_error_message=str(e),
-            )
+        return generated_content
+    except Exception as e:
+        error_id = str(PyObjectId())
+        log_manager.ERROR(
+            {
+                "message": f"Error while generating content: {e}",
+                "stack_trace": traceback.format_exc(),
+                "error_id": error_id,
+            }
+        )
+        raise HTTPException(
+            status_code=500, detail=f"Error while generating content. Please try again later. Error ID: {error_id}"
+        )

@@ -68,6 +68,27 @@ export class ContentGenerationsService {
     }
 
     /**
+     * Create Public Content Generation
+     * Create a new public content generation record
+     * @param requestBody
+     * @returns RegisterContentGeneration_Out Successful Response
+     * @throws ApiError
+     */
+    public static createPublicContentGeneration(
+        requestBody: RegisterContentGeneration_In,
+    ): CancelablePromise<RegisterContentGeneration_Out> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/content-generations/public',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Get Content Generation
      * Get a specific content generation record
      * @param contentGenerationId Content generation record id
@@ -80,29 +101,6 @@ export class ContentGenerationsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/content-generations/{content_generation_id}',
-            path: {
-                'content_generation_id': contentGenerationId,
-            },
-            errors: {
-                404: `Content generation not found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Retry Content Generation
-     * Retry a failed content generation record
-     * @param contentGenerationId Content generation record id
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static retryContentGeneration(
-        contentGenerationId: string,
-    ): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/content-generations/{content_generation_id}/retry',
             path: {
                 'content_generation_id': contentGenerationId,
             },

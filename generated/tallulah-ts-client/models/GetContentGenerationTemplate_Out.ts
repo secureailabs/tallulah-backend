@@ -12,6 +12,7 @@ export type GetContentGenerationTemplate_Out = {
     parameters?: Array<ParameterField>;
     context?: Array<Context>;
     prompt: string;
+    is_public?: boolean;
     id: string;
     user_id: string;
     organization_id: string;

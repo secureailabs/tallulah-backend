@@ -15,7 +15,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -56,7 +56,8 @@ class Context(SailBaseModel):
 
 
 class ContentGenerationState(Enum):
-    ACTIVE = "ACTIVE"
+    TEMPLATE = "TEMPLATE"
+    PUBLISHED = "PUBLISHED"
     DELETED = "DELETED"
 
 
@@ -66,6 +67,7 @@ class ContentGenerationTemplate_Base(SailBaseModel):
     parameters: List[ParameterField] = Field(default=None)
     context: List[Context] = Field(default=None)
     prompt: StrictStr = Field()
+    is_public: bool = Field(default=False)
 
 
 class ContentGenerationTemplate_Db(ContentGenerationTemplate_Base):
@@ -73,7 +75,7 @@ class ContentGenerationTemplate_Db(ContentGenerationTemplate_Base):
     user_id: PyObjectId = Field()
     organization_id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
-    state: ContentGenerationState = Field(default=ContentGenerationState.ACTIVE)
+    state: ContentGenerationState = Field(default=ContentGenerationState.TEMPLATE)
 
 
 class GetContentGenerationTemplate_Out(ContentGenerationTemplate_Base):
@@ -102,6 +104,7 @@ class UpdateContentGenerationTemplate_In(SailBaseModel):
     parameters: Optional[List[ParameterField]] = Field(default=None)
     context: Optional[List[Context]] = Field(default=None)
     prompt: Optional[StrictStr] = Field(default=None)
+    is_public: Optional[bool] = Field(default=None)
 
 
 class ContentGenerationTemplates:
@@ -120,8 +123,9 @@ class ContentGenerationTemplates:
     @staticmethod
     async def read(
         content_generation_template_id: Optional[PyObjectId] = None,
-        user_id: Optional[PyObjectId] = None,
         organization_id: Optional[PyObjectId] = None,
+        state: Optional[ContentGenerationState] = None,
+        is_public: Optional[bool] = None,
         throw_on_not_found: bool = True,
     ) -> List[ContentGenerationTemplate_Db]:
         content_generation_template_list = []
@@ -129,13 +133,14 @@ class ContentGenerationTemplates:
         query = {}
         if content_generation_template_id:
             query["_id"] = str(content_generation_template_id)
-        if user_id:
-            query["user_id"] = str(user_id)
         if organization_id:
             query["organization_id"] = str(organization_id)
-
-        # read only active content generation templates
-        query["state"] = ContentGenerationState.ACTIVE.value
+        if is_public:
+            query["is_public"] = is_public
+        if state:
+            query["state"] = state.value
+        else:
+            query["state"] = {"$ne": ContentGenerationState.DELETED.value}
 
         response = await ContentGenerationTemplates.data_service.find_by_query(
             collection=ContentGenerationTemplates.DB_COLLECTION_CONTENT_GENERATION_TEMPLATE,
@@ -148,7 +153,7 @@ class ContentGenerationTemplates:
         elif throw_on_not_found:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No conversations found for query: {query}",
+                detail=f"No content generation templates found for query: {query}",
             )
 
         return content_generation_template_list
@@ -163,6 +168,7 @@ class ContentGenerationTemplates:
         update_content_generation_template_parameters: Optional[List[ParameterField]] = None,
         update_content_generation_template_context: Optional[List[Context]] = None,
         update_content_generation_template_prompt: Optional[StrictStr] = None,
+        update_content_generation_template_is_public: Optional[bool] = None,
     ):
         query = {}
         if query_content_generation_template_id:
@@ -183,6 +189,8 @@ class ContentGenerationTemplates:
             update_request["$set"]["context"] = update_content_generation_template_context
         if update_content_generation_template_prompt:
             update_request["$set"]["prompt"] = update_content_generation_template_prompt
+        if update_content_generation_template_is_public:
+            update_request["$set"]["is_public"] = update_content_generation_template_is_public
 
         update_response = await ContentGenerationTemplates.data_service.update_many(
             collection=ContentGenerationTemplates.DB_COLLECTION_CONTENT_GENERATION_TEMPLATE,
@@ -193,5 +201,5 @@ class ContentGenerationTemplates:
         if update_response.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation not found or no changes to update",
+                detail=f"No content generation templates found for query: {query}",
             )

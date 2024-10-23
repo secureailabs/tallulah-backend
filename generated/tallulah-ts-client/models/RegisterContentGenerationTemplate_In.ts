@@ -11,4 +11,5 @@ export type RegisterContentGenerationTemplate_In = {
     parameters?: Array<ParameterField>;
     context?: Array<Context>;
     prompt: string;
+    is_public?: boolean;
 };

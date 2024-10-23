@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 export enum app__models__content_generation_template__ContentGenerationState {
-    ACTIVE = 'ACTIVE',
+    TEMPLATE = 'TEMPLATE',
+    PUBLISHED = 'PUBLISHED',
     DELETED = 'DELETED',
 }
