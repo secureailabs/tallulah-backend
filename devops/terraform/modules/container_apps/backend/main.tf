@@ -130,6 +130,14 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "redis-password"
     value = var.redis_password
   }
+  secret {
+    name  = "azure-email-from-address"
+    value = var.azure_email_from_address
+  }
+  secret {
+    name  = "azure-comm-connection-string"
+    value = var.azure_comm_connection_string
+  }
   template {
     min_replicas = 1
     max_replicas = 10
