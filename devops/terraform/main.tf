@@ -135,6 +135,8 @@ module "container_app_backend" {
   dd_azure_subscription_id          = data.azurerm_key_vault_secret.keyvault_secrets["dd-azure-subscription-id"].value
   dd_azure_resource_group           = data.azurerm_key_vault_secret.keyvault_secrets["dd-azure-resource-group"].value
   redis_password                    = data.azurerm_key_vault_secret.keyvault_secrets["redis-password"].value
+  azure_email_from_address          = data.azurerm_key_vault_secret.keyvault_secrets["azure-email-from-address"].value
+  azure_comm_connection_string      = data.azurerm_key_vault_secret.keyvault_secrets["azure-comm-connection-string"].value
 }
 
 module "container_app_rabbit_mq" {
