@@ -380,9 +380,13 @@ async def enable_2fa(
     if not update_user_info.phone:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number is required")
 
-    # Update phone
-    firebase_admin.auth.update_user(current_user.user_id, email_verified=True, phone_number=update_user_info.phone)
-    # Firebase Python sdk missing enrollment of 2fa, so this is done via web
+    try:
+        # Update phone
+        firebase_admin.auth.update_user(current_user.user_id, email_verified=True, phone_number=update_user_info.phone)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number used with another account?")
+
+    # Skipped: Firebase Python sdk missing enrollment of 2fa, so this is done via web
 
     await Users.update(query_user_id=found_user.id, update_phone=update_user_info.phone, ignore_no_update=True)
 
