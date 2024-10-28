@@ -4,4 +4,5 @@
 
 export type RegisterContentGeneration_Out = {
     id: string;
+    generated: string;
 };

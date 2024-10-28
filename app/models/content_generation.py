@@ -26,10 +26,8 @@ from app.models.common import PyObjectId, SailBaseModel
 
 
 class ContentGenerationState(Enum):
-    RECEIVED = "RECEIVED"
-    PROCESSING = "PROCESSING"
-    DONE = "DONE"
-    ERROR = "ERROR"
+    ACTIVE = "ACTIVE"
+    DELETED = "DELETED"
 
 
 class ContentGeneration_Base(SailBaseModel):
@@ -39,11 +37,10 @@ class ContentGeneration_Base(SailBaseModel):
 
 class ContentGeneration_Db(ContentGeneration_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    user_id: PyObjectId = Field()
+    user_id: Optional[PyObjectId] = Field(default=None)
     organization_id: PyObjectId = Field()
     generated: Optional[StrictStr] = Field(default=None)
-    state: ContentGenerationState = Field(default=ContentGenerationState.RECEIVED)
-    error_message: Optional[StrictStr] = Field(default=None)
+    state: ContentGenerationState = Field(default=ContentGenerationState.ACTIVE)
     creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -51,7 +48,6 @@ class GetContentGeneration_Out(ContentGeneration_Base):
     id: PyObjectId = Field()
     state: ContentGenerationState = Field()
     generated: Optional[StrictStr] = Field(default=None)
-    error_message: Optional[StrictStr] = Field(default=None)
     creation_time: datetime = Field()
 
 
@@ -68,6 +64,7 @@ class RegisterContentGeneration_In(ContentGeneration_Base):
 
 class RegisterContentGeneration_Out(SailBaseModel):
     id: PyObjectId = Field()
+    generated: StrictStr = Field()
 
 
 class ContentGenerations:

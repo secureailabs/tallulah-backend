@@ -55,7 +55,8 @@ async def add_new_content_generation_template(
         prompt=content_generation_template.prompt,
         user_id=current_user.id,
         organization_id=current_user.organization_id,
-        state=ContentGenerationState.ACTIVE,
+        state=ContentGenerationState.TEMPLATE,
+        is_public=content_generation_template.is_public,
     )
     await ContentGenerationTemplates.create(content_generation_template_db)
 
@@ -103,6 +104,26 @@ async def get_content_generation_template(
     return GetContentGenerationTemplate_Out(**content_generation_template[0].dict())
 
 
+@router.get(
+    path="/published/{content_generation_template_id}",
+    description="Get the content generation template for the current user",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    operation_id="get_published_content_generation_template",
+)
+async def get_published_content_generation_template(
+    form_template_id: PyObjectId = Path(description="Form template id"),
+) -> GetContentGenerationTemplate_Out:
+    content_generation_template = await ContentGenerationTemplates.read(
+        content_generation_template_id=form_template_id,
+        state=ContentGenerationState.PUBLISHED,
+        is_public=True,
+        throw_on_not_found=True,
+    )
+
+    return GetContentGenerationTemplate_Out(**content_generation_template[0].dict())
+
+
 @router.patch(
     path="/{content_generation_template_id}",
     description="Update a content generation template for the current user",
@@ -125,6 +146,26 @@ async def update_content_generation_template(
         update_content_generation_template_parameters=content_generation_template.parameters,
         update_content_generation_template_context=content_generation_template.context,
         update_content_generation_template_prompt=content_generation_template.prompt,
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch(
+    path="/{content_generation_template_id}/publish",
+    description="Publish a content generation template for the current user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="publish_content_generation_template",
+)
+async def publish_content_generation_template(
+    content_generation_template_id: PyObjectId = Path(description="Content generation template id"),
+    current_user: TokenData = Depends(get_current_user),
+) -> Response:
+    # Update the response template
+    await ContentGenerationTemplates.update(
+        query_content_generation_template_id=content_generation_template_id,
+        query_organization_id=current_user.organization_id,
+        update_content_generation_template_state=ContentGenerationState.PUBLISHED,
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -117,4 +117,48 @@ export class ContentGenerationTemplatesService {
         });
     }
 
+    /**
+     * Get Published Content Generation Template
+     * Get the content generation template for the current user
+     * @param formTemplateId Form template id
+     * @returns GetContentGenerationTemplate_Out Successful Response
+     * @throws ApiError
+     */
+    public static getPublishedContentGenerationTemplate(
+        formTemplateId: string,
+    ): CancelablePromise<GetContentGenerationTemplate_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/content-generation-templates/published/{content_generation_template_id}',
+            path: {
+                'form_template_id': formTemplateId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Publish Content Generation Template
+     * Publish a content generation template for the current user
+     * @param contentGenerationTemplateId Content generation template id
+     * @returns void
+     * @throws ApiError
+     */
+    public static publishContentGenerationTemplate(
+        contentGenerationTemplateId: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/content-generation-templates/{content_generation_template_id}/publish',
+            path: {
+                'content_generation_template_id': contentGenerationTemplateId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }

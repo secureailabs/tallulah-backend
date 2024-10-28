@@ -10,6 +10,5 @@ export type GetContentGeneration_Out = {
     id: string;
     state: app__models__content_generation__ContentGenerationState;
     generated?: (string | null);
-    error_message?: (string | null);
     creation_time: string;
 };
