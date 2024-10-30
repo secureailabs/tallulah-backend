@@ -46,6 +46,8 @@ class SecretStore(BaseModel):
     FIREBASE_CREDENTIALS: str
     FIREBASE_CREDENTIALS_FILE: str
     GOOGLE_RECAPTCHA_SECRET_KEY: str
+    REDDIT_API_KEY: str
+    REDDIT_API_SECRET: str
 
     class Config:
         frozen = True
@@ -83,6 +85,8 @@ secret_store = SecretStore(
     FIREBASE_CREDENTIALS=get_secret_env("FIREBASE_CREDENTIALS"),
     FIREBASE_CREDENTIALS_FILE=get_secret_env("FIREBASE_CREDENTIALS_FILE"),
     GOOGLE_RECAPTCHA_SECRET_KEY=get_secret_env("GOOGLE_RECAPTCHA_SECRET_KEY"),
+    REDDIT_API_KEY=get_secret_env("REDDIT_API_KEY"),
+    REDDIT_API_SECRET=get_secret_env("REDDIT_API_SECRET"),
 )
 
 

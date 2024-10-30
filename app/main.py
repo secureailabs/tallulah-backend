@@ -54,6 +54,7 @@ from app.api import (
     patient_profile_repositories,
     patient_profiles,
     response_templates,
+    social_search,
     web_utils,
 )
 from app.data.operations import DatabaseOperations
@@ -105,6 +106,7 @@ server.include_router(etapestry_data.router)
 server.include_router(dashboard_templates.router)
 server.include_router(media.router)
 server.include_router(organization.router)
+server.include_router(social_search.router)
 
 # Setup CORS to allow all origins
 origins = [

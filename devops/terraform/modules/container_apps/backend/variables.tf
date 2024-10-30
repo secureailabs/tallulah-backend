@@ -167,7 +167,18 @@ variable "dd_azure_resource_group" {
   description = "The name of the Azure resource group"
   type        = string
 }
+
 variable "redis_password" {
   description = "The password for the Redis instance"
+  type        = string
+}
+
+variable "reddit_api_key" {
+  description = "The API key for the Reddit API"
+  type        = string
+}
+
+variable "reddit_api_secret" {
+  description = "The secret for the Reddit API"
   type        = string
 }
