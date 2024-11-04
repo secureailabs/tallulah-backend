@@ -1,4 +1,4 @@
-IMAGES = tallulah/backend tallulah/rabbitmq tallulah/logstash tallulah/redis
+IMAGES = tallulah/backend tallulah/rabbitmq tallulah/monstache tallulah/redis
 
 run:
 	@./scripts.sh run

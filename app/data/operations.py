@@ -16,10 +16,11 @@ import asyncio
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-import motor.motor_asyncio
 import pymongo.results as results
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from motor import motor_asyncio
+from motor.motor_asyncio import AsyncIOMotorChangeStream
 from pymongo import ReturnDocument
 from pymongo.server_api import ServerApi
 
@@ -47,7 +48,7 @@ class DatabaseOperations:
             cls._instance = super(DatabaseOperations, cls).__new__(cls)
             cls.mongodb_host = secret_store.MONGO_CONNECTION_URL
             if use_cert:
-                cls.client = motor.motor_asyncio.AsyncIOMotorClient(
+                cls.client = motor_asyncio.AsyncIOMotorClient(
                     cls.mongodb_host,
                     tls=True,
                     tlsCertificateKeyFile="/tmp/mongo_atlas_cert.pem",
@@ -55,7 +56,7 @@ class DatabaseOperations:
                     io_loop=asyncio.get_event_loop(),
                 )
             else:
-                cls.client = cls.client = motor.motor_asyncio.AsyncIOMotorClient(
+                cls.client = cls.client = motor_asyncio.AsyncIOMotorClient(
                     cls.mongodb_host,
                     io_loop=asyncio.get_event_loop(),
                 )
@@ -123,3 +124,16 @@ class DatabaseOperations:
 
     async def aggregate(self, collection: str, pipeline: List[Dict]) -> List[Dict]:
         return await self.sail_db[collection].aggregate(pipeline).to_list(10000)
+
+    async def get_change_stream(
+        self, collection_name: str, pipeline: List[dict], resume_token: Optional[Any] = None
+    ) -> AsyncIOMotorChangeStream:
+        collection = self.sail_db[collection_name]
+        if resume_token:
+            change_stream = collection.watch(pipeline, resume_after=resume_token)
+        else:
+            change_stream = collection.watch(pipeline)
+        return change_stream
+
+    async def get_collection(self, collection_name: str):
+        return self.sail_db[collection_name]

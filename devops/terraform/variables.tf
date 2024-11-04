@@ -68,3 +68,8 @@ variable "devops_resource_group_name" {
   description = "The name of the resource group"
   type        = string
 }
+
+variable "monstache_container_image_tag" {
+  description = "The tag of the monstache container image"
+  type        = string
+}
