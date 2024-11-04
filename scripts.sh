@@ -129,7 +129,11 @@ generate_client() {
     # It is not a bug, it happens because the openapi spec uses alias of the keys used in the models
     # For example, if a model has a field called "id", it will be renamed to "_id", because that's what mongodb uses
     # But _is is considered a private member so "id" is used instead
-    sed -i '' 's/\"_id\"/\"id\"/g' docs/openapi.json
+    if [ $machine == "Mac" ]; then
+        sed -i '' 's/\"_id\"/\"id\"/g' docs/openapi.json
+    else
+        sed -i 's/\"_id\"/\"id\"/g' docs/openapi.json
+    fi
 
     # Generate the python client
     rm -rf tallulah-client/
