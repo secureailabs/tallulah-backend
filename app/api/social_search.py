@@ -13,6 +13,7 @@
 # -------------------------------------------------------------------------------
 
 import urllib.parse
+from calendar import c
 from datetime import datetime
 from typing import List, Optional
 
@@ -156,8 +157,10 @@ async def reddit_search(
     for post in results["data"]["children"]:
         data = post["data"]
         images = []
+        if "thumbnail" in data and data["thumbnail"] != "self":
+            images.append(data["thumbnail"])
         if "preview" in data:
-            images = list(map(lambda x: x["source"]["url"], data["preview"]["images"]))
+            images.extend(list(map(lambda x: x["source"]["url"], data["preview"]["images"])))
         result.append(
             RedditPost(
                 reddit_id=data["id"],
@@ -170,11 +173,18 @@ async def reddit_search(
                 selftext=data["selftext"],
                 images=images,
                 post_time=data["created_utc"],
+                created_utc=data["created_utc"],
                 is_patient_story=False,
             )
         )
 
-    return await filter_posts_by_patient_stories(result) if filter_patient_stories else result
+    try:
+        return await filter_posts_by_patient_stories(result) if filter_patient_stories else result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error filtering posts",
+        )
 
 
 @router.get(
@@ -227,6 +237,7 @@ async def reddit_add_tag(
         selftext=reddit_post.selftext,
         images=reddit_post.images,
         post_time=reddit_post.post_time,
+        created_utc=reddit_post.created_utc,
         is_patient_story=reddit_post.is_patient_story,
         added_by=current_user.id,
         organization_id=current_user.organization_id,

@@ -56,6 +56,7 @@ class RedditPost(SailBaseModel):
     selftext: Optional[StrictStr] = Field(default=None)
     images: List[StrictStr] = Field()
     post_time: datetime = Field()
+    created_utc: int = Field()
     is_patient_story: Optional[Boolean] = Field(default=None)
 
 
