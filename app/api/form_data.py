@@ -20,7 +20,7 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
 
-from app.api.authentication import get_current_user
+from app.api.authentication import RoleChecker, get_current_user
 from app.models.accounts import Users
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
@@ -44,7 +44,7 @@ from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.lock_store import RedisLockStore
-from app.utils.message_queue import InMemoryProducerConsumer, MessageQueueTypes, RabbitMQProducerConumer
+from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConumer
 from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
@@ -53,28 +53,66 @@ router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 logger = logging.getLogger(__name__)
 
 
-# @router.on_event("startup")
-# @repeat_every(seconds=60)
 async def queue_form_data_metadata_generation():
     log_manager.DEBUG({"message": "Pushing a message to the task queue to generate structured data"})
 
-    # Get the 10 form data for which the metadata is not generated
-    metadata_not_generated = await FormDatas.read(
-        field_not_exists="metadata", limit=10, skip=0, throw_on_not_found=False
-    )
+    # Get the form data for which the metadata is not yet generated
+    metadata_not_generated = await FormDatas.read(field_not_exists="metadata")
     if not metadata_not_generated:
         return
 
-    # Initialize the queue
-    task_queue = InMemoryProducerConsumer(
-        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION, connection_string=""
-    )
-    await task_queue.connect()
+    for form_data in metadata_not_generated:
+        form_data_id = form_data.id
 
-    # Push the message to the queue
-    print("Data id", [str(data.id) for data in metadata_not_generated])
-    for data in metadata_not_generated:
-        await task_queue.push_message(str(data.id))
+        lock_store = RedisLockStore()
+        is_locked = await lock_store.is_locked(f"form_data_{str(form_data_id)}")
+        if is_locked:
+            log_manager.INFO({"message": f"Form data {form_data_id} is already being processed"})
+            continue
+
+        log_manager.DEBUG(
+            {"message": f"Pushing a message {form_data_id} to the task queue to generate structured data"}
+        )
+        task_queue = RabbitMQProducerConumer(
+            queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
+            connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
+        )
+        await task_queue.connect()
+        await task_queue.push_message(str(form_data_id))
+
+        # sleep for 10 seconds to avoid rate limiting
+        await asyncio.sleep(10)
+
+
+async def queue_all_form_data_metadata_generation():
+    log_manager.DEBUG({"message": "Pushing a message to the task queue to generate structured data"})
+
+    # Get all the form data
+    metadata_not_generated = await FormDatas.read()
+    if not metadata_not_generated:
+        return
+
+    for form_data in metadata_not_generated:
+        form_data_id = form_data.id
+
+        lock_store = RedisLockStore()
+        is_locked = await lock_store.is_locked(f"form_data_{str(form_data_id)}")
+        if is_locked:
+            log_manager.INFO({"message": f"Form data {form_data_id} is already being processed"})
+            continue
+
+        log_manager.DEBUG(
+            {"message": f"Pushing a message {form_data_id} to the task queue to generate structured data"}
+        )
+        task_queue = RabbitMQProducerConumer(
+            queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
+            connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
+        )
+        await task_queue.connect()
+        await task_queue.push_message(str(form_data_id))
+
+        # sleep for 10 seconds to avoid rate limiting
+        await asyncio.sleep(10)
 
 
 async def notify_users(form_template_id: PyObjectId):
@@ -488,6 +526,36 @@ async def backfill_tags(background_tasks: BackgroundTasks):
     # Generate Tags
     background_tasks.add_task(generate_all_tags)
     background_tasks.add_task(generate_all_themes)
+
+    return Response(status_code=status.HTTP_200_OK)
+
+
+@router.get(
+    path="/test/backfill_metadata",
+    description="Backfill the metadata",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
+    operation_id="backfill_metadata",
+)
+async def backfill_metadata(background_tasks: BackgroundTasks):
+    # Generate metadata
+    background_tasks.add_task(queue_form_data_metadata_generation)
+
+    return Response(status_code=status.HTTP_200_OK)
+
+
+@router.get(
+    path="/test/generate-all-metadata",
+    description="Backfill the metadata",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
+    operation_id="generate_all_metadata",
+)
+async def generate_all_metadata(background_tasks: BackgroundTasks):
+    # Generate metadata
+    background_tasks.add_task(queue_all_form_data_metadata_generation)
 
     return Response(status_code=status.HTTP_200_OK)
 

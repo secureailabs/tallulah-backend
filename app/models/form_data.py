@@ -13,9 +13,9 @@
 # -------------------------------------------------------------------------------
 
 import math
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import pgeocode
 from fastapi import HTTPException, status
@@ -47,11 +47,22 @@ class ImageMetadata(SailBaseModel):
     transcript: str = Field()
 
 
+class StructuredData(SailBaseModel):
+    name: Optional[str]
+    age: Optional[int]
+    location: Optional[str]
+    diagnosis: Optional[str]
+    events: List[str]
+    date_of_Event: Optional[str]
+    emotions_of_event: List[str]
+    overall_theme_or_basic_concerns: List[str]
+
+
 class FormDataMetadata(SailBaseModel):
     video_metadata: List[VideoMetadata] = Field(default=[])
     audio_metadata: List[AudioMetadata] = Field(default=[])
     image_metadata: List[ImageMetadata] = Field(default=[])
-    structured_data: Dict[StrictStr, Any] = Field(default={})
+    structured_data: Union[None, StructuredData, Dict[StrictStr, Any]] = Field(default=None)
     creation_time: datetime = Field(default=datetime.utcnow())
 
 
