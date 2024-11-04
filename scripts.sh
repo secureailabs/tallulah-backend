@@ -33,11 +33,6 @@ push_image_to_registry() {
         exit 1
     fi
 
-    az account set --subscription $AZURE_SUBSCRIPTION_ID
-
-    echo "log in to azure registry"
-    az acr login --name "$DOCKER_REGISTRY_NAME"
-
     # Get the version from the ../VERSION file
     version=$(cat VERSION)
 
@@ -46,6 +41,7 @@ push_image_to_registry() {
 
     echo "Tag and Pushing image to azure hub"
     tag=v"$version"_"$gitCommitHash"
+    # tag=v"$version"_"$gitCommitHash""$random_seed"
     echo "Tag: $tag"
     docker tag "$1" "$DOCKER_REGISTRY_NAME".azurecr.io/"$1":"$tag"
     docker push "$DOCKER_REGISTRY_NAME".azurecr.io/"$1":"$tag"
@@ -153,13 +149,20 @@ generate_client() {
 }
 
 deploy() {
+    export random_seed=$(openssl rand -base64 3)
     az login
+    az account set --subscription $AZURE_SUBSCRIPTION_ID
+
+    echo "log in to azure registry"
+    az acr login --name "$DOCKER_REGISTRY_NAME"
+
     make build_image
-    make push_all
+    make push_all -j4
 
     version=$(cat VERSION)
     gitCommitHash=$(git rev-parse --short HEAD)
     backend_tag=v"$version"_"$gitCommitHash"
+    # backend_tag=v"$version"_"$gitCommitHash""$random_seed"
     echo "Tag: $backend_tag"
 
     # rm -rf researcher-ui || true

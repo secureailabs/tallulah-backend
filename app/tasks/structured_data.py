@@ -1,12 +1,19 @@
 import json
 import traceback
-from typing import Dict
+from typing import Dict, List
 
 from aio_pika.abc import AbstractIncomingMessage
 
 from app.models.common import PyObjectId
 from app.models.content_generation_template import Context
-from app.models.form_data import AudioMetadata, FormDataMetadata, FormDatas, ImageMetadata, VideoMetadata
+from app.models.form_data import (
+    AudioMetadata,
+    FormDataMetadata,
+    FormDatas,
+    ImageMetadata,
+    StructuredData,
+    VideoMetadata,
+)
 from app.utils import log_manager
 from app.utils.azure_openai import OpenAiGenerator
 from app.utils.lock_store import RedisLockStore
@@ -16,7 +23,7 @@ from app.utils.transcribe_image import describe_image_from_id
 from app.utils.transcribe_video import transcribe_video_from_id
 
 
-async def generate_structured_data(metadata: FormDataMetadata, form_values: Dict) -> Dict:
+async def generate_structured_data(metadata: FormDataMetadata, form_values: Dict):
     system_message = """
     Extract the following information from the provided text, which may include data from forms or transcriptions of images, videos, or audio attachments. The text might be unstructured or conversational.
     Information to extract:
@@ -29,20 +36,7 @@ async def generate_structured_data(metadata: FormDataMetadata, form_values: Dict
     - Emotion of event
     - Overall theme or basic concerns related to the disease
 
-    Present the extracted information in JSON format, using the following structure:
-
-    ```json
-    {
-    "Name": "",
-    "Age": "",
-    "Location": "",
-    "Diagnosis": "",
-    "Events": "",
-    "Date of Event": "",
-    "Emotion of Event": "",
-    "Overall Theme or Basic Concerns": ""
-    }
-    ```
+    Present the extracted information in JSON format, using the provided template
 """
 
     # prepare prompts for OpenAI
@@ -64,13 +58,9 @@ async def generate_structured_data(metadata: FormDataMetadata, form_values: Dict
 
     # generate structured data
     openai_generator = OpenAiGenerator(api_base=secret_store.OPENAI_API_BASE, api_key=secret_store.OPENAI_API_KEY)
-    structured_data = await openai_generator.get_response(conversation)
+    structured_data = await openai_generator.get_response(messages=conversation, response_model=StructuredData)
 
-    # Extract the data between opening and closing ```json
-    structured_data = structured_data.split("```json")[1].split("```")[0].strip()
-
-    # TODO: Parse the structured data and return it
-    return json.loads(structured_data)
+    return structured_data
 
 
 async def on_generate_structured_data(message: AbstractIncomingMessage) -> None:
@@ -144,6 +134,16 @@ async def on_generate_structured_data(message: AbstractIncomingMessage) -> None:
 
             # After the audio, video and image metadata is generated, we can extract the structured data
             structured_data = await generate_structured_data(form_metadata, user_provided_data)
+            # check if the structured data is a StructuredData object
+            if not isinstance(structured_data, StructuredData):
+                log_manager.ERROR(
+                    {
+                        "message": "Structured data is not of type StructuredData",
+                        "form_data_id": str(form_data_id),
+                        "structured_data": structured_data,
+                    }
+                )
+                return
             form_metadata.structured_data = structured_data
 
             # Update the database
