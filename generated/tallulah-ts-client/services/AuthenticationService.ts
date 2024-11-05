@@ -103,7 +103,7 @@ export class AuthenticationService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                401: `Incorrect current password`,
+                400: `User not found in firebase`,
                 422: `Validation Error`,
             },
         });
