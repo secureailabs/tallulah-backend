@@ -23,9 +23,19 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 
 from app.api.authentication import get_current_user
+from app.models.accounts import Users
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
-from app.models.social_search import PostState, RedditPost, RedditPost_Db, RedditPosts, SearchHistory, SearchHistory_Db
+from app.models.social_search import (
+    PostState,
+    PostTagResponse,
+    RedditPost,
+    RedditPost_Db,
+    RedditPosts,
+    SearchHistory,
+    SearchHistory_Db,
+    SearchHistoryResponse,
+)
 from app.utils.azure_openai import OpenAiGenerator
 from app.utils.secrets import secret_store
 
@@ -90,7 +100,7 @@ async def search_history(
     sort_direction: int = Query(default=-1, description="Sort direction"),
     skip: int = Query(default=0, description="Number of form data to skip"),
     limit: int = Query(default=10, description="Number of form data to return"),
-) -> List[SearchHistory_Db]:
+) -> List[SearchHistoryResponse]:
     result = []
 
     result = await SearchHistory.read(
@@ -100,7 +110,24 @@ async def search_history(
         sort_key=sort_key,
         sort_direction=sort_direction,
     )
-    return result
+
+    users = await Users.read(organization_id=current_user.organization_id)
+
+    response = []
+    for search in result:
+        user = next((x for x in users if x.id == search.user_id), None)
+        response.append(
+            SearchHistoryResponse(
+                query=search.query,
+                social=search.social,
+                search_time=search.search_time,
+                after=search.after,
+                user_name=user.name if user else "",
+                job_title=user.job_title if user else "",
+            )
+        )
+
+    return response
 
 
 @router.get(
@@ -201,7 +228,7 @@ async def reddit_tags(
     sort_direction: int = Query(default=-1, description="Sort direction"),
     skip: int = Query(default=0, description="Number of form data to skip"),
     limit: int = Query(default=10, description="Number of form data to return"),
-) -> List[RedditPost_Db]:
+) -> List[PostTagResponse]:
     result = []
 
     result = await RedditPosts.read(
@@ -212,7 +239,36 @@ async def reddit_tags(
         sort_key=sort_key,
         sort_direction=sort_direction,
     )
-    return result
+    response = []
+    users = await Users.read(organization_id=current_user.organization_id)
+    for post in result:
+        user = next((x for x in users if x.id == post.added_by), None)
+        response.append(
+            PostTagResponse(
+                id=post.id,
+                social="reddit",
+                post=RedditPost(
+                    reddit_id=post.reddit_id,
+                    name=post.name,
+                    link=post.link,
+                    author=post.author,
+                    author_link=post.author_link,
+                    title=post.title,
+                    subreddit=post.subreddit,
+                    selftext=post.selftext,
+                    images=post.images,
+                    post_time=post.post_time,
+                    created_utc=post.created_utc,
+                    is_patient_story=post.is_patient_story,
+                ),
+                status=post.status,
+                added_time=post.added_time,
+                user_name=user.name if user else "",
+                job_title=user.job_title if user else "",
+            )
+        )
+
+    return response
 
 
 @router.post(

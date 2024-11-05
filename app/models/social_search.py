@@ -45,6 +45,15 @@ class SearchHistory_Db(SearchHistory_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
 
 
+class SearchHistoryResponse(SailBaseModel):
+    query: StrictStr = Field()
+    social: StrictStr = Field(default="reddit")
+    search_time: datetime = Field()
+    after: Optional[StrictStr] = Field(default=None)
+    user_name: StrictStr = Field()
+    job_title: StrictStr = Field()
+
+
 class RedditPost(SailBaseModel):
     reddit_id: StrictStr = Field()
     name: StrictStr = Field()
@@ -66,6 +75,16 @@ class RedditPost_Db(RedditPost):
     status: PostState = Field(default=PostState.REQUESTED)
     added_time: datetime = Field(default_factory=datetime.utcnow)
     added_by: PyObjectId = Field()
+
+
+class PostTagResponse(SailBaseModel):
+    id: PyObjectId = Field()
+    social: StrictStr = Field(default="reddit")
+    post: RedditPost = Field()
+    status: PostState = Field()
+    added_time: datetime = Field()
+    user_name: StrictStr = Field()
+    job_title: StrictStr = Field()
 
 
 class SearchHistory:

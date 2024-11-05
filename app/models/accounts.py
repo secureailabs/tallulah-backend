@@ -112,6 +112,7 @@ class Users:
     @staticmethod
     async def read(
         user_id: Optional[PyObjectId] = None,
+        organization_id: Optional[PyObjectId] = None,
         email: Optional[str] = None,
         user_role: Optional[UserRole] = None,
         user_state: Optional[UserAccountState] = None,
@@ -122,6 +123,8 @@ class Users:
         query = {}
         if user_id:
             query["_id"] = user_id
+        if organization_id:
+            query["organization_id"] = organization_id
         if email:
             query["email"] = email
         # FIXME: roles is an array, so we need to use $in operator
