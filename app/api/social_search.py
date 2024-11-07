@@ -297,7 +297,7 @@ async def reddit_add_tag(
         is_patient_story=reddit_post.is_patient_story,
         added_by=current_user.id,
         organization_id=current_user.organization_id,
-        status=PostState.REQUESTED,
+        status=PostState.IN_QUEUE,
     )
 
     await RedditPosts.create(post)

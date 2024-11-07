@@ -26,8 +26,9 @@ from app.models.common import PyObjectId, SailBaseModel
 
 
 class PostState(Enum):
+    IN_QUEUE = "IN QUEUE"
     REQUESTED = "REQUESTED"
-    IN_PROGRESS = "IN_PROGRESS"
+    IN_PROGRESS = "IN PROGRESS"
     APPROVED = "APPROVED"
     DENIED = "DENIED"
 
