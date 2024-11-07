@@ -25,6 +25,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.18.0] - 2024-10-21
+
+### Added
+
+- **Patient Story Structured Data Generation**
+  - Implemented the frontend to generate structured data for patient stories based on the form data including photos, videos, and form responses.
+  - The structured data is generated in JSON format and can be used for further analysis and visualization.
+
+- **Patient Story Structured Data Export**
+  - Added a feature to export the structured data for patient stories from the frontend.
+  - Users can now download the structured data for patient stories and use it for external analysis or reporting.
+
+- **Logging the backend logs and errors**
+  - Implemented datadopg logging for backend services to track errors and monitor the application's performance.
+  - The logs are stored in a centralized location for easy access and analysis.
+
 ## [0.17.0] - 2024-10-08
 
 ### Added

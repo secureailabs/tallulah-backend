@@ -1,8 +1,11 @@
 from typing import List, Optional, Union
 
 import aiohttp
+from azure.communication.email.aio import EmailClient
 from pydantic import BaseModel, validator
 from tenacity import retry, stop_after_attempt, wait_fixed
+
+from app.utils.secrets import secret_store
 
 
 class EmailBody(BaseModel):
@@ -40,6 +43,45 @@ class MessageResponse(BaseModel):
         if v.body is not None and comment_v is not None:
             raise ValueError("Either comment or body must be specified. Not both")
         return v
+
+
+class AzureClient:
+    def __init__(self):
+        self.client = EmailClient.from_connection_string(secret_store.AZURE_COMM_CONNECTION_STRING)
+        self.from_address = secret_store.AZURE_EMAIL_FROM_ADDRESS
+
+    async def send_email(self, message: MessageResponse):
+        if not message.message.body or not message.message.body.content:
+            raise Exception("Email body is empty")
+        if not message.message.toRecipients:
+            raise Exception("No recipient specified")
+        try:
+            msg = {
+                "content": {
+                    "subject": message.message.subject,
+                    "plainText": "" if message.message.body.contentType == "html" else message.message.body.content,
+                    "html": message.message.body.content if message.message.body.contentType == "html" else "",
+                },
+                "recipients": {
+                    "to": list(
+                        map(
+                            lambda x: {
+                                "address": x.emailAddress.address,
+                                "displayName": x.emailAddress.name,
+                            },
+                            message.message.toRecipients,
+                        )
+                    ),
+                    # "cc": [],
+                    # "bcc": [],
+                },
+                "senderAddress": self.from_address,
+            }
+            poller = await self.client.begin_send(msg)
+            return await poller.result()
+        except Exception as e:
+            print("Failed to send email: " + str(e))
+        return False
 
 
 class OutlookClient:

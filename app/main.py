@@ -65,17 +65,6 @@ from app.utils.elastic_search import ElasticsearchClient
 from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConumer
 from app.utils.secrets import secret_store
 
-# sentry_sdk.init(
-#     dsn="https://adad5fa0b086f5c00ebddc4a5c8d9107@o4506660384997376.ingest.sentry.io/4506660387946496",
-#     # Set traces_sample_rate to 1.0 to capture 100%
-#     # of transactions for performance monitoring.
-#     traces_sample_rate=1.0,
-#     # Set profiles_sample_rate to 1.0 to profile 100%
-#     # of sampled transactions.
-#     # We recommend adjusting this value in production.
-#     profiles_sample_rate=1.0,
-# )
-
 server = FastAPI(
     title="Tallulah",
     description="All the private and public APIs for Tallulah - Patient Story Management Platform",
@@ -137,7 +126,7 @@ class ValidationError(BaseModel):
 
 @server.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    print(exc)
+    log_manager.WARNING({"message": f"Validation error: {exc}"})
     error = ValidationError(error="Invalid Schema")
     return JSONResponse(status_code=422, content=jsonable_encoder(error))
 
@@ -180,7 +169,7 @@ async def server_error_exception_handler(request: Request, exc: Exception):
     await data_service.insert_one("errors", jsonable_encoder(message))
 
     # Add the exception to the audit log as well
-    log_manager.ERROR(message)
+    log_manager.CRITICAL(message)
 
     # Respond with a 500 error
     return Response(
@@ -288,16 +277,25 @@ async def add_audit_log(request: Request, call_next: Callable):
 
 
 async def start_queue_consumers():
-    log_manager.DEBUG({"message": "Starting the task queue consumer for generating structured data"})
+    try:
+        await asyncio.sleep(30)
+        log_manager.INFO({"message": "Starting the task queue consumer for generating structured data"})
 
-    rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
-    task_queue = RabbitMQProducerConumer(
-        queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
-        connection_string=f"{rabbit_mq_connect_url}:5672",
-    )
+        rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
+        task_queue = RabbitMQProducerConumer(
+            queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
+            connection_string=f"{rabbit_mq_connect_url}:5672",
+        )
 
-    await task_queue.connect()
-    await task_queue.consume_messages(on_generate_structured_data)
+        await task_queue.connect()
+        await task_queue.consume_messages(on_generate_structured_data)
+    except Exception as exception:
+        log_manager.ERROR(
+            {
+                "message": f"Error: while starting the task queue consumer: {exception}",
+                "stack_trace": f"{traceback.format_exc()}",
+            }
+        )
 
 
 @server.on_event("startup")

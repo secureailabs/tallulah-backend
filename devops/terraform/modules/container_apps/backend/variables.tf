@@ -182,3 +182,13 @@ variable "reddit_api_secret" {
   description = "The secret for the Reddit API"
   type        = string
 }
+
+variable "azure_email_from_address" {
+  description = "The email address to send emails from"
+  type        = string
+}
+
+variable "azure_comm_connection_string" {
+  description = "The connection string for the Azure communication service"
+  type        = string
+}
