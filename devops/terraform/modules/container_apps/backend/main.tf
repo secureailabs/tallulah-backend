@@ -131,6 +131,14 @@ resource "azurerm_container_app" "container_app_backend" {
     value = var.redis_password
   }
   secret {
+    name  = "reddit-api-key"
+    value = var.reddit_api_key
+  }
+  secret {
+    name  = "reddit-api-secret"
+    value = var.reddit_api_secret
+  }
+  secret {
     name  = "azure-email-from-address"
     value = var.azure_email_from_address
   }
@@ -289,6 +297,13 @@ resource "azurerm_container_app" "container_app_backend" {
         name        = "REDIS_PASSWORD"
         secret_name = "redis-password"
       }
+      env {
+        name = "REDDIT_API_KEY"
+        secret_name = "reddit-api-key"
+      }
+      env {
+        name = "REDDIT_API_SECRET"
+        secret_name = "reddit-api-secret"
     }
   }
 }

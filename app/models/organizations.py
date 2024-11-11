@@ -2,7 +2,7 @@
 # Engineering
 # organizations.py
 # -------------------------------------------------------------------------------
-"""Models used by account management service"""
+"""Models used by organizations service"""
 # -------------------------------------------------------------------------------
 # Copyright (C) 2022 Array Insights, Inc. All Rights Reserved.
 # Private and Confidential. Internal Use Only.
@@ -13,8 +13,8 @@
 # -------------------------------------------------------------------------------
 
 from datetime import datetime
-from typing import List, Optional
 from enum import Enum
+from typing import List, Optional
 
 from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -30,9 +30,11 @@ class ExportState(Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
+
 class ExportType(Enum):
     CSV = "csv"
     JSON = "json"
+
 
 class Organization_Base(SailBaseModel):
     name: StrictStr = Field()
@@ -56,6 +58,7 @@ class ExportData_Base(SailBaseModel):
 
 class ExportData_Db(ExportData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+
 
 class ExportData_Out(ExportData_Base):
     id: PyObjectId = Field()
@@ -102,7 +105,6 @@ class Organizations:
         return organization_list
 
 
-
 class DataExports:
     DB_COLLECTION_DATA_EXPORTS = "organization_data_exports"
     data_service = DatabaseOperations()
@@ -115,7 +117,6 @@ class DataExports:
             collection=DataExports.DB_COLLECTION_DATA_EXPORTS,
             data=jsonable_encoder(export),
         )
-
 
     @staticmethod
     async def update(
@@ -130,7 +131,6 @@ class DataExports:
             query={"_id": str(export.id)},
             data=jsonable_encoder(update_request),
         )
-
 
     @staticmethod
     async def read(

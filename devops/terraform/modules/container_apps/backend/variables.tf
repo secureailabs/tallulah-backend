@@ -173,6 +173,16 @@ variable "redis_password" {
   type        = string
 }
 
+variable "reddit_api_key" {
+  description = "The API key for the Reddit API"
+  type        = string
+}
+
+variable "reddit_api_secret" {
+  description = "The secret for the Reddit API"
+  type        = string
+}
+
 variable "azure_email_from_address" {
   description = "The email address to send emails from"
   type        = string

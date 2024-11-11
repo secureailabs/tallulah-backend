@@ -48,6 +48,8 @@ class SecretStore(BaseModel):
     GOOGLE_RECAPTCHA_SECRET_KEY: str
     AZURE_COMM_CONNECTION_STRING: str
     AZURE_EMAIL_FROM_ADDRESS: str
+    REDDIT_API_KEY: str
+    REDDIT_API_SECRET: str
 
     class Config:
         frozen = True
@@ -87,6 +89,8 @@ secret_store = SecretStore(
     GOOGLE_RECAPTCHA_SECRET_KEY=get_secret_env("GOOGLE_RECAPTCHA_SECRET_KEY"),
     AZURE_COMM_CONNECTION_STRING=get_secret_env("AZURE_COMM_CONNECTION_STRING"),
     AZURE_EMAIL_FROM_ADDRESS=get_secret_env("AZURE_EMAIL_FROM_ADDRESS"),
+    REDDIT_API_KEY=get_secret_env("REDDIT_API_KEY"),
+    REDDIT_API_SECRET=get_secret_env("REDDIT_API_SECRET"),
 )
 
 
