@@ -146,6 +146,10 @@ resource "azurerm_container_app" "container_app_backend" {
     name  = "azure-comm-connection-string"
     value = var.azure_comm_connection_string
   }
+  secret {
+    name  = "mongo-db-charts-private-key"
+    value = var.mongo_db_charts_private_key
+  }
   template {
     min_replicas = 1
     max_replicas = 10
@@ -298,12 +302,17 @@ resource "azurerm_container_app" "container_app_backend" {
         secret_name = "redis-password"
       }
       env {
-        name = "REDDIT_API_KEY"
+        name        = "REDDIT_API_KEY"
         secret_name = "reddit-api-key"
       }
       env {
-        name = "REDDIT_API_SECRET"
+        name        = "REDDIT_API_SECRET"
         secret_name = "reddit-api-secret"
+      }
+      env {
+        name        = "MONGO_DB_CHARTS_PRIVATE_KEY"
+        secret_name = "mongo-db-charts-private-key"
+      }
     }
   }
 }

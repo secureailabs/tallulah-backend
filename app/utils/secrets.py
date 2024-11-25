@@ -50,6 +50,7 @@ class SecretStore(BaseModel):
     AZURE_EMAIL_FROM_ADDRESS: str
     REDDIT_API_KEY: str
     REDDIT_API_SECRET: str
+    MONGO_DB_CHARTS_PRIVATE_KEY: str
 
     class Config:
         frozen = True
@@ -91,6 +92,7 @@ secret_store = SecretStore(
     AZURE_EMAIL_FROM_ADDRESS=get_secret_env("AZURE_EMAIL_FROM_ADDRESS"),
     REDDIT_API_KEY=get_secret_env("REDDIT_API_KEY"),
     REDDIT_API_SECRET=get_secret_env("REDDIT_API_SECRET"),
+    MONGO_DB_CHARTS_PRIVATE_KEY=get_secret_env("MONGO_DB_CHARTS_PRIVATE_KEY"),
 )
 
 

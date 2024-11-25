@@ -192,3 +192,8 @@ variable "azure_comm_connection_string" {
   description = "The connection string for the Azure communication service"
   type        = string
 }
+
+variable "mongo_db_charts_private_key" {
+  description = "The private key for the MongoDB Charts signature"
+  type        = string
+}
