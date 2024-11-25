@@ -15,6 +15,7 @@ export type { Body_login } from './models/Body_login';
 export type { Body_reply_to_emails } from './models/Body_reply_to_emails';
 export type { CaptchaRequest } from './models/CaptchaRequest';
 export type { CardLayout } from './models/CardLayout';
+export type { ChartToken_Out } from './models/ChartToken_Out';
 export type { Context } from './models/Context';
 export type { DashboardLayout_Input } from './models/DashboardLayout_Input';
 export type { DashboardLayout_Output } from './models/DashboardLayout_Output';
