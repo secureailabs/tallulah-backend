@@ -26,6 +26,10 @@ class LoginSuccess_Out(SailBaseModel):
     token_type: StrictStr
 
 
+class ChartToken_Out(SailBaseModel):
+    chart_token: StrictStr
+
+
 class TokenData(SailBaseModel):
     id: PyObjectId = Field()
     organization_id: PyObjectId = Field()

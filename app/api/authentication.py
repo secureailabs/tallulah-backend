@@ -27,8 +27,16 @@ from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
 from app.models.accounts import UpdateUser_In, User_Db, UserAccountState, UserInfo_Out, UserRole, Users
-from app.models.authentication import FirebaseTokenData, LoginSuccess_Out, RefreshToken_In, ResetPassword_In, TokenData
+from app.models.authentication import (
+    ChartToken_Out,
+    FirebaseTokenData,
+    LoginSuccess_Out,
+    RefreshToken_In,
+    ResetPassword_In,
+    TokenData,
+)
 from app.models.common import PyObjectId
+from app.models.form_templates import FormTemplates, FormTemplateState
 from app.models.organizations import Organizations
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.secrets import secret_store
@@ -443,3 +451,48 @@ async def migrate_users(
             pass
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+async def get_chart_token(user: UserInfo_Out, form_template_id: PyObjectId | None) -> ChartToken_Out:
+    if form_template_id:
+        # Check if form template exists
+        await FormTemplates.read(
+            organization_id=user.organization_id,
+            template_id=form_template_id,
+            state=FormTemplateState.PUBLISHED,
+            throw_on_not_found=True,
+        )
+
+    payload = {
+        "iat": int(time()),  # Issued at time
+        "exp": int(time()) + 3600,  # JWT expiration time (1 hour)
+        "iss": "tallulah",  # App identifier
+        "sub": str(user.organization_id),
+        "aud": "tallulah",
+    }
+    if form_template_id:
+        payload["form_template_id"] = [str(form_template_id)]
+    else:
+        form_templates = await FormTemplates.read(
+            organization_id=user.organization_id,
+            state=FormTemplateState.PUBLISHED,
+            throw_on_not_found=False,
+        )
+        if form_templates and len(form_templates) > 0:
+            payload["form_template_id"] = [str(form_template.id) for form_template in form_templates]
+    private_key = bytes.fromhex(secret_store.MONGO_DB_CHARTS_PRIVATE_KEY).decode("utf-8")
+    token = jwt.encode(payload, private_key, algorithm="RS256")
+    print(token)
+    return ChartToken_Out(chart_token=str(token))
+
+
+@router.get(
+    "/api/auth/chart-token",
+    description="Get the chart token",
+    status_code=status.HTTP_200_OK,
+    operation_id="get_chart_token_api",
+)
+async def get_chart_token_api(
+    current_user: UserInfo_Out = Depends(get_current_user_info),
+) -> ChartToken_Out:
+    return await get_chart_token(current_user, None)
