@@ -13,10 +13,13 @@
 # -------------------------------------------------------------------------------
 
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
+from typing import Optional
 
-from app.api.authentication import RoleChecker, get_current_user, get_password_hash, create_firebase_user
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+
+from app.api.authentication import RoleChecker, create_firebase_user, get_current_user, get_password_hash
 from app.models.accounts import (
+    GetMultipleUsers_Out,
     GetUsers_Out,
     RegisterUser_In,
     RegisterUser_Out,
@@ -28,7 +31,7 @@ from app.models.accounts import (
 )
 from app.models.authentication import TokenData
 from app.models.common import PyObjectId
-from app.models.organizations import Organization_Db, Organizations
+from app.models.organizations import GetMultipleOrganizations_Out, GetOrganizations_Out, Organization_Db, Organizations
 from app.utils.secrets import secret_store
 
 router = APIRouter(tags=["users"])
@@ -113,6 +116,42 @@ async def get_user(
     return GetUsers_Out(**user_db[0].dict())
 
 
+@router.get(
+    path="/api/users",
+    description="Get all users",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
+    operation_id="get_all_users",
+)
+async def get_all_users(
+    _: TokenData = Depends(get_current_user),
+    organization_id: Optional[PyObjectId] = Query(default=None, description="UUID of the organization"),
+) -> GetMultipleUsers_Out:
+    # Check if the organization exists
+    if organization_id:
+        await Organizations.read(organization_id=organization_id, throw_on_not_found=True)
+        users = await Users.read(organization_id=organization_id)
+    else:
+        users = await Users.read()
+
+    return GetMultipleUsers_Out(users=[GetUsers_Out(**user.dict()) for user in users])
+
+
+@router.get(
+    path="/api/organizations",
+    description="Get all organizations",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
+    operation_id="get_all_organizations",
+)
+async def get_all_organizations(
+    _: TokenData = Depends(get_current_user),
+) -> GetMultipleOrganizations_Out:
+    organizations = await Organizations.read()
+
+    return GetMultipleOrganizations_Out(organizations=[GetOrganizations_Out(**org.dict()) for org in organizations])
+
+
 @router.patch(
     path="/api/users/{user_id}",
     description="Update user information.",
@@ -135,6 +174,7 @@ async def update_user_info(
     await Users.update(
         query_user_id=user_id,
         update_job_title=update_user_info.job_title,
+        update_roles=update_user_info.roles,
         update_avatar=update_user_info.avatar,
         update_account_state=update_user_info.account_state,
         update_phone=update_user_info.phone,
@@ -186,8 +226,8 @@ async def add_tallulah_admin():
     if user_db:
         return
 
-    admin_email="admin@tallulah.net"
-    admin_name="Tallulah Admin"
+    admin_email = "admin@tallulah.net"
+    admin_name = "Tallulah Admin"
 
     # Create the user and add it to the database
     user_db = User_Db(

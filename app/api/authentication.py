@@ -19,14 +19,14 @@ from typing import List
 
 import firebase_admin
 import firebase_admin.auth
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
-from app.models.accounts import UpdateUser_In, User_Db, UserAccountState, UserInfo_Out, UserRole, Users
+from app.models.accounts import UpdateUser_In, UserAccountState, UserInfo_Out, UserRole, Users
 from app.models.authentication import (
     ChartToken_Out,
     FirebaseTokenData,
@@ -261,6 +261,46 @@ async def login_for_access_token(
 
 
 @router.post(
+    path="/api/admin-login",
+    description="Admin login for tallulah user",
+    response_model=LoginSuccess_Out,
+    response_model_by_alias=False,
+    dependencies=[Depends(RoleChecker(allowed_roles=[]))],
+    operation_id="admin_login",
+)
+async def admin_login(
+    user_id: PyObjectId = Query(description="The user id for which access is requested"),
+    current_user: TokenData = Depends(get_current_user),
+) -> LoginSuccess_Out:
+
+    found_user = await Users.read(user_id=user_id, throw_on_not_found=True)
+    found_user_db = found_user[0]
+
+    if found_user_db.state is not UserAccountState.ACTIVE:
+        raise HTTPException(
+            status_code=403,
+            detail=f"User account is {found_user_db.state.value}. Contact Array Insights support.",
+        )
+
+    # Create the access token and refresh token and return them
+    token_data = TokenData(
+        id=found_user_db.id,
+        roles=found_user_db.roles,
+        organization_id=found_user_db.organization_id,
+        exp=int(time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60),
+        super_user_id=current_user.id,
+    )
+    access_token = jwt.encode(
+        claims=jsonable_encoder(token_data),
+        key=secret_store.JWT_SECRET,
+        algorithm=ALGORITHM,
+    )
+
+    # Refresh token is not returned for admin login as it is not needed
+    return LoginSuccess_Out(access_token=access_token, refresh_token="", token_type="bearer")
+
+
+@router.post(
     path="/api/refresh-token",
     description="Refresh the JWT token for the user",
     response_model=LoginSuccess_Out,
@@ -324,7 +364,11 @@ async def get_current_user_info(
     # Get the user organization name
     organization = await Organizations.read(organization_id=found_user[0].organization_id)
 
-    return UserInfo_Out(**found_user[0].dict(), organization_name=organization[0].name)
+    return UserInfo_Out(
+        **found_user[0].dict(),
+        organization_name=organization[0].name,
+        super_user_id=current_user.super_user_id,
+    )
 
 
 @router.post(

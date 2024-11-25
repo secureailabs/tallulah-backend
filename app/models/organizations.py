@@ -46,6 +46,14 @@ class Organization_Db(Organization_Base):
     account_creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 
+class GetOrganizations_Out(Organization_Base):
+    id: PyObjectId = Field()
+
+
+class GetMultipleOrganizations_Out(SailBaseModel):
+    organizations: List[GetOrganizations_Out]
+
+
 class ExportData_Base(SailBaseModel):
     user_id: PyObjectId = Field()
     organization_id: PyObjectId = Field()
