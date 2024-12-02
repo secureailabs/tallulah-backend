@@ -130,9 +130,8 @@ async def get_all_users(
     # Check if the organization exists
     if organization_id:
         await Organizations.read(organization_id=organization_id, throw_on_not_found=True)
-        users = await Users.read(organization_id=organization_id)
-    else:
-        users = await Users.read()
+
+    users = await Users.read(organization_id=organization_id)
 
     return GetMultipleUsers_Out(users=[GetUsers_Out(**user.dict()) for user in users])
 

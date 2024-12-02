@@ -115,7 +115,6 @@ class Users:
         user_id: Optional[PyObjectId] = None,
         organization_id: Optional[PyObjectId] = None,
         email: Optional[str] = None,
-        organization_id: Optional[PyObjectId] = None,
         user_role: Optional[UserRole] = None,
         user_state: Optional[UserAccountState] = None,
         throw_on_not_found: bool = True,
