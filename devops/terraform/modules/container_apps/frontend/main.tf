@@ -4,7 +4,7 @@ resource "azurerm_container_app" "container_app_frontend" {
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
   ingress {
-    target_port      = 80
+    target_port      = 3000
     exposed_port     = 500
     transport        = "tcp"
     external_enabled = true
