@@ -14,6 +14,7 @@ ENV DD_SERVICE=tallulah-backend
 ENV DD_VERSION=1
 
 COPY app /app
+COPY VERSION /VERSION
 
 COPY --from=datadog/serverless-init:1-alpine /datadog-init /app/datadog-init
 
