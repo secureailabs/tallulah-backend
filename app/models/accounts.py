@@ -63,6 +63,7 @@ class UserInfo_Out(User_Base):
     id: PyObjectId = Field()
     organization_id: PyObjectId = Field()
     organization_name: StrictStr = Field()
+    super_user_id: Optional[PyObjectId] = Field(default=None)
 
 
 class RegisterUser_In(User_Base):
@@ -127,6 +128,8 @@ class Users:
             query["organization_id"] = organization_id
         if email:
             query["email"] = email
+        if organization_id:
+            query["organization_id"] = organization_id
         # FIXME: roles is an array, so we need to use $in operator
         if user_role:
             query["roles"] = user_role.value
@@ -153,6 +156,7 @@ class Users:
     async def update(
         query_user_id: Optional[PyObjectId] = None,
         update_job_title: Optional[str] = None,
+        update_roles: Optional[List[UserRole]] = None,
         update_avatar: Optional[str] = None,
         update_account_state: Optional[UserAccountState] = None,
         update_last_login_time: Optional[datetime] = None,
@@ -171,6 +175,8 @@ class Users:
             update_request["$set"]["last_login_time"] = update_last_login_time
         if update_job_title:
             update_request["$set"]["job_title"] = update_job_title
+        if update_roles:
+            update_request["$set"]["roles"] = [role.value for role in update_roles]
         if update_avatar:
             update_request["$set"]["avatar"] = update_avatar
         if update_account_state:

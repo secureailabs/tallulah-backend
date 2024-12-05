@@ -12,7 +12,7 @@
 #     prior written permission of Array Insights, Inc.
 # -------------------------------------------------------------------------------
 
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field, StrictStr
 
@@ -35,6 +35,7 @@ class TokenData(SailBaseModel):
     organization_id: PyObjectId = Field()
     roles: List[UserRole] = Field()
     exp: int = Field()
+    super_user_id: Optional[PyObjectId] = Field(default=None)
 
 
 class FirebaseTokenData(SailBaseModel):

@@ -226,7 +226,9 @@ class FormTemplates:
             update_request["$set"]["last_edit_time"] = update_form_template_last_edit_time
         if update_form_template_state:
             update_request["$set"]["state"] = update_form_template_state.value
-        if update_form_template_logo:
+        # TODO: change everywhere how to perform a delete operation
+        # in the following case, if the update involves deletion of logo, it has to be done by setting it to an empty string
+        if update_form_template_logo is not None:
             update_request["$set"]["logo"] = update_form_template_logo
         if udpate_form_template_card_layout:
             update_request["$set"]["card_layout"] = udpate_form_template_card_layout
