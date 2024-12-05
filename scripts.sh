@@ -33,11 +33,6 @@ push_image_to_registry() {
         exit 1
     fi
 
-    az account set --subscription $AZURE_SUBSCRIPTION_ID
-
-    echo "log in to azure registry"
-    az acr login --name "$DOCKER_REGISTRY_NAME"
-
     # Get the version from the ../VERSION file
     version=$(cat VERSION)
 
@@ -46,6 +41,7 @@ push_image_to_registry() {
 
     echo "Tag and Pushing image to azure hub"
     tag=v"$version"_"$gitCommitHash"
+    # tag=v"$version"_"$gitCommitHash""$random_seed"
     echo "Tag: $tag"
     docker tag "$1" "$DOCKER_REGISTRY_NAME".azurecr.io/"$1":"$tag"
     docker push "$DOCKER_REGISTRY_NAME".azurecr.io/"$1":"$tag"
@@ -66,8 +62,8 @@ build_image() {
     docker pull redis:7.4.1 --platform linux/amd64
     docker tag redis:7.4.1 tallulah/redis
 
-    # Build the logstash image
-    docker build . -f devops/docker/logstash/Dockerfile -t tallulah/logstash --platform linux/amd64
+    # Build the monstache image
+    docker build . -f devops/docker/monstache/Dockerfile -t tallulah/monstache --platform linux/amd64
 }
 
 # Run the docker image
@@ -153,13 +149,20 @@ generate_client() {
 }
 
 deploy() {
+    export random_seed=$(openssl rand -base64 3)
     az login
+    az account set --subscription $AZURE_SUBSCRIPTION_ID
+
+    echo "log in to azure registry"
+    az acr login --name "$DOCKER_REGISTRY_NAME"
+
     make build_image
-    make push_all
+    make push_all -j4
 
     version=$(cat VERSION)
     gitCommitHash=$(git rev-parse --short HEAD)
     backend_tag=v"$version"_"$gitCommitHash"
+    # backend_tag=v"$version"_"$gitCommitHash""$random_seed"
     echo "Tag: $backend_tag"
 
     # rm -rf researcher-ui || true
@@ -184,12 +187,14 @@ deploy() {
         sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
         sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
         sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
+        sed -i '' "s/^monstache_container_image_tag=.*/monstache_container_image_tag=\"tallulah\/monstache:$backend_tag\"/g" development.tfvars
     else
         sed -i "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
         sed -i "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
         sed -i "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
         sed -i "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
         sed -i "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
+        sed -i "s/^monstache_container_image_tag=.*/monstache_container_image_tag=\"tallulah\/monstache:$backend_tag\"/g" development.tfvars
     fi
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
@@ -229,6 +234,7 @@ release() {
     sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
     sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" production.tfvars
+    sed -i '' "s/^monstache_container_image_tag=.*/monstache_container_image_tag=\"tallulah\/monstache:$backend_tag\"/g" production.tfvars
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
     terraform init -backend-config="backend_prod.tfvars" -reconfigure

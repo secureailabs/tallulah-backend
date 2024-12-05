@@ -83,7 +83,6 @@ class RabbitMQProducerConumer(AbstractMessageQueue):
     def __init__(self, queue_name: MessageQueueTypes, connection_string: str):
         if not hasattr(self, "queue_name"):
             self.queue_name = queue_name
-            self.is_connected = False
 
         if not hasattr(self, "url"):
             self.url = connection_string
@@ -91,23 +90,23 @@ class RabbitMQProducerConumer(AbstractMessageQueue):
             raise ValueError("Cannot change the url of the queue")
 
     async def connect(self):
-        if not self.is_connected:
+        if not self.is_connected():
             self.connection = await connect(self.url, loop=asyncio.get_event_loop())
             self.channel = await self.connection.channel()
             self.queue = await self.channel.declare_queue(self.queue_name.value, durable=True)
-            self.is_connected = True
 
     async def push_message(self, message: str):
-        if not self.is_connected:
-            raise Exception("Not connected")
+        if not self.is_connected():
+            await self.connect()
+
         await self.channel.default_exchange.publish(
             Message(message.encode(), delivery_mode=DeliveryMode.PERSISTENT),
             routing_key=self.queue.name,
         )
 
     async def consume_messages(self, on_message: Callable):
-        if not self.is_connected:
-            raise Exception("Not connected")
+        if not self.is_connected():
+            await self.connect()
 
         log_manager.DEBUG({"message": f"{self.queue_name} is waiting for messages"})
         async with self.queue.iterator() as queue_iter:
@@ -116,9 +115,15 @@ class RabbitMQProducerConumer(AbstractMessageQueue):
                 await on_message(message)
 
     async def disconnect(self):
-        if not self.is_connected:
+        if not self.is_connected():
             raise Exception("Not connected")
         await self.connection.close()
+
+    def is_connected(self):
+        # check the health of the connection
+        if not hasattr(self, "connection"):
+            return False
+        return self.connection and not self.connection.is_closed
 
 
 class RabbitMQWorkQueue(AbstractMessageQueue):

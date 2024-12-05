@@ -203,6 +203,22 @@ module "container_app_redis" {
   redis_password              = data.azurerm_key_vault_secret.keyvault_secrets["redis-password"].value
 }
 
+module "container_app_monstache" {
+  source                      = "./modules/container_apps/monstache"
+  resource_group_name         = module.resource_group.resource_group_name
+  container_app_env_id        = module.container_apps_env.container_app_environment_id
+  docker_image                = format("%s/%s", var.container_registry_server, var.monstache_container_image_tag)
+  container_registry_server   = var.container_registry_server
+  container_registry_username = data.azurerm_key_vault_secret.keyvault_secrets["container-registry-username"].value
+  container_registry_password = data.azurerm_key_vault_secret.keyvault_secrets["container-registry-password"].value
+  mongo_url                   = data.azurerm_key_vault_secret.keyvault_secrets["mongo-connection-url"].value
+  elastic_cloud_username      = data.azurerm_key_vault_secret.keyvault_secrets["elastic-username"].value
+  elastic_cloud_password      = data.azurerm_key_vault_secret.keyvault_secrets["elastic-password"].value
+  elastic_cloud_host          = data.azurerm_key_vault_secret.keyvault_secrets["elastic-cloud-host"].value
+  monstache_change_stream_ns  = "tallulah-prod-driven-urchin.form_data"
+  mongo_certificate           = data.azurerm_key_vault_secret.keyvault_secrets["mongo-connection-certificate"].value
+}
+
 module "storage_account" {
   source              = "./modules/storage_account"
   name                = "tallulahstorage"
