@@ -313,6 +313,14 @@ resource "azurerm_container_app" "container_app_backend" {
         name        = "MONGO_DB_CHARTS_PRIVATE_KEY"
         secret_name = "mongo-db-charts-private-key"
       }
+      env {
+        name        = "AZURE_EMAIL_FROM_ADDRESS"
+        secret_name = "azure-email-from-address"
+      }
+      env {
+        name        = "AZURE_COMM_CONNECTION_STRING"
+        secret_name = "azure-comm-connection-string"
+      }
     }
   }
 }
