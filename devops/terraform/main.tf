@@ -137,6 +137,9 @@ module "container_app_backend" {
   redis_password                    = data.azurerm_key_vault_secret.keyvault_secrets["redis-password"].value
   azure_email_from_address          = data.azurerm_key_vault_secret.keyvault_secrets["azure-email-from-address"].value
   azure_comm_connection_string      = data.azurerm_key_vault_secret.keyvault_secrets["azure-comm-connection-string"].value
+  reddit_api_key                    = data.azurerm_key_vault_secret.keyvault_secrets["reddit-api-key"].value
+  reddit_api_secret                 = data.azurerm_key_vault_secret.keyvault_secrets["reddit-api-secret"].value
+  mongo_db_charts_private_key       = data.azurerm_key_vault_secret.keyvault_secrets["mongo-db-charts-private-key"].value
 }
 
 module "container_app_rabbit_mq" {
