@@ -1,4 +1,8 @@
 IMAGES = tallulah/backend tallulah/rabbitmq tallulah/logstash tallulah/redis
+IMAGES = tallulah/backend
+
+login:
+	@az login
 
 run:
 	@./scripts.sh run
