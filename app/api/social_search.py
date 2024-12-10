@@ -41,8 +41,8 @@ from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/social/search", tags=["social-search"])
 
-MAX_REDDIT_POSTS = 30
-FILTER_BATCH_SIZE = 30
+MAX_REDDIT_POSTS = 15
+FILTER_BATCH_SIZE = 15
 
 
 def chunks(lst, n):
