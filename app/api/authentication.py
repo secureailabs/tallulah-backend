@@ -269,11 +269,12 @@ async def login_for_access_token(
     operation_id="admin_login",
 )
 async def admin_login(
-    user_id: PyObjectId = Query(description="The user id for which access is requested"),
+    # user_id: PyObjectId = Query(description="The user id for which access is requested"),
+    email: str = Query(description="The email of the user for which access is requested"),
     current_user: TokenData = Depends(get_current_user),
 ) -> LoginSuccess_Out:
 
-    found_user = await Users.read(user_id=user_id, throw_on_not_found=True)
+    found_user = await Users.read(email=email, throw_on_not_found=True)
     found_user_db = found_user[0]
 
     if found_user_db.state is not UserAccountState.ACTIVE:
@@ -526,7 +527,6 @@ async def get_chart_token(user: UserInfo_Out, form_template_id: PyObjectId | Non
             payload["form_template_id"] = [str(form_template.id) for form_template in form_templates]
     private_key = bytes.fromhex(secret_store.MONGO_DB_CHARTS_PRIVATE_KEY).decode("utf-8")
     token = jwt.encode(payload, private_key, algorithm="RS256")
-    print(token)
     return ChartToken_Out(chart_token=str(token))
 
 
@@ -540,3 +540,16 @@ async def get_chart_token_api(
     current_user: UserInfo_Out = Depends(get_current_user_info),
 ) -> ChartToken_Out:
     return await get_chart_token(current_user, None)
+
+
+@router.get(
+    "/api/auth/chart-token/{form_template_id}",
+    description="Get the chart token for a form template",
+    status_code=status.HTTP_200_OK,
+    operation_id="get_chart_token_for_template_api",
+)
+async def get_chart_token_for_template_api(
+    current_user: UserInfo_Out = Depends(get_current_user_info),
+    form_template_id: PyObjectId = Path(description="The form template id"),
+) -> ChartToken_Out:
+    return await get_chart_token(current_user, form_template_id)
