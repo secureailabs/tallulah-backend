@@ -75,12 +75,40 @@ resource "azurerm_application_gateway" "application_gateway" {
     data     = var.ssl_certificate_pfx_2
     password = var.ssl_certificate_password
   }
+  ssl_profile {
+    name = "secure_ssl_profile"
+    ssl_policy {
+      policy_name          = "AppGwSslPolicy20220101"
+      policy_type          = "Predefined"
+      min_protocol_version = "TLSv1_2"
+    }
+  }
+  rewrite_rule_set {
+    name = "security-headers"
+
+    rewrite_rule {
+      name          = "security-headers-rewrite-rule"
+      rule_sequence = 1
+
+      # TODO: this will stop the forms being used as iframes in other sites
+      # response_header_configuration {
+      #   header_name  = "X-Frame-Options"
+      #   header_value = "SAMEORIGIN"
+      # }
+      response_header_configuration {
+        header_name  = "Strict Transport Security"
+        header_value = "max-age=31536000; includeSubDomains"
+      }
+    }
+  }
+
   http_listener {
     name                           = "app-gateway-listener"
     frontend_ip_configuration_name = "appGwPrivateFrontendIpIPv4"
     frontend_port_name             = "port_443"
     protocol                       = "Https"
     ssl_certificate_name           = "app-gateway-ssl-cert"
+    ssl_profile_name               = "secure_ssl_profile"
     host_name                      = var.host_name
   }
   http_listener {
@@ -89,7 +117,23 @@ resource "azurerm_application_gateway" "application_gateway" {
     frontend_port_name             = "port_443"
     protocol                       = "Https"
     ssl_certificate_name           = "app-gateway-ssl-cert-2"
+    ssl_profile_name               = "secure_ssl_profile"
     host_name                      = var.host_name_2
+  }
+  # Add an HTTP listener for port 80
+  http_listener {
+    name                           = "app-gateway-listener-http"
+    frontend_ip_configuration_name = "appGwPrivateFrontendIpIPv4"
+    frontend_port_name             = "port_80"
+    protocol                       = "Http"
+    host_name                      = var.host_name
+  }
+  redirect_configuration {
+    name                 = "http-to-https-redirect"
+    redirect_type        = "Permanent"
+    target_listener_name = "app-gateway-listener"
+    include_path         = true
+    include_query_string = true
   }
   url_path_map {
     name                               = "app-gateway-url-path-map"
@@ -109,18 +153,27 @@ resource "azurerm_application_gateway" "application_gateway" {
     }
   }
   request_routing_rule {
-    name               = "app-gateway-routing-rule"
-    http_listener_name = "app-gateway-listener"
-    priority           = 1
-    rule_type          = "PathBasedRouting"
-    url_path_map_name  = "app-gateway-url-path-map"
+    name                  = "app-gateway-routing-rule"
+    http_listener_name    = "app-gateway-listener"
+    priority              = 1
+    rule_type             = "PathBasedRouting"
+    url_path_map_name     = "app-gateway-url-path-map"
+    rewrite_rule_set_name = "security-headers"
   }
   request_routing_rule {
-    name               = "app-gateway-routing-rule-2"
-    http_listener_name = "app-gateway-listener-2"
-    priority           = 2
-    rule_type          = "PathBasedRouting"
-    url_path_map_name  = "app-gateway-url-path-map"
+    name                  = "app-gateway-routing-rule-2"
+    http_listener_name    = "app-gateway-listener-2"
+    priority              = 2
+    rule_type             = "PathBasedRouting"
+    url_path_map_name     = "app-gateway-url-path-map"
+    rewrite_rule_set_name = "security-headers"
+  }
+  request_routing_rule {
+    name                        = "app-gateway-http-redirect-rule"
+    http_listener_name          = "app-gateway-listener-http"
+    rule_type                   = "Basic"
+    redirect_configuration_name = "http-to-https-redirect"
+    priority                    = 3
   }
   backend_address_pool {
     name  = "app-gateway-backend-pool"
