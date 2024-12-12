@@ -56,18 +56,18 @@ export class AuthenticationService {
     /**
      * Admin Login
      * Admin login for tallulah user
-     * @param userId The user id for which access is requested
+     * @param email The email of the user for which access is requested
      * @returns LoginSuccess_Out Successful Response
      * @throws ApiError
      */
     public static adminLogin(
-        userId: string,
+        email: string,
     ): CancelablePromise<LoginSuccess_Out> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/admin-login',
             query: {
-                'user_id': userId,
+                'email': email,
             },
             errors: {
                 422: `Validation Error`,
@@ -199,6 +199,28 @@ export class AuthenticationService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/auth/chart-token',
+        });
+    }
+
+    /**
+     * Get Chart Token For Template Api
+     * Get the chart token for a form template
+     * @param formTemplateId The form template id
+     * @returns ChartToken_Out Successful Response
+     * @throws ApiError
+     */
+    public static getChartTokenForTemplateApi(
+        formTemplateId: string,
+    ): CancelablePromise<ChartToken_Out> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/auth/chart-token/{form_template_id}',
+            path: {
+                'form_template_id': formTemplateId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
