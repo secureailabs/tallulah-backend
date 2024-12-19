@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 
@@ -29,6 +29,7 @@ from app.models.common import PyObjectId
 from app.models.social_search import (
     PostState,
     PostTagResponse,
+    PostTagUpdate,
     RedditPost,
     RedditPost_Db,
     RedditPosts,
@@ -265,6 +266,9 @@ async def reddit_tags(
                 added_time=post.added_time,
                 user_name=user.name if user else "",
                 job_title=user.job_title if user else "",
+                contact_method=post.contact_method,
+                contacted_at=post.contacted_at,
+                contacted_by=post.contacted_by,
             )
         )
 
@@ -307,20 +311,24 @@ async def reddit_add_tag(
 
 @router.put(
     path="/reddit/tags/{post_id}",
-    description="Reddit Tagged Post Status Update",
+    description="Reddit Tagged Post Update",
     status_code=status.HTTP_204_NO_CONTENT,
     response_model_by_alias=False,
-    operation_id="reddit_update_tag_status",
+    operation_id="reddit_update_tag",
 )
-async def reddit_update_tag_status(
+async def reddit_update_tag(
     post_id: PyObjectId = Path(description="Post ID"),
-    post_status: PostState = Query(description="Post status"),
+    tag: PostTagUpdate = Body(description="Tag Details for Update"),
     current_user: TokenData = Depends(get_current_user),
 ) -> Response:
-    await RedditPosts.update_status(
+
+    await RedditPosts.update(
         organization_id=current_user.organization_id,
         post_id=post_id,
-        status=post_status,
+        status=tag.status,
+        contact_method=tag.contact_method,
+        contacted_at=tag.contacted_at,
+        contacted_by=tag.contacted_by,
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

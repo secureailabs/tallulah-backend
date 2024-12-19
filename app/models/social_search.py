@@ -31,6 +31,7 @@ class PostState(Enum):
     IN_PROGRESS = "IN PROGRESS"
     APPROVED = "APPROVED"
     DENIED = "DENIED"
+    DELETED = "DELETED"
 
 
 class SearchHistory_Base(SailBaseModel):
@@ -76,6 +77,10 @@ class RedditPost_Db(RedditPost):
     status: PostState = Field(default=PostState.REQUESTED)
     added_time: datetime = Field(default_factory=datetime.utcnow)
     added_by: PyObjectId = Field()
+    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    contact_method: Optional[StrictStr] = Field(default=None)
+    contacted_at: Optional[datetime] = Field(default=None)
+    contacted_by: Optional[StrictStr] = Field(default=None)
 
 
 class PostTagResponse(SailBaseModel):
@@ -86,6 +91,16 @@ class PostTagResponse(SailBaseModel):
     added_time: datetime = Field()
     user_name: StrictStr = Field()
     job_title: StrictStr = Field()
+    contact_method: Optional[StrictStr] = Field(default=None)
+    contacted_at: Optional[datetime] = Field(default=None)
+    contacted_by: Optional[StrictStr] = Field(default=None)
+
+
+class PostTagUpdate(SailBaseModel):
+    status: Optional[PostState] = Field(default=None)
+    contact_method: Optional[StrictStr] = Field(default=None)
+    contacted_at: Optional[datetime] = Field(default=None)
+    contacted_by: Optional[StrictStr] = Field(default=None)
 
 
 class SearchHistory:
@@ -181,6 +196,7 @@ class RedditPosts:
             query["user_id"] = str(user_id)
         if organization_id:
             query["organization_id"] = str(organization_id)
+        query["status"] = {"$ne": PostState.DELETED.value}
 
         if skip is None and limit is None:
             response = await RedditPosts.data_service.find_by_query(
@@ -211,13 +227,25 @@ class RedditPosts:
         return posts_list
 
     @staticmethod
-    async def update_status(
+    async def update(
         organization_id: PyObjectId,
         post_id: PyObjectId,
-        status: PostState,
+        status: Optional[PostState] = None,
+        contact_method: Optional[StrictStr] = None,
+        contacted_by: Optional[StrictStr] = None,
+        contacted_at: Optional[datetime] = None,
     ):
         update_request = {"$set": {}}
-        update_request["$set"]["status"] = status.value
+        if status:
+            update_request["$set"]["status"] = status.value
+        if contact_method:
+            update_request["$set"]["contact_method"] = contact_method
+        if contacted_by:
+            update_request["$set"]["contacted_by"] = contacted_by
+        if contacted_at:
+            update_request["$set"]["contacted_at"] = contacted_at
+
+        update_request["$set"]["updated_at"] = datetime.utcnow()
 
         return await RedditPosts.data_service.update_one(
             collection=RedditPosts.DB_COLLECTION_REDDIT_POSTS,
