@@ -3,6 +3,7 @@ resource "azurerm_container_app" "container_app_backend" {
   name                         = "backend"
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
+  max_inactive_revisions       = 100
   ingress {
     target_port      = 8000
     exposed_port     = 8000

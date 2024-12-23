@@ -20,11 +20,12 @@ resource "azurerm_subnet" "container_apps_subnet" {
 
 # 10.0.16.2 - 10.0.16.254
 resource "azurerm_subnet" "gateway_subnet" {
-  address_prefixes     = ["10.0.16.0/24"]
-  name                 = "gateway"
-  resource_group_name  = var.resource_group_name
-  virtual_network_name = var.virtual_network_name
-  depends_on           = [azurerm_virtual_network.vnet]
+  address_prefixes                  = ["10.0.16.0/24"]
+  name                              = "gateway"
+  resource_group_name               = var.resource_group_name
+  virtual_network_name              = var.virtual_network_name
+  depends_on                        = [azurerm_virtual_network.vnet]
+  private_endpoint_network_policies = "Enabled"
 }
 
 # TODO: create virtual network peering here. It is difficult as the remote virtual network is in a different subscription.
