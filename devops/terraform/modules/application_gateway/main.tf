@@ -61,6 +61,11 @@ resource "azurerm_application_gateway" "application_gateway" {
     name = "port_443"
     port = 443
   }
+  frontend_port {
+    name = "port_80"
+    port = 80
+  }
+
   gateway_ip_configuration {
     name      = "appGatewayIpConfig"
     subnet_id = var.gateway_subnet_id
@@ -74,6 +79,10 @@ resource "azurerm_application_gateway" "application_gateway" {
     name     = "app-gateway-ssl-cert-2"
     data     = var.ssl_certificate_pfx_2
     password = var.ssl_certificate_password
+  }
+  ssl_policy {
+    policy_type = "Predefined"
+    policy_name = "AppGwSslPolicy20220101"
   }
   ssl_profile {
     name = "secure_ssl_profile"
@@ -96,7 +105,7 @@ resource "azurerm_application_gateway" "application_gateway" {
       #   header_value = "SAMEORIGIN"
       # }
       response_header_configuration {
-        header_name  = "Strict Transport Security"
+        header_name  = "Strict-Transport-Security"
         header_value = "max-age=31536000; includeSubDomains"
       }
     }

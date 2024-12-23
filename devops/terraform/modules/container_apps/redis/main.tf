@@ -3,6 +3,7 @@ resource "azurerm_container_app" "container_app_redis" {
   name                         = "redis"
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
+  max_inactive_revisions       = 100
   ingress {
     target_port = 6379
     transport   = "tcp"
