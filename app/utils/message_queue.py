@@ -71,13 +71,13 @@ class InMemoryProducerConsumer(AbstractMessageQueue):
         pass
 
 
-class RabbitMQProducerConumer(AbstractMessageQueue):
+class RabbitMQProducerConsumer(AbstractMessageQueue):
     _queues = {}
 
     # Make a singleton class for all the unique queues
     def __new__(cls, queue_name: MessageQueueTypes, connection_string: str):
         if queue_name not in cls._queues:
-            cls._queues[queue_name] = super(RabbitMQProducerConumer, cls).__new__(cls)
+            cls._queues[queue_name] = super(RabbitMQProducerConsumer, cls).__new__(cls)
         return cls._queues[queue_name]
 
     def __init__(self, queue_name: MessageQueueTypes, connection_string: str):

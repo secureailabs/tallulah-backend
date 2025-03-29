@@ -62,7 +62,7 @@ from app.models.common import PyObjectId
 from app.tasks.structured_data import on_generate_structured_data
 from app.utils import log_manager
 from app.utils.elastic_search import ElasticsearchClient
-from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConumer
+from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConsumer
 from app.utils.secrets import secret_store
 
 server = FastAPI(
@@ -282,7 +282,7 @@ async def start_queue_consumers():
         log_manager.INFO({"message": "Starting the task queue consumer for generating structured data"})
 
         rabbit_mq_connect_url = secret_store.RABBIT_MQ_HOST
-        task_queue = RabbitMQProducerConumer(
+        task_queue = RabbitMQProducerConsumer(
             queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
             connection_string=f"{rabbit_mq_connect_url}:5672",
         )

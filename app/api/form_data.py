@@ -44,7 +44,7 @@ from app.utils.background_couroutines import AsyncTaskManager
 from app.utils.elastic_search import ElasticsearchClient
 from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, OutlookClient, ToRecipient
 from app.utils.lock_store import RedisLockStore
-from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConumer
+from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConsumer
 from app.utils.secrets import secret_store
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
@@ -73,7 +73,7 @@ async def queue_form_data_metadata_generation():
         log_manager.DEBUG(
             {"message": f"Pushing a message {form_data_id} to the task queue to generate structured data"}
         )
-        task_queue = RabbitMQProducerConumer(
+        task_queue = RabbitMQProducerConsumer(
             queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
             connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
         )
@@ -104,7 +104,7 @@ async def queue_all_form_data_metadata_generation():
         log_manager.DEBUG(
             {"message": f"Pushing a message {form_data_id} to the task queue to generate structured data"}
         )
-        task_queue = RabbitMQProducerConumer(
+        task_queue = RabbitMQProducerConsumer(
             queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
             connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
         )
@@ -474,7 +474,7 @@ async def generate_metadata(
             )
 
     log_manager.DEBUG({"message": f"Pushing a message {form_data_id} to the task queue to generate structured data"})
-    task_queue = RabbitMQProducerConumer(
+    task_queue = RabbitMQProducerConsumer(
         queue_name=MessageQueueTypes.FORM_DATA_METADATA_GENERATION,
         connection_string=f"{secret_store.RABBIT_MQ_HOST}:5672",
     )
