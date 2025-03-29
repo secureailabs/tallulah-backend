@@ -24,7 +24,7 @@ from app.utils.transcribe_audio import transcribe_audio
 
 async def transcribe_video(video_path: str) -> str:
     audio_path = video_path + ".wav"
-    cmd = f"ffmpeg -y -i {video_path} -vn -acodec pcm_s16le -ar 16000 -ac 1 {audio_path}"
+    cmd = f'ffmpeg -y -i "{video_path}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{audio_path}"'
     extraction_result = await run_shell_code(cmd)
     if extraction_result.status != 0:
         raise Exception(f"ffmpeg failed: {extraction_result.error}")
@@ -38,7 +38,8 @@ async def transcribe_video(video_path: str) -> str:
 
 
 async def transcribe_video_from_id(video_id, file_name) -> str:
-
+    # clean file_name
+    file_name = file_name.replace(" ", "_").replace(":", "_").replace("/", "_").replace("\\", "_")
     storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-video")
     video_file_data = await storage_manager.download_blob(str(video_id))
 

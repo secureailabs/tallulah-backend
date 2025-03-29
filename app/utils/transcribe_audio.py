@@ -35,7 +35,7 @@ async def transcribe_audio(audio_path: str) -> str:
             chunk_count = audio_size // chunk_size + 1
             for i in range(chunk_count):
                 chunk_audio_path = f"{audio_path}_{i}.wav"
-                cmd = f"ffmpeg -y -i {audio_path} -ss {i * chunk_size} -t {chunk_size} {chunk_audio_path}"
+                cmd = f'ffmpeg -y -i "{audio_path}" -ss {i * chunk_size} -t {chunk_size} {chunk_audio_path}'
                 split_op_status = await run_shell_code(cmd)
                 if split_op_status.status != 0:
                     raise Exception(f"ffmpeg failed: {split_op_status.error}")
@@ -58,6 +58,8 @@ async def transcribe_audio(audio_path: str) -> str:
 
 
 async def transcribe_audio_from_id(audio_id: PyObjectId, file_name: str) -> str:
+    # clean file_name
+    file_name = file_name.replace(" ", "_").replace(":", "_").replace("/", "_").replace("\\", "_")
     storage_manager = AzureBlobManager(secret_store.STORAGE_ACCOUNT_CONNECTION_STRING, "form-audio")
     audio_file_data = await storage_manager.download_blob(str(audio_id))
 
