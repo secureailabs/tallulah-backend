@@ -113,6 +113,7 @@ class FormTemplate_Db(FormTemplate_Base):
 
 class GetFormTemplate_Out(FormTemplate_Base):
     id: PyObjectId = Field()
+    organization_id: PyObjectId = Field()
     creation_time: datetime = Field(default_factory=datetime.utcnow)
     state: FormTemplateState = Field()
     last_edit_time: datetime = Field(default_factory=datetime.utcnow)
