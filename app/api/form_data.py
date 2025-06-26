@@ -46,11 +46,29 @@ from app.utils.emails import EmailAddress, EmailBody, Message, MessageResponse, 
 from app.utils.lock_store import RedisLockStore
 from app.utils.message_queue import MessageQueueTypes, RabbitMQProducerConsumer
 from app.utils.secrets import secret_store
+from dateutil.parser import parse as parse_date
 
 router = APIRouter(prefix="/api/form-data", tags=["form-data"])
 
 # logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def clean_fields(values: dict):
+    try:
+        for key, field in values.items():
+            if field["type"].lower() == "date":
+                if not field["value"]:
+                    field["value"] = None
+                else:
+                    try:
+                        # Attempt to parse the date string
+                        field["value"] = parse_date(field["value"]).isoformat()
+                    except ValueError:
+                        field["value"] = None
+    except Exception as e:
+        logger.error(f"Error cleaning fields: {e}")
+    print(f"Cleaned values: {values}")
+    return values
 
 
 async def queue_form_data_metadata_generation():
@@ -170,17 +188,24 @@ async def add_form_data(
 
     form_data_db = FormData_Db(
         form_template_id=form_data.form_template_id,
-        values=form_data.values,
+        values=clean_fields(form_data.values),
     )
     await FormDatas.create(form_data_db)
 
-    # Add the form data to elasticsearch for search
-    elastic_client = ElasticsearchClient()
-    await elastic_client.insert_document(
-        index_name=str(form_data.form_template_id),
-        id=str(form_data_db.id),
-        document=jsonable_encoder(form_data_db, exclude=set(["_id", "id"])),
-    )
+    try:
+        # Add the form data to elasticsearch for search
+        elastic_client = ElasticsearchClient()
+        await elastic_client.insert_document(
+            index_name=str(form_data.form_template_id),
+            id=str(form_data_db.id),
+            document=jsonable_encoder(form_data_db, exclude=set(["_id", "id"])),
+        )
+    except Exception as e:
+        log_manager.ERROR({"message": f"Error while adding form data to elasticsearch: {e}"})
+        # raise HTTPException(
+        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     detail="Error while adding form data to elasticsearch",
+        # )
 
     # Send email notifications
     async_task_manager = AsyncTaskManager()
