@@ -236,7 +236,10 @@ async def add_audit_log(request: Request, call_next: Callable):
     # remove sensitive data from the request body
     if "Content-Type" in request.headers:
         if request.headers.get("Content-Type") == "application/json":
-            request_body = json.loads(request_body)
+            try:
+                request_body = json.loads(request_body)
+            except json.JSONDecodeError:
+                request_body = {}
             # recursively remove password from the request body
             request_body_json = remove_sensitive_info(request_body)
             request_body = json.dumps(request_body_json)
