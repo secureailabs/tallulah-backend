@@ -19,6 +19,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
+from openai import organization
 
 from app.api.authentication import RoleChecker, get_current_user
 from app.models.accounts import Users
@@ -67,7 +68,7 @@ def clean_fields(values: dict):
                         field["value"] = None
     except Exception as e:
         logger.error(f"Error cleaning fields: {e}")
-    print(f"Cleaned values: {values}")
+    # print(f"Cleaned values: {values}")
     return values
 
 
@@ -681,3 +682,123 @@ async def generate_all_themes():
         except Exception as e:
             print(e)
             logger.error(f"Error generating themes for form data: {data.id}")
+
+
+@router.get(
+    path="/deduplicate/{form_template_id}",
+    description="Deduplicate form data for a given form template",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    operation_id="deduplicate_form_data",
+)
+async def deduplicate_form_data(
+    form_template_id: PyObjectId = Path(description="Form template id"),
+    current_user: TokenData = Depends(get_current_user),
+):
+    organization_id = current_user.organization_id
+    organization_id = "bf863520-5dea-4447-9e3e-b85044c323ed"
+    # form_template_id = "eec41736-f197-4d8b-8373-47ff7207237c"
+
+    # Get all the form data for the template
+    form_data_list = await FormDatas.read(
+        form_template_id=form_template_id,
+        throw_on_not_found=False,
+    )
+    if not form_data_list:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    
+    original_forms = []
+    duplicate_forms = []
+
+    for form_data in form_data_list:
+        # Check if the form data is already processed
+        if form_data.metadata and form_data.state == FormDataState.DELETED:
+            continue
+        
+        is_duplicate = False
+        for form in original_forms:
+            if form_data.values == form.values or (form.values.get("Your name") and form.values.get("Zip Code") and form.values.get("Your name") == form_data.values.get("Your name") and form.values.get("Zip Code") == form_data.values.get("Zip Code")):
+                duplicate_forms.append(form_data)
+                is_duplicate = True
+                print(f"Duplicate found: {form_data.id} is a duplicate of {form.id}")
+                break
+        if not is_duplicate:
+            original_forms.append(form_data)
+
+    print(f"Original forms: {len(original_forms)}, Duplicate forms: {len(duplicate_forms)}")
+
+    for form_data in duplicate_forms:
+        # Delete the duplicate form data
+        await FormDatas.update(
+            query_form_data_id=form_data.id,
+            update_form_data_state=FormDataState.DELETED,
+            throw_on_no_update=False,
+        )
+        print(f"Deleted form data: {form_data.id}")
+        # Delete from elasticsearch
+        elastic_client = ElasticsearchClient()
+        try:
+            await elastic_client.delete_document(
+                index_name=str(form_template_id), id=str(form_data.id)
+            )
+        except Exception as e:
+            logger.error(f"Error deleting form data from elasticsearch: {e}")
+
+    return Response(
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@router.get(
+    path="/reindex/{form_template_id}",
+    description="Reindex form data in ES",
+    status_code=status.HTTP_200_OK,
+    response_model_by_alias=False,
+    operation_id="reindex_form_data",
+)
+async def reindex_form_data(
+    form_template_id: PyObjectId = Path(description="Form template id"),
+    current_user: TokenData = Depends(get_current_user),
+):
+    organization_id = current_user.organization_id
+    # form_template_id = "eec41736-f197-4d8b-8373-47ff7207237c"
+
+    # Get all the form data for the template
+    form_data_list = await FormDatas.read(
+        form_template_id=form_template_id,
+        throw_on_not_found=False,
+    )
+    if not form_data_list:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    elastic_client = ElasticsearchClient()
+    for form_data in form_data_list:
+        try:
+            # get the form data from elasticsearch
+            existing_document = await elastic_client.get_document(
+                index_name=str(form_template_id),
+                id=str(form_data.id),
+            )
+            if existing_document:
+                if form_data.state == FormDataState.DELETED:
+                    # If the form data is deleted, delete it from elasticsearch
+                    await elastic_client.delete_document(
+                        index_name=str(form_template_id),
+                        id=str(form_data.id),
+                    )
+                    logger.info(f"Deleted form data from elasticsearch: {form_data.id}")
+                    continue
+                continue
+            if form_data.state == FormDataState.DELETED:
+                continue
+            # Clean the fields before reindexing
+            form_data.values = clean_fields(form_data.values)
+            await elastic_client.insert_document(
+                index_name=str(form_template_id),
+                id=str(form_data.id),
+                document=jsonable_encoder(form_data, exclude=set(["_id", "id"])),
+            )
+        except Exception as e:
+            logger.error(f"Error reindexing form data: {e}")
+
+    return Response(status_code=status.HTTP_200_OK)

@@ -55,6 +55,14 @@ class ElasticsearchClient:
     async def update_document(self, index_name: str, id: str, document: dict):
         resp = await self.client.index(index=index_name, document=document, id=id)
         return resp
+    
+    async def get_document(self, index_name: str, id: str):
+        try:
+            resp = await self.client.get(index=index_name, id=id)
+            return resp
+        except Exception as e:
+            print(f"Error retrieving document with id {id} from index {index_name}: {e}")
+            return None
 
     async def run_aggregation_query(self, index_name: str, query: dict):
         resp = await self.client.search(index=index_name, size=0, body=query)  # type: ignore
