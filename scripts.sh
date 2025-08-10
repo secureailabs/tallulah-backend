@@ -150,14 +150,14 @@ generate_client() {
 
 deploy() {
     export random_seed=$(openssl rand -base64 3)
-    az login
+    # az login
     az account set --subscription $AZURE_SUBSCRIPTION_ID
 
     echo "log in to azure registry"
     az acr login --name "$DOCKER_REGISTRY_NAME"
 
-    make build_image
-    make push_all -j4
+    # make build_image
+    # make push_all -j4
 
     version=$(cat VERSION)
     gitCommitHash=$(git rev-parse --short HEAD)
@@ -167,17 +167,18 @@ deploy() {
 
     # rm -rf researcher-ui || true
     # git clone git@github.com:secureailabs/researcher-ui.git
-    pushd researcher-ui
-    yarn
-    yarn build:beta
-    make build_image
-    make push_image
+    # pushd researcher-ui
+    # yarn
+    # yarn build:beta
+    # make build_image
+    # make push_image
 
     version=$(cat VERSION)
     gitCommitHash=$(git rev-parse --short HEAD)
     ui_tag=v"$version"_"$gitCommitHash"
+    ui_tag="v0.3.0_3e5a2c2"
     echo "Tag: $ui_tag"
-    popd
+    # popd
 
     pushd devops/terraform
 
@@ -188,11 +189,11 @@ deploy() {
         sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
         sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
     else
-        sed -i "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
+        #sed -i "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" development.tfvars
         sed -i "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" development.tfvars
-        sed -i "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
-        sed -i "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
-        sed -i "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
+        #sed -i "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" development.tfvars
+        #sed -i "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" development.tfvars
+        #sed -i "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" development.tfvars
     fi
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
@@ -203,35 +204,48 @@ deploy() {
 
 
 release() {
-    az login
-    make build_image
-    make push_all
+    # az login
+    # make build_image
+    # make push_all
 
     version=$(cat VERSION)
     gitCommitHash=$(git rev-parse --short HEAD)
     backend_tag=v"$version"_"$gitCommitHash"
     echo "Tag: $backend_tag"
 
-    # rm -rf researcher-ui || true
-    # git clone git@github.com:secureailabs/researcher-ui.git
-    pushd researcher-ui
-    yarn
-    yarn build
-    make build_image
-    make push_image
+    if false; then
+        # rm -rf researcher-ui || true
+        # git clone git@github.com:secureailabs/researcher-ui.git
+        pushd researcher-ui
+        yarn
+        yarn build
+        make build_image
+        make push_image
 
-    version=$(cat VERSION)
-    gitCommitHash=$(git rev-parse --short HEAD)
-    ui_tag=v"$version"_"$gitCommitHash"
-    echo "Tag: $ui_tag"
-    popd
+        version=$(cat VERSION)
+        gitCommitHash=$(git rev-parse --short HEAD)
+        ui_tag=v"$version"_"$gitCommitHash"
+        echo "Tag: $ui_tag"
+        popd
+    else
+        ui_tag="v0.3.4-prod_4edd5c3"
+    fi
 
     pushd devops/terraform
-    sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" production.tfvars
-    sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
-    sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
-    sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
-    sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" production.tfvars
+    if [ $machine == "Mac" ]; then
+        sed -i '' "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" production.tfvars
+        sed -i '' "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
+        sed -i '' "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
+        sed -i '' "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
+        sed -i '' "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" production.tfvars
+    else
+        echo "None"
+        #sed -i "s/^backend_container_image_tag=.*/backend_container_image_tag=\"tallulah\/backend:$backend_tag\"/g" production.tfvars
+        #sed -i "s/^ui_container_image_tag=.*/ui_container_image_tag=\"tallulah\/ui:$ui_tag\"/g" production.tfvars
+        #sed -i "s/^rabbitmq_container_image_tag=.*/rabbitmq_container_image_tag=\"tallulah\/rabbitmq:$backend_tag\"/g" production.tfvars
+        #sed -i "s/^logstash_container_image_tag=.*/logstash_container_image_tag=\"tallulah\/logstash:$backend_tag\"/g" production.tfvars
+        #sed -i "s/^redis_container_image_tag=.*/redis_container_image_tag=\"tallulah\/redis:$backend_tag\"/g" production.tfvars
+    fi
 
     az account set --subscription $AZURE_SUBSCRIPTION_ID
     terraform init -backend-config="backend_prod.tfvars" -reconfigure
