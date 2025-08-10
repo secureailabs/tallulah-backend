@@ -34,7 +34,7 @@ class MediaMetadata_Db(SailBaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     state: MediaState = Field(default=MediaState.ACTIVE)
     organization_id: PyObjectId = Field()
-    creation_time: datetime = Field(default=datetime.utcnow())
+    creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 
 class MediaMetadata:

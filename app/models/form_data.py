@@ -63,7 +63,7 @@ class FormDataMetadata(SailBaseModel):
     audio_metadata: List[AudioMetadata] = Field(default=[])
     image_metadata: List[ImageMetadata] = Field(default=[])
     structured_data: Union[None, StructuredData, Dict[StrictStr, Any]] = Field(default=None)
-    creation_time: datetime = Field(default=datetime.utcnow())
+    creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 
 class FormData_Base(SailBaseModel):
@@ -85,7 +85,7 @@ class FormData_Db(FormData_Base):
     state: FormDataState = Field(default=FormDataState.ACTIVE)
     themes: Optional[List[StrictStr]] = Field(default=None)
     metadata: Optional[FormDataMetadata] = Field(default=None)
-    creation_time: datetime = Field(default=datetime.utcnow())
+    creation_time: datetime = Field(default_factory=datetime.utcnow)
 
 
 class GetFormData_Out(FormData_Base):
