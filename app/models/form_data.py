@@ -81,7 +81,7 @@ class RegisterFormData_Out(SailBaseModel):
 
 class FormData_Db(FormData_Base):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    chat_time: Optional[datetime] = Field(default=datetime.utcnow())
+    chat_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
     state: FormDataState = Field(default=FormDataState.ACTIVE)
     themes: Optional[List[StrictStr]] = Field(default=None)
     metadata: Optional[FormDataMetadata] = Field(default=None)
