@@ -44,6 +44,7 @@ router = APIRouter(prefix="/api/social/search", tags=["social-search"])
 
 MAX_REDDIT_POSTS = 15
 FILTER_BATCH_SIZE = 15
+MAX_POST_LENGTH = 1024
 
 
 def chunks(lst, n):
@@ -70,7 +71,7 @@ async def filter_posts_by_patient_stories(posts: List[RedditPost]) -> List[Reddi
                 {
                     "role": "user",
                     "content": (
-                        "id: " + post.reddit_id + ", title: " + post.title + (", selftext: " + post.selftext)
+                        "id: " + post.reddit_id + ", title: " + post.title + (", selftext: " + post.selftext[:MAX_POST_LENGTH])
                         if post.selftext
                         else ""
                     ),
@@ -209,6 +210,7 @@ async def reddit_search(
     try:
         return await filter_posts_by_patient_stories(result) if filter_patient_stories else result
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error filtering posts",
