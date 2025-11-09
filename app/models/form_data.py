@@ -263,6 +263,7 @@ class FormDatas:
         data_filter: Optional[FormFilter_In] = None,
     ) -> int:
         query = {}
+        query["state"] = FormDataState.ACTIVE.value
         if form_template_id:
             query["form_template_id"] = str(form_template_id)
         if data_filter:

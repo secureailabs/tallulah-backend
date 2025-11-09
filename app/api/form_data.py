@@ -19,7 +19,6 @@ from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Response, status
 from fastapi.encoders import jsonable_encoder
-from openai import organization
 
 from app.api.authentication import RoleChecker, get_current_user
 from app.models.accounts import Users
@@ -278,6 +277,10 @@ async def get_all_form_data(
     _ = await FormTemplates.read(
         template_id=form_template_id, organization_id=current_user.organization_id, throw_on_not_found=True
     )
+
+    # For ABCF form sorting
+    if sort_key == "values.firstName.value" and str(form_template_id) == "eec41736-f197-4d8b-8373-47ff7207237c":
+        sort_key = "values.First Name.value"
 
     form_data_list = await FormDatas.read(
         form_template_id=form_template_id,
