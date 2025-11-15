@@ -11,7 +11,7 @@ resource "azurerm_storage_account" "storage_account" {
   resource_group_name = var.resource_group_name
 
   location                         = "westus"
-  account_kind                     = "BlobStorage"
+  account_kind                     = "StorageV2"
   account_tier                     = "Standard"
   account_replication_type         = "LRS"
   public_network_access_enabled    = true
