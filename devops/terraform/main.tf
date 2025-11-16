@@ -122,8 +122,8 @@ module "container_app_backend" {
   refresh_secret                    = data.azurerm_key_vault_secret.keyvault_secrets["refresh-secret"].value
   storage_container_sas_url         = "TODO"
   tallulah_admin_password           = data.azurerm_key_vault_secret.keyvault_secrets["tallulah-admin-password"].value
-  # storage_account_connection_string = module.storage_account.storage_account_connection_string
-  storage_account_connection_string = data.azurerm_key_vault_secret.keyvault_secrets["storage-account-connection-string"].value
+  storage_account_connection_string = module.storage_account.storage_account_connection_string
+  # storage_account_connection_string = data.azurerm_key_vault_secret.keyvault_secrets["storage-account-connection-string"].value
   elastic_password                  = data.azurerm_key_vault_secret.keyvault_secrets["elastic-password"].value
   elastic_cloud_host                = data.azurerm_key_vault_secret.keyvault_secrets["elastic-cloud-host"].value
   openai_api_base                   = data.azurerm_key_vault_secret.keyvault_secrets["openai-api-base"].value
