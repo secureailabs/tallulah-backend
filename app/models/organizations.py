@@ -154,9 +154,11 @@ class DataExports:
         if organization_id:
             query["organization_id"] = str(organization_id)
 
-        response = await DataExports.data_service.find_by_query(
+        response = await DataExports.data_service.find_sorted(
             collection=DataExports.DB_COLLECTION_DATA_EXPORTS,
             query=query,
+            sort_key="export_time",
+            sort_direction=-1,
         )
 
         exports = []
