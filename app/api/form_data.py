@@ -279,8 +279,11 @@ async def get_all_form_data(
     )
 
     # For ABCF form sorting
-    if sort_key == "values.firstName.value" and str(form_template_id) == "eec41736-f197-4d8b-8373-47ff7207237c":
-        sort_key = "values.First Name.value"
+    if str(form_template_id) == "eec41736-f197-4d8b-8373-47ff7207237c":
+        if sort_key == "values.firstName.value":
+            sort_key = "values.First Name.value"
+        if sort_key == "values.lastName.value":
+            sort_key = "values.Last Name.value"
 
     form_data_list = await FormDatas.read(
         form_template_id=form_template_id,
